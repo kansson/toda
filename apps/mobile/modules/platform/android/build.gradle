@@ -1,0 +1,22 @@
+apply plugin: 'com.android.library'
+apply plugin: 'expo-module-gradle-plugin'
+
+group = 'app.toda.platform'
+version = '0.1.0'
+
+// Expo Modules 2.0: annotated Kotlin classes, found at compile time rather than listed.
+expoModule {
+  v2 true
+}
+
+android {
+  namespace "app.toda.platform"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}
+
+dependencies {
+  implementation 'com.facebook.react:react-android'
+}

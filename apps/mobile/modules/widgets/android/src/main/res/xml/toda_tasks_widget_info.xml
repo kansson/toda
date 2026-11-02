@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:configure="app.toda.widgets.TasksWidgetConfigureActivity"
+  android:description="@string/toda_widget_tasks_description"
+  android:initialLayout="@layout/toda_widget_loading"
+  android:previewLayout="@layout/toda_tasks_widget_preview"
+  android:minWidth="250dp"
+  android:minHeight="110dp"
+  android:minResizeWidth="160dp"
+  android:minResizeHeight="110dp"
+  android:resizeMode="horizontal|vertical"
+  android:targetCellWidth="4"
+  android:targetCellHeight="3"
+  android:updatePeriodMillis="0"
+  android:widgetCategory="home_screen"
+  android:widgetFeatures="reconfigurable" />

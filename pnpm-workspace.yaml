@@ -1,0 +1,105 @@
+packages:
+  - apps/*
+  - packages/*
+
+cleanupUnusedCatalogs: true
+catalogMode: prefer
+verifyDepsBeforeRun: false
+
+# Resolve no release younger than three days, here and in CI. A release that is genuinely needed
+# sooner goes in minimumReleaseAgeExclude with its exact version and the reason.
+minimumReleaseAge: 4320
+
+minimumReleaseAgeExclude:
+  # 2026-11-01: TanStack DB's Convex adapter shipped on 2026-10-28; rc.1.1 is the first release
+  # with one copy of @tanstack/db across the adapter, persistence and offline packages.
+  - '@tanstack/db@1.0.0-rc.1.1'
+  - '@tanstack/db-ivm@1.0.0-rc.1.1'
+  - '@tanstack/react-db@1.0.0-rc.1.1'
+  - '@tanstack/convex-db-collection@1.0.0-rc.1.1'
+  - '@tanstack/expo-db-sqlite-persistence@1.0.0-rc.1.1'
+  - '@tanstack/db-sqlite-persistence-core@1.0.0-rc.1.1'
+  - '@tanstack/offline-transactions@1.2.0'
+  # 2026-11-01: the Expo UI release matching SDK 58's newest patch.
+  - '@expo/ui@58.0.26'
+
+# Every workspace package names its dependencies as `catalog:`; versions live only here.
+catalog:
+  '@convex-dev/auth': 2.0.0-beta.0
+  '@expo/material-symbols': 0.1.1
+  '@expo/metro-runtime': 58.0.15
+  '@expo/ui': 58.0.26
+  '@formatjs/intl-getcanonicallocales': 3.2.12
+  '@formatjs/intl-locale': 5.3.12
+  '@formatjs/intl-pluralrules': 6.3.15
+  '@lingui/babel-plugin-lingui-macro': 6.10.1
+  '@lingui/cli': 6.10.1
+  '@lingui/core': 6.10.1
+  '@lingui/format-po': 6.10.1
+  '@lingui/react': 6.10.1
+  '@oxlint/plugins': 1.90.0
+  '@react-native-community/netinfo': 12.0.1
+  '@tanstack/convex-db-collection': 1.0.0-rc.1.1
+  '@tanstack/db': 1.0.0-rc.1.1
+  '@tanstack/expo-db-sqlite-persistence': 1.0.0-rc.1.1
+  '@tanstack/offline-transactions': 1.2.0
+  '@tanstack/react-db': 1.0.0-rc.1.1
+  '@types/node': 26.6.5
+  '@types/react': 19.3.0
+  '@vitest/coverage-v8': 5.0.5
+  babel-preset-expo: 58.0.22
+  convex: 1.48.0
+  convex-helpers: 0.1.131
+  convex-test: 0.0.66
+  expo: 58.0.21
+  expo-application: 58.1.2
+  expo-build-properties: 58.0.11
+  expo-clipboard: 58.0.4
+  expo-constants: 58.0.14
+  expo-crypto: 58.0.7
+  expo-dev-client: 58.0.17
+  expo-file-system: 58.0.13
+  expo-haptics: 58.0.7
+  expo-linking: 58.0.15
+  expo-localization: 58.0.5
+  expo-notifications: 58.1.7
+  expo-router: 58.0.28
+  expo-secure-store: 58.0.2
+  expo-splash-screen: 58.0.12
+  expo-sqlite: 58.0.14
+  expo-status-bar: 58.0.4
+  expo-system-ui: 58.0.7
+  expo-task-manager: 58.0.12
+  react: 19.3.0
+  react-dom: 19.3.0
+  react-native: 0.88.1
+  react-native-gesture-handler: 3.3.0
+  react-native-reanimated: 4.7.1
+  react-native-safe-area-context: 5.10.1
+  react-native-screens: 4.30.1
+  react-native-worklets: 0.13.0
+  sharp: 0.35.5
+  typescript: 7.0.2
+  vite: npm:@voidzero-dev/vite-plus-core@1.4.0
+  vite-plus: 1.4.0
+  vitest: 5.0.5
+  zod: 4.6.7
+
+overrides:
+  '@react-native/metro-config': 0.88.1
+  '@types/react': 19.3.0
+  vite: npm:@voidzero-dev/vite-plus-core@1.4.0
+  vitest: 5.0.5
+
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    typescript: '>=5 <8'
+    # The Expo persistence adapter declares SDK 55 and 57; SDK 58's expo-sqlite has the same API.
+    expo-sqlite: '>=55'
+
+allowBuilds:
+  esbuild: true
+  sharp: true

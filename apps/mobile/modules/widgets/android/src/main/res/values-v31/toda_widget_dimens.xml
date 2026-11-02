@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!--
+    The launcher's own widget radius, as Google Tasks uses: it opens and closes an app from a
+    widget through a shape of this radius, so a rounder widget showed the wallpaper at its corners.
+  -->
+  <dimen name="toda_widget_radius">@android:dimen/system_app_widget_background_radius</dimen>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:description="@string/toda_widget_new_task_description"
+  android:initialLayout="@layout/toda_widget_loading"
+  android:previewLayout="@layout/toda_new_task_widget_preview"
+  android:minWidth="40dp"
+  android:minHeight="40dp"
+  android:resizeMode="horizontal"
+  android:targetCellWidth="2"
+  android:targetCellHeight="1"
+  android:updatePeriodMillis="0"
+  android:widgetCategory="home_screen" />

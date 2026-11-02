@@ -1,0 +1,44 @@
+# Operating-system metadata
+.DS_Store
+._*
+Thumbs.db
+
+# Dependencies and tool caches
+node_modules/
+.pnpm-store/
+.cache/
+.vite-plus/
+.vite-hooks/
+.output/
+.tanstack/
+*.tsbuildinfo
+
+# Local environment and service configuration
+.env
+.env.*
+!.env.example
+!**/.env.example
+.dev.vars
+.dev.vars.*
+.codex/
+auth.json
+
+# Generated data and build output
+/data/
+coverage/
+dist/
+.wrangler/
+
+# Runtime logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local editor state
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?

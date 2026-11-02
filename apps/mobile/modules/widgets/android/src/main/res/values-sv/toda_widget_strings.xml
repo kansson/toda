@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="toda_widget_tasks_name">Uppgifter</string>
+  <string name="toda_widget_tasks_description">En listas uppgifter, avbockade direkt på hemskärmen</string>
+  <string name="toda_widget_new_task">Ny uppgift</string>
+  <string name="toda_widget_new_task_description">Lägger till en uppgift med ett tryck</string>
+  <string name="toda_widget_empty_title">Inga uppgifter</string>
+  <string name="toda_widget_complete">Markera som klar</string>
+  <string name="toda_widget_preview_list">Mina uppgifter</string>
+  <string name="toda_widget_preview_task_one">Betala elräkningen</string>
+  <string name="toda_widget_preview_due_one">I går</string>
+  <string name="toda_widget_preview_task_two">Vattna blommorna</string>
+  <string name="toda_widget_preview_due_two">I morgon</string>
+  <string name="toda_widget_choose">Visa i den här widgeten</string>
+  <string name="toda_widget_cancel">Avbryt</string>
+  <string name="toda_widget_today">I dag</string>
+  <string name="toda_widget_starred">Stjärnmärkta</string>
+</resources>

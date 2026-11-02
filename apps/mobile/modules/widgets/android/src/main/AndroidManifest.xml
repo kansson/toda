@@ -1,0 +1,43 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <!-- The list widget: tasks checked off right on the home screen. -->
+    <receiver
+      android:name="app.toda.widgets.TasksWidgetReceiver"
+      android:exported="false"
+      android:label="@string/toda_widget_tasks_name">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/toda_tasks_widget_info" />
+    </receiver>
+    <!-- What a list widget shows, asked as it is placed and when it is reconfigured. -->
+    <activity
+      android:name="app.toda.widgets.TasksWidgetConfigureActivity"
+      android:excludeFromRecents="true"
+      android:exported="true"
+      android:taskAffinity=""
+      android:theme="@style/Theme.Toda.WidgetConfigure">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+      </intent-filter>
+    </activity>
+    <!-- A widget pinned from Settings, with the source chosen there. -->
+    <receiver
+      android:name="app.toda.widgets.PinnedWidgetReceiver"
+      android:exported="false" />
+    <!-- One tap to a new task. -->
+    <receiver
+      android:name="app.toda.widgets.NewTaskWidgetReceiver"
+      android:exported="false"
+      android:label="@string/toda_widget_new_task">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/toda_new_task_widget_info" />
+    </receiver>
+  </application>
+</manifest>

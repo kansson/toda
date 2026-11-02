@@ -1,0 +1,1484 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-11-01 17:53+0100\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: sv\n"
+
+#. Shown for a task without a title
+#. Shown for a task without a title
+#. Shown for a task without a title
+#. Shown for a task without a title
+#. Shown for a task without a title
+#: src/components/app-sync.tsx
+#: src/components/task-form.tsx
+#: src/components/task-row.tsx
+#: src/reminders/notifications.ts
+#: src/screens/task.tsx
+msgid "(No title)"
+msgstr "(Utan titel)"
+
+#. placeholder {0}: reminder.overdue
+#: src/reminders/notifications.ts
+msgid "{0, plural, one {# overdue} other {# overdue}}"
+msgstr "{0, plural, one {# försenad} other {# försenade}}"
+
+#. placeholder {0}: repeat.end.count
+#: src/ui/format.ts
+msgid "{0, plural, one {# time} other {# times}}"
+msgstr "{0, plural, one {# gång} other {# gånger}}"
+
+#. placeholder {0}: -days
+#: src/ui/format.ts
+msgid "{0, plural, one {Due yesterday} other {Due # days ago}}"
+msgstr "{0, plural, one {Skulle vara klar i går} other {Skulle vara klar för # dagar sedan}}"
+
+#. placeholder {0}: repeat.end.count
+#: src/components/repeat-editor.tsx
+msgid "{0, plural, one {Ends after # time} other {Ends after # times}}"
+msgstr "{0, plural, one {Slutar efter # gång} other {Slutar efter # gånger}}"
+
+#. placeholder {0}: subtasks.length
+#: src/screens/task.tsx
+msgid "{0, plural, one {Its subtask is deleted with it.} other {Its # subtasks are deleted with it.}}"
+msgstr "{0, plural, one {Dess deluppgift tas bort med den.} other {Dess # deluppgifter tas bort med den.}}"
+
+#. Update download progress: the share done, and the version name
+#. placeholder {0}: i18n.number(state.progress, { style: 'percent' })
+#. placeholder {1}: state.update.versionName
+#: src/components/update-alert.tsx
+msgid "{0} of Toda {1}"
+msgstr "{0} av Toda {1}"
+
+#. Account with several phones
+#. placeholder {0}: account.devices
+#: src/screens/settings.tsx
+msgid "{0} phones share these tasks"
+msgstr "{0} telefoner delar uppgifterna"
+
+#. Snackbar after clearing done tasks
+#. placeholder {0}: removed.length
+#: src/screens/settings.tsx
+msgid "{0} tasks deleted"
+msgstr "{0} uppgifter borttagna"
+
+#: src/reminders/notifications.ts
+msgid "{count, plural, one {# task} other {# tasks}}"
+msgstr "{count, plural, one {# uppgift} other {# uppgifter}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {day} other {days}}"
+msgstr "{count, plural, one {dag} other {dagar}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {Every day} other {Every # days}}"
+msgstr "{count, plural, one {Varje dag} other {Var #:e dag}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {Every month} other {Every # months}}"
+msgstr "{count, plural, one {Varje månad} other {Var #:e månad}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {Every week} other {Every # weeks}}"
+msgstr "{count, plural, one {Varje vecka} other {Var #:e vecka}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {Every year} other {Every # years}}"
+msgstr "{count, plural, one {Varje år} other {Vart #:e år}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {month} other {months}}"
+msgstr "{count, plural, one {månad} other {månader}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {week} other {weeks}}"
+msgstr "{count, plural, one {vecka} other {veckor}}"
+
+#: src/components/repeat-editor.tsx
+msgid "{count, plural, one {year} other {years}}"
+msgstr "{count, plural, one {år} other {år}}"
+
+#. Snackbar after deleting several tasks
+#: src/components/task-commands.ts
+msgid "{count} tasks deleted"
+msgstr "{count} uppgifter borttagna"
+
+#. Repeat summary: the weekly rule and its days
+#: src/ui/format.ts
+msgid "{every} on {days}"
+msgstr "{every} på {days}"
+
+#. Repeat summary: monthly on a day number
+#. placeholder {0}: monthly.day
+#: src/ui/format.ts
+msgid "{every} on day {0}"
+msgstr "{every} den {0}:e"
+
+#. Repeat summary: monthly on e.g. the second Tuesday
+#: src/ui/format.ts
+msgid "{every} on the {which} {day}"
+msgstr "{every} på {which} {day}en"
+
+#. Repeat summary: monthly on the last day
+#: src/ui/format.ts
+msgid "{every} on the last day"
+msgstr "{every} sista dagen"
+
+#: src/ui/format.ts
+msgid "{n, plural, one {Daily} other {Every # days}}"
+msgstr "{n, plural, one {Varje dag} other {Var #:e dag}}"
+
+#: src/ui/format.ts
+msgid "{n, plural, one {Monthly} other {Every # months}}"
+msgstr "{n, plural, one {Varje månad} other {Var #:e månad}}"
+
+#: src/ui/format.ts
+msgid "{n, plural, one {Weekly} other {Every # weeks}}"
+msgstr "{n, plural, one {Varje vecka} other {Var #:e vecka}}"
+
+#: src/ui/format.ts
+msgid "{n, plural, one {Yearly} other {Every # years}}"
+msgstr "{n, plural, one {Varje år} other {Vart #:e år}}"
+
+#. Warning before joining with unsent changes
+#: src/screens/link.tsx
+msgid "{pending} changes here are not synced yet; joining another phone drops them."
+msgstr "{pending} ändringar här är inte synkade än; de försvinner om du ansluter till en annan telefon."
+
+#. Task row: how many open subtasks it has
+#: src/components/task-row.tsx
+msgid "{subtaskCount} subtasks"
+msgstr "{subtaskCount} deluppgifter"
+
+#. Snackbar when the server refused a change
+#: src/app/_layout.tsx
+msgid "A change couldn’t be saved and was undone"
+msgstr "En ändring kunde inte sparas och ångrades"
+
+#. Settings section about the app
+#: src/screens/settings.tsx
+msgid "About"
+msgstr "Om"
+
+#. Adds the subtask
+#: src/components/task-form.tsx
+msgid "Add"
+msgstr "Lägg till"
+
+#. Task field: its date, unset
+#. Task field: its date, unset
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Add date"
+msgstr "Lägg till datum"
+
+#. Task field: its deadline, unset
+#. Task field: its deadline, unset
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Add deadline"
+msgstr "Lägg till deadline"
+
+#. Task field: its details, unset
+#: src/components/task-form.tsx
+msgid "Add details"
+msgstr "Lägg till detaljer"
+
+#. Task page button starring it
+#. Task page button starring it
+#. Task row button starring it
+#: src/components/task-row.tsx
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Add star"
+msgstr "Stjärnmärk"
+
+#. Adds a subtask
+#. Dialog title
+#: src/components/task-form.tsx
+msgid "Add subtask"
+msgstr "Lägg till deluppgift"
+
+#. Task field: its time, unset
+#. Task field: its time, unset
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Add time"
+msgstr "Lägg till tid"
+
+#. Task field: its list, unset
+#. Task field: its list, unset
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Add to a list"
+msgstr "Lägg i en lista"
+
+#. Settings row pinning the list widget
+#: src/screens/settings.tsx
+msgid "Add to home screen"
+msgstr "Lägg till på hemskärmen"
+
+#. Dialog choosing the new task’s list
+#: src/screens/new-task.tsx
+msgid "Add to list"
+msgstr "Lägg till i lista"
+
+#. Repeat ends after a count
+#: src/components/repeat-editor.tsx
+msgid "After a number of times"
+msgstr "Efter ett antal gånger"
+
+#. Repeat summary suffix: the next date counts from completion
+#: src/ui/format.ts
+msgid "after done"
+msgstr "efter klart"
+
+#. List chip while every list is shown
+#: src/screens/tasks.tsx
+msgid "All"
+msgstr "Alla"
+
+#. Deleting the account warning
+#: src/screens/settings.tsx
+msgid "All lists and tasks are deleted from the server and every linked phone. This can’t be undone."
+msgstr "Alla listor och uppgifter tas bort från servern och alla länkade telefoner. Det går inte att ångra."
+
+#. Delete list warning
+#: src/components/lists-sheet.tsx
+msgid "All tasks in this list will be deleted for good."
+msgstr "Alla uppgifter i listan tas bort för gott."
+
+#. Settings row explanation for exact alarms
+#: src/screens/settings.tsx
+msgid "Allow alarms & reminders, or reminders may come a little late"
+msgstr "Tillåt alarm och påminnelser, annars kan påminnelser komma lite sent"
+
+#. Settings row asking for notification permission
+#: src/screens/settings.tsx
+msgid "Allow notifications"
+msgstr "Tillåt aviseringar"
+
+#. Update dialog after opening the system setting that lets the app install its update
+#. placeholder {0}: state.update.versionName
+#: src/components/update-alert.tsx
+msgid "Allow Toda to install apps in the setting that opened, then come back and tap Update to install {0}."
+msgstr "Tillåt Toda att installera appar i inställningen som öppnades, kom sedan tillbaka och tryck på Uppdatera för att installera {0}."
+
+#. Update dialog when the system installer failed
+#: src/components/update-alert.tsx
+msgid "Android couldn’t install the update."
+msgstr "Android kunde inte installera uppdateringen."
+
+#. Picks a custom summary time
+#: src/screens/settings.tsx
+msgid "Another time…"
+msgstr "Annan tid …"
+
+#. Settings row checking for updates
+#: src/screens/settings.tsx
+msgid "App updates"
+msgstr "Appuppdateringar"
+
+#. Settings section
+#: src/screens/settings.tsx
+msgid "Appearance"
+msgstr "Utseende"
+
+#. Notification channel description: tasks with a time
+#: src/reminders/notifications.ts
+msgid "At the time a task is set for"
+msgstr "Vid tiden en uppgift är satt till"
+
+#. Top bar button returning to the previous screen
+#: src/ui/screen.tsx
+msgid "Back"
+msgstr "Tillbaka"
+
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#. Closes a dialog without changes
+#: src/components/date-pickers.tsx
+#: src/components/repeat-editor.tsx
+#: src/components/update-alert.tsx
+#: src/screens/settings.tsx
+#: src/ui/dialogs.tsx
+msgid "Cancel"
+msgstr "Avbryt"
+
+#. Settings row checking for updates
+#: src/screens/settings.tsx
+msgid "Check now"
+msgstr "Sök nu"
+
+#. Settings row while looking for updates
+#: src/screens/settings.tsx
+msgid "Checking…"
+msgstr "Söker …"
+
+#. Clears a repeat’s interval
+#: src/components/repeat-editor.tsx
+msgid "Clear how often"
+msgstr "Rensa hur ofta"
+
+#. Search field button emptying it
+#: src/components/search-field.tsx
+msgid "Clear search"
+msgstr "Rensa sökningen"
+
+#. Makes a repeat go on for good
+#: src/components/repeat-editor.tsx
+msgid "Clear the end"
+msgstr "Rensa slutet"
+
+#. Closes a sheet
+#. Closes an information dialog
+#: src/components/update-alert.tsx
+#: src/ui/sheets.tsx
+msgid "Close"
+msgstr "Stäng"
+
+#. Field label: the pairing code
+#: src/screens/link.tsx
+msgid "Code"
+msgstr "Kod"
+
+#. Snackbar after copying the code
+#: src/screens/link.tsx
+msgid "Code copied"
+msgstr "Koden kopierad"
+
+#. Filter chip: tasks that are done
+#: src/screens/tasks.tsx
+msgid "Completed"
+msgstr "Klara"
+
+#. Task page: when it was completed
+#. placeholder {0}: datePhrase(localDate(task.completedAt), today)
+#: src/screens/task.tsx
+msgid "Completed {0}"
+msgstr "Klar {0}"
+
+#. Connects to the typed server
+#: src/components/server-setup.tsx
+msgid "Connect"
+msgstr "Anslut"
+
+#. Title of the first-launch page asking for the sync server
+#: src/components/server-setup.tsx
+msgid "Connect to your server"
+msgstr "Anslut till din server"
+
+#. While checking the new server answers
+#: src/screens/settings.tsx
+msgid "Connecting…"
+msgstr "Ansluter…"
+
+#. Continues joining with the code
+#. Continues to the next step
+#: src/screens/link.tsx
+#: src/screens/settings.tsx
+msgid "Continue"
+msgstr "Fortsätt"
+
+#. Copies the pairing code
+#: src/screens/link.tsx
+msgid "Copy code"
+msgstr "Kopiera kod"
+
+#. Update dialog when the releases could not be read
+#: src/components/update-alert.tsx
+msgid "Couldn’t check for updates. Check your connection and try again."
+msgstr "Kunde inte söka efter uppdateringar. Kontrollera anslutningen och försök igen."
+
+#. Snackbar when joining failed
+#: src/screens/link.tsx
+msgid "Couldn’t join. Check your connection."
+msgstr "Kunde inte ansluta. Kontrollera anslutningen."
+
+#. Snackbar when no pairing code could be made
+#: src/screens/link.tsx
+msgid "Couldn’t make a code. Check your connection."
+msgstr "Kunde inte skapa en kod. Kontrollera anslutningen."
+
+#. Snackbar when an account change failed
+#: src/screens/settings.tsx
+msgid "Couldn’t reach the server. Try again when online."
+msgstr "Kunde inte nå servern. Försök igen när du är online."
+
+#. Snackbar when moving to another server failed
+#: src/screens/settings.tsx
+msgid "Couldn’t switch servers. Try again."
+msgstr "Det gick inte att byta server. Försök igen."
+
+#. Creates the list
+#: src/components/lists-sheet.tsx
+msgid "Create"
+msgstr "Skapa"
+
+#. Theme option
+#: src/screens/settings.tsx
+msgid "Dark"
+msgstr "Mörkt"
+
+#. Sort option: by date
+#: src/ui/format.ts
+msgid "Date"
+msgstr "Datum"
+
+#. Sort option: by deadline
+#: src/ui/format.ts
+msgid "Deadline"
+msgstr "Deadline"
+
+#. Confirms deleting a list
+#. Confirms deleting a task
+#. Confirms deleting the done tasks
+#. List menu command
+#: src/components/lists-sheet.tsx
+#: src/screens/settings.tsx
+#: src/screens/task.tsx
+msgid "Delete"
+msgstr "Ta bort"
+
+#. Settings row deleting the account
+#: src/screens/settings.tsx
+msgid "Delete all tasks and lists"
+msgstr "Ta bort alla uppgifter och listor"
+
+#. Settings row
+#: src/screens/settings.tsx
+msgid "Delete completed tasks"
+msgstr "Ta bort klara uppgifter"
+
+#. Dialog title
+#: src/screens/settings.tsx
+msgid "Delete completed tasks?"
+msgstr "Ta bort klara uppgifter?"
+
+#. Confirms deleting the account
+#: src/screens/settings.tsx
+msgid "Delete everything"
+msgstr "Ta bort allt"
+
+#. Dialog title
+#: src/screens/settings.tsx
+msgid "Delete everything?"
+msgstr "Ta bort allt?"
+
+#. Dialog title
+#: src/screens/task.tsx
+msgid "Delete repeating task?"
+msgstr "Ta bort återkommande uppgift?"
+
+#. Removes a subtask
+#: src/components/task-form.tsx
+msgid "Delete subtask"
+msgstr "Ta bort deluppgift"
+
+#. Task page button deleting it
+#: src/screens/task.tsx
+msgid "Delete task"
+msgstr "Ta bort uppgift"
+
+#. Dialog title
+#: src/screens/task.tsx
+msgid "Delete task?"
+msgstr "Ta bort uppgift?"
+
+#. Dialog title
+#: src/components/lists-sheet.tsx
+msgid "Delete this list?"
+msgstr "Ta bort listan?"
+
+#. Dialog title: a task’s details
+#. Label of a task’s details field
+#: src/components/task-form.tsx
+msgid "Details"
+msgstr "Detaljer"
+
+#. Stops a task repeating
+#. Stops a task repeating
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Don’t repeat"
+msgstr "Upprepa inte"
+
+#. Saves the repeat
+#: src/components/repeat-editor.tsx
+msgid "Done"
+msgstr "Klar"
+
+#. Snackbar after completing a repeating task: when the next one is due
+#. placeholder {0}: datePhrase(completion.nextDue, today)
+#: src/components/task-commands.ts
+msgid "Done. Back {0}."
+msgstr "Klart. Tillbaka {0}."
+
+#. Dialog title while downloading
+#: src/components/update-alert.tsx
+msgid "Downloading update"
+msgstr "Laddar ned uppdatering"
+
+#. A deadline, with its date
+#: src/ui/format.ts
+msgid "Due {day}"
+msgstr "Deadline {day}"
+
+#. A deadline that is today
+#. Section of the Today view: tasks dated today
+#: src/components/task-list.tsx
+#: src/ui/format.ts
+msgid "Due today"
+msgstr "Deadline i dag"
+
+#. A deadline that is tomorrow
+#: src/ui/format.ts
+msgid "Due tomorrow"
+msgstr "Deadline i morgon"
+
+#. Notification channel description: the morning digest
+#: src/reminders/notifications.ts
+msgid "Each morning, the day’s tasks without a time and those overdue"
+msgstr "Varje morgon: dagens uppgifter utan tid och de som är försenade"
+
+#. Deleting a repeating task
+#: src/screens/task.tsx
+msgid "Earlier occurrences you completed stay in Completed."
+msgstr "Tidigare tillfällen du klarat finns kvar bland klara."
+
+#. Dialog title: renaming a task
+#. Task page button renaming it
+#: src/screens/task.tsx
+msgid "Edit title"
+msgstr "Ändra titel"
+
+#. Repeat editor: when the repeat ends
+#. Repeat editor: when the repeat ends, unset
+#: src/components/repeat-editor.tsx
+msgid "Ends"
+msgstr "Slutar"
+
+#. Dialog title: how many times it repeats
+#: src/components/repeat-editor.tsx
+msgid "Ends after"
+msgstr "Slutar efter"
+
+#. Repeat ends on a date
+#. placeholder {0}: fullDate(repeat.end.date)
+#: src/components/repeat-editor.tsx
+msgid "Ends on {0}"
+msgstr "Slutar {0}"
+
+#. Dialog title
+#: src/screens/link.tsx
+msgid "Enter the code"
+msgstr "Ange koden"
+
+#. A weekly repeat on all seven days, after "on"
+#: src/ui/format.ts
+msgid "every day"
+msgstr "alla dagar"
+
+#. Morning summary time
+#. placeholder {0}: timeLabel(preferences.digestTime)
+#: src/screens/settings.tsx
+msgid "Every day at {0}"
+msgstr "Varje dag kl. {0}"
+
+#. Delete all completed warning
+#: src/screens/settings.tsx
+msgid "Every done task in every list will be deleted."
+msgstr "Alla klara uppgifter i alla listor tas bort."
+
+#. Settings row explanation for deleting done tasks
+#: src/screens/settings.tsx
+msgid "Every done task, in every list"
+msgstr "Alla klara uppgifter, i alla listor"
+
+#. Repeat summary: Monday to Friday
+#: src/ui/format.ts
+msgid "Every weekday"
+msgstr "Varje vardag"
+
+#. Pairing code lifetime left
+#: src/screens/link.tsx
+msgid "Expires in {left} min"
+msgstr "Går ut om {left} min"
+
+#. Monthly repeat: the first of a weekday in the month
+#: src/ui/format.ts
+msgid "first"
+msgstr "första"
+
+#. Repeat editor switch: keep the dates instead of counting from done
+#: src/components/repeat-editor.tsx
+msgid "Fixed schedule"
+msgstr "Fast schema"
+
+#. Monthly repeat: the fourth of a weekday in the month
+#: src/ui/format.ts
+msgid "fourth"
+msgstr "fjärde"
+
+#. Settings section
+#: src/screens/settings.tsx
+msgid "Home screen widget"
+msgstr "Widget på hemskärmen"
+
+#. Opens the guide to deploying the backend
+#: src/components/server-setup.tsx
+msgid "How to set up a server"
+msgstr "Så sätter du upp en server"
+
+#. Opens the field for a pairing code
+#: src/screens/link.tsx
+msgid "I have a code"
+msgstr "Jag har en kod"
+
+#. Dialog title while installing
+#: src/components/update-alert.tsx
+msgid "Installing update"
+msgstr "Installerar uppdatering"
+
+#. Deleting a task
+#: src/screens/task.tsx
+msgid "It is deleted from every phone."
+msgstr "Den tas bort från alla telefoner."
+
+#. Confirms joining the other account
+#: src/screens/link.tsx
+msgid "Join"
+msgstr "Anslut"
+
+#. Monthly repeat: the last of a weekday in the month
+#: src/ui/format.ts
+msgid "last"
+msgstr "sista"
+
+#. Puts off installing an update
+#. Section of tasks for later dates
+#: src/components/update-alert.tsx
+#: src/ui/format.ts
+msgid "Later"
+msgstr "Senare"
+
+#. Settings row opening the licenses of the open-source packages
+#. Title of the screen listing the open-source packages and their licenses
+#: src/screens/licenses.tsx
+#: src/screens/settings.tsx
+msgid "Licenses"
+msgstr "Licenser"
+
+#. Theme option
+#: src/screens/settings.tsx
+msgid "Light"
+msgstr "Ljust"
+
+#. Settings row showing a code for another phone
+#. Title of the pairing screen
+#: src/screens/link.tsx
+#: src/screens/settings.tsx
+msgid "Link another phone"
+msgstr "Länka en annan telefon"
+
+#. Snackbar after deleting a list
+#: src/components/lists-sheet.tsx
+msgid "List deleted"
+msgstr "Listan borttagen"
+
+#. Title of the sheet choosing the list shown
+#: src/components/lists-sheet.tsx
+msgid "Lists"
+msgstr "Listor"
+
+#. List chip while several lists are shown, with how many
+#. placeholder {0}: chosen.length
+#: src/screens/tasks.tsx
+msgid "Lists ({0})"
+msgstr "Listor ({0})"
+
+#. Snackbar when the launcher cannot add the widget itself
+#: src/screens/settings.tsx
+msgid "Long-press the home screen, choose Widgets and find Toda"
+msgstr "Tryck länge på hemskärmen, välj Widgetar och leta upp Toda"
+
+#. Creates a pairing code
+#: src/screens/link.tsx
+msgid "Make a code"
+msgstr "Skapa en kod"
+
+#. Pairing explanation
+#: src/screens/link.tsx
+msgid "Make a code here, then type it on the other phone under “I have a code”. It works once, for ten minutes."
+msgstr "Skapa en kod här och skriv in den på den andra telefonen under ”Jag har en kod”. Den fungerar en gång, i tio minuter."
+
+#. Turns a subtask into a task of its own
+#: src/screens/task.tsx
+msgid "Make a task"
+msgstr "Gör till uppgift"
+
+#. Dialog message
+#. Dialog message
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Making this task repeat removes its deadline."
+msgstr "Om uppgiften upprepas tas dess deadline bort."
+
+#. Notification button completing the task
+#. Task checkbox description when open
+#. Task page button completing it
+#. Widget check box completing a task
+#: src/components/app-sync.tsx
+#: src/components/task-row.tsx
+#: src/reminders/notifications.ts
+#: src/screens/task.tsx
+msgid "Mark done"
+msgstr "Markera som klar"
+
+#. Task checkbox description when done
+#. Task page button reopening it
+#: src/components/task-row.tsx
+#: src/screens/task.tsx
+msgid "Mark not done"
+msgstr "Markera som inte klar"
+
+#. Dialog title
+#. Settings row: the daily notification of the day’s tasks
+#: src/screens/settings.tsx
+msgid "Morning summary"
+msgstr "Morgonsammanfattning"
+
+#. Dialog choosing a task’s list
+#: src/screens/task.tsx
+msgid "Move to list"
+msgstr "Flytta till lista"
+
+#. Name of the list every account starts with
+#: src/data/session.tsx
+msgid "My Tasks"
+msgstr "Mina uppgifter"
+
+#. Field label: a list’s name
+#. Field label: a list’s name
+#: src/components/lists-sheet.tsx
+msgid "Name"
+msgstr "Namn"
+
+#. Dialog title
+#. Lists sheet button adding a list
+#: src/components/lists-sheet.tsx
+msgid "New list"
+msgstr "Ny lista"
+
+#. Floating button adding a task
+#. Title of the new task page
+#. Widget button adding a task
+#: src/components/app-sync.tsx
+#: src/screens/new-task.tsx
+#: src/screens/tasks.tsx
+msgid "New task"
+msgstr "Ny uppgift"
+
+#. Update channel: daily builds
+#. Update channel: daily builds
+#: src/screens/settings.tsx
+msgid "Nightly"
+msgstr "Nattlig"
+
+#. Section of tasks without a date
+#: src/ui/format.ts
+msgid "No date"
+msgstr "Inget datum"
+
+#. Section of tasks without a deadline
+#: src/ui/format.ts
+msgid "No deadline"
+msgstr "Ingen deadline"
+
+#. Section of tasks in no list
+#: src/ui/format.ts
+msgid "No list"
+msgstr "Ingen lista"
+
+#. Lists sheet with no lists
+#: src/components/lists-sheet.tsx
+msgid "No lists yet"
+msgstr "Inga listor än"
+
+#. Snackbar when choosing a task’s list while there are none
+#: src/components/task-form.tsx
+msgid "No lists yet. Add one from Lists on the main screen."
+msgstr "Inga listor ännu. Lägg till en under Listor på startsidan."
+
+#. Empty Starred view
+#: src/components/task-list.tsx
+msgid "No starred tasks"
+msgstr "Inga stjärnmärkta uppgifter"
+
+#. Main screen with no tasks and no view chosen
+#. Widget with no open tasks
+#: src/components/app-sync.tsx
+#: src/components/task-list.tsx
+msgid "No tasks"
+msgstr "Inga uppgifter"
+
+#. Settings row before the first sync
+#: src/screens/settings.tsx
+msgid "Not connected yet"
+msgstr "Inte ansluten än"
+
+#. Section of tasks without a star
+#: src/ui/format.ts
+msgid "Not starred"
+msgstr "Inte stjärnmärkta"
+
+#. Empty Upcoming view
+#: src/components/task-list.tsx
+msgid "Nothing coming up"
+msgstr "Inget på gång"
+
+#. Empty Completed view
+#: src/components/task-list.tsx
+msgid "Nothing done yet"
+msgstr "Inget klart än"
+
+#. Empty Today view
+#: src/components/task-list.tsx
+msgid "Nothing due today"
+msgstr "Inget att göra i dag"
+
+#. Search without results
+#: src/components/task-list.tsx
+msgid "Nothing found"
+msgstr "Inget hittades"
+
+#. Settings row opening the system settings
+#: src/screens/settings.tsx
+msgid "Notification settings"
+msgstr "Aviseringsinställningar"
+
+#. Label of how many days or weeks
+#: src/components/repeat-editor.tsx
+msgid "Number"
+msgstr "Antal"
+
+#. Morning summary turned off
+#. Morning summary turned off
+#: src/screens/settings.tsx
+msgid "Off"
+msgstr "Av"
+
+#. Confirms a dialog
+#. Confirms a dialog
+#. Confirms a dialog
+#. Confirms a picked date
+#. Confirms a picked time
+#: src/components/date-pickers.tsx
+#: src/components/repeat-editor.tsx
+msgid "OK"
+msgstr "OK"
+
+#. Repeat editor: the weekdays of a weekly repeat
+#. Repeat editor: which day of the month
+#. Repeat editor: which day of the month
+#: src/components/repeat-editor.tsx
+msgid "On"
+msgstr "På"
+
+#. Repeat editor: the weekdays of a weekly repeat, as in On Mon, Thu
+#. placeholder {0}: weekdaysPhrase(repeat.weekdays)
+#: src/components/repeat-editor.tsx
+msgid "On {0}"
+msgstr "På {0}"
+
+#. A date inside a sentence, as in back on Friday
+#: src/ui/format.ts
+msgid "on {day}"
+msgstr "på {day}"
+
+#. Repeat ends on a date
+#: src/components/repeat-editor.tsx
+msgid "On a date"
+msgstr "Ett visst datum"
+
+#. Monthly repeat on a day number
+#: src/components/repeat-editor.tsx
+msgid "On day {day}"
+msgstr "Den {day}:e"
+
+#. Settings row explanation
+#: src/screens/settings.tsx
+msgid "On every phone, for good"
+msgstr "På alla telefoner, för gott"
+
+#. Monthly repeat on e.g. the second Tuesday
+#. placeholder {0}: ordinalWeekLabel(week)
+#. placeholder {1}: weekdayName(startWeekday)
+#: src/components/repeat-editor.tsx
+msgid "On the {0} {1}"
+msgstr "På {0} {1}en"
+
+#. Monthly repeat on e.g. the last Friday
+#. placeholder {0}: weekdayName(startWeekday)
+#: src/components/repeat-editor.tsx
+msgid "On the last {0}"
+msgstr "Sista {0}en"
+
+#. Account with one phone
+#: src/screens/settings.tsx
+msgid "Only this phone so far"
+msgstr "Bara den här telefonen än så länge"
+
+#. Lists sheet: button opening one list’s menu
+#. placeholder {0}: list.title
+#: src/components/lists-sheet.tsx
+msgid "Options for {0}"
+msgstr "Alternativ för {0}"
+
+#. Settings row explanation for adding a widget
+#: src/screens/settings.tsx
+msgid "Or long-press the home screen and choose Widgets"
+msgstr "Eller tryck länge på hemskärmen och välj Widgetar"
+
+#. Settings row explanation
+#: src/screens/settings.tsx
+msgid "Other phones keep their tasks"
+msgstr "Andra telefoner behåller sina uppgifter"
+
+#. Section of tasks whose date has passed
+#: src/ui/format.ts
+msgid "Overdue"
+msgstr "Försenade"
+
+#. Section of tasks whose deadline has passed
+#: src/ui/format.ts
+msgid "Past deadline"
+msgstr "Efter deadline"
+
+#. Body of the app-wide error screen
+#: src/components/app-error.tsx
+msgid "Please try again."
+msgstr "Försök igen."
+
+#. Shown for a package without a licence file; the licence is a name like MIT
+#: src/screens/licenses.tsx
+msgid "Released under the {name} licence. The package includes no licence text."
+msgstr "Släppt under licensen {name}. Paketet innehåller ingen licenstext."
+
+#. Sort option: the order the user arranged
+#: src/ui/format.ts
+msgid "Relevance"
+msgstr "Relevans"
+
+#. Settings row asking for exact alarms
+#: src/screens/settings.tsx
+msgid "Remind on the minute"
+msgstr "Påminn på minuten"
+
+#. Settings section
+#: src/screens/settings.tsx
+msgid "Reminders"
+msgstr "Påminnelser"
+
+#. Settings row explanation
+#: src/screens/settings.tsx
+msgid "Reminders are off until you do"
+msgstr "Påminnelser är avstängda tills du gör det"
+
+#. Clears a task’s date
+#. Clears a task’s date
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Remove date"
+msgstr "Ta bort datum"
+
+#. Clears a task’s deadline
+#. Clears a task’s deadline
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Remove deadline"
+msgstr "Ta bort deadline"
+
+#. Clears a task’s details
+#: src/components/task-form.tsx
+msgid "Remove details"
+msgstr "Ta bort detaljer"
+
+#. Takes a task out of its list
+#. Takes a task out of its list
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Remove from list"
+msgstr "Ta bort från listan"
+
+#. Task page button removing its star
+#. Task page button removing its star
+#. Task row button removing its star
+#: src/components/task-row.tsx
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Remove star"
+msgstr "Ta bort stjärna"
+
+#. Clears a task’s time
+#. Clears a task’s time
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Remove time"
+msgstr "Ta bort tid"
+
+#. List menu command
+#: src/components/lists-sheet.tsx
+msgid "Rename"
+msgstr "Byt namn"
+
+#. Dialog title
+#: src/components/lists-sheet.tsx
+msgid "Rename list"
+msgstr "Byt namn på lista"
+
+#. Task field: how it repeats, unset
+#. Task field: how it repeats, unset
+#. Title of the repeat editor
+#: src/components/repeat-editor.tsx
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Repeat"
+msgstr "Upprepa"
+
+#. Continues to the repeat editor
+#. Continues to the repeat editor
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Repeat anyway"
+msgstr "Upprepa ändå"
+
+#. Dialog title
+#. Dialog title
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Repeating tasks have no deadline"
+msgstr "Återkommande uppgifter har ingen deadline"
+
+#. Dialog title: how often a task repeats
+#. Repeat editor: the interval, unset
+#: src/components/repeat-editor.tsx
+msgid "Repeats every"
+msgstr "Upprepas var"
+
+#. Dialog title: the weekdays of a weekly repeat
+#: src/components/repeat-editor.tsx
+msgid "Repeats on"
+msgstr "Upprepas på"
+
+#. Dialog title
+#: src/screens/link.tsx
+msgid "Replace this phone’s tasks?"
+msgstr "Ersätta telefonens uppgifter?"
+
+#. Saves a list’s new name
+#. Saves a task’s details
+#. Saves a task’s title
+#. Saves the new task
+#: src/components/lists-sheet.tsx
+#: src/components/task-form.tsx
+#: src/screens/new-task.tsx
+#: src/screens/task.tsx
+msgid "Save"
+msgstr "Spara"
+
+#. Search field placeholder
+#: src/components/search-field.tsx
+msgid "Search tasks"
+msgstr "Sök uppgifter"
+
+#. Monthly repeat: the second of a weekday in the month
+#: src/ui/format.ts
+msgid "second"
+msgstr "andra"
+
+#. Dialog title: the sync server
+#. Settings row: the sync server
+#: src/screens/settings.tsx
+msgid "Server"
+msgstr "Server"
+
+#. Field label: the sync server
+#. Field label: the sync server
+#: src/components/server-setup.tsx
+#: src/screens/settings.tsx
+msgid "Server address"
+msgstr "Serveradress"
+
+#. App bar button opening the settings
+#. Title of the settings screen
+#: src/screens/settings.tsx
+#: src/screens/tasks.tsx
+msgid "Settings"
+msgstr "Inställningar"
+
+#. Pairing section: making a code
+#: src/screens/link.tsx
+msgid "Share these tasks"
+msgstr "Dela de här uppgifterna"
+
+#. Lists sheet button going back to every list
+#: src/components/lists-sheet.tsx
+msgid "Show every list"
+msgstr "Visa alla listor"
+
+#. Dialog title: what a widget added from Settings shows
+#: src/screens/settings.tsx
+msgid "Show in the widget"
+msgstr "Visa i widgeten"
+
+#. Title of the app-wide error screen
+#: src/components/app-error.tsx
+msgid "Something went wrong"
+msgstr "Något gick fel"
+
+#. Title of the sort sheet
+#: src/screens/tasks.tsx
+msgid "Sort by"
+msgstr "Sortera efter"
+
+#. Spoken label of the sort chip, with the chosen order
+#. placeholder {0}: i18n._(sortLabels[sort])
+#: src/screens/tasks.tsx
+msgid "Sort: {0}"
+msgstr "Sortering: {0}"
+
+#. Update channel: tested releases
+#. Update channel: tested releases
+#: src/screens/settings.tsx
+msgid "Stable"
+msgstr "Stabil"
+
+#. Filter chip: starred tasks
+#. The widget shows starred tasks
+#. Widget title: starred tasks
+#: src/components/app-sync.tsx
+#: src/screens/settings.tsx
+#: src/screens/tasks.tsx
+msgid "Starred"
+msgstr "Stjärnmärkta"
+
+#. Section of tasks starred over a month ago
+#: src/ui/format.ts
+msgid "Starred earlier"
+msgstr "Stjärnmärkta tidigare"
+
+#. Section of tasks starred in the last month
+#. Sort option: most recently starred first
+#: src/ui/format.ts
+msgid "Starred recently"
+msgstr "Nyligen stjärnmärkta"
+
+#. Confirms leaving the account
+#: src/screens/settings.tsx
+msgid "Start over"
+msgstr "Börja om"
+
+#. Settings row leaving the account
+#: src/screens/settings.tsx
+msgid "Start over on this phone"
+msgstr "Börja om på den här telefonen"
+
+#. Dialog title
+#: src/screens/settings.tsx
+msgid "Start over on this phone?"
+msgstr "Börja om på den här telefonen?"
+
+#. Task page heading over its subtasks
+#: src/components/task-form.tsx
+msgid "Subtasks"
+msgstr "Deluppgifter"
+
+#. Confirms moving to another server
+#: src/screens/settings.tsx
+msgid "Switch"
+msgstr "Byt"
+
+#. Dialog title
+#. Dialog title
+#: src/screens/settings.tsx
+msgid "Switch servers?"
+msgstr "Byta server?"
+
+#. Settings section about the sync server
+#: src/screens/settings.tsx
+msgid "Sync"
+msgstr "Synkning"
+
+#. Theme option following the phone
+#: src/screens/settings.tsx
+msgid "System default"
+msgstr "Systemstandard"
+
+#. Snackbar after deleting a task
+#: src/components/task-commands.ts
+msgid "Task deleted"
+msgstr "Uppgiften borttagen"
+
+#. Snackbar after completing a task
+#: src/components/task-commands.ts
+msgid "Task done"
+msgstr "Uppgiften klar"
+
+#. Snackbar after reopening a done task
+#: src/components/task-commands.ts
+msgid "Task not done"
+msgstr "Uppgiften inte klar"
+
+#. Settings section about the tasks themselves
+#: src/screens/settings.tsx
+msgid "Tasks"
+msgstr "Uppgifter"
+
+#. Notification channel for tasks with a time
+#: src/reminders/notifications.ts
+msgid "Tasks at a time"
+msgstr "Uppgifter med tid"
+
+#. Error under the server address field
+#. Error under the server address field
+#: src/components/server-setup.tsx
+#: src/screens/settings.tsx
+msgid "That address isn’t a Convex server, or it can’t be reached now."
+msgstr "Adressen är ingen Convex-server, eller så går den inte att nå just nu."
+
+#. Snackbar for a bad pairing code
+#: src/screens/link.tsx
+msgid "That code is wrong or has expired"
+msgstr "Koden är fel eller har gått ut"
+
+#. Snackbar for a mistyped server address
+#: src/screens/settings.tsx
+msgid "That isn’t a server address"
+msgstr "Det är ingen serveradress"
+
+#. Explanation in the server dialog
+#: src/screens/settings.tsx
+msgid "The address of the Convex server this phone syncs with."
+msgstr "Adressen till Convex-servern som telefonen synkar med."
+
+#. Update dialog when the downloaded file did not match its checksum
+#: src/components/update-alert.tsx
+msgid "The downloaded update was damaged, so it wasn’t installed. Try again."
+msgstr "Den nedladdade uppdateringen var skadad och installerades inte. Försök igen."
+
+#. Joining warning
+#: src/screens/link.tsx
+msgid "The lists on this phone are replaced by the other phone’s. If no other phone shares them, they are deleted."
+msgstr "Listorna på den här telefonen ersätts av den andra telefonens. Om ingen annan telefon delar dem tas de bort."
+
+#. Update dialog when downloading the new version failed
+#: src/components/update-alert.tsx
+msgid "The update couldn’t be downloaded. Check your connection and try again."
+msgstr "Uppdateringen kunde inte laddas ned. Kontrollera anslutningen och försök igen."
+
+#. Dialog title
+#. Settings row: light, dark or system
+#: src/screens/settings.tsx
+msgid "Theme"
+msgstr "Tema"
+
+#. Monthly repeat: the third of a weekday in the month
+#: src/ui/format.ts
+msgid "third"
+msgstr "tredje"
+
+#. Leaving the account warning
+#: src/screens/settings.tsx
+msgid "This phone forgets its tasks and starts with an empty list. Other phones linked to it keep theirs; if none are, the tasks are deleted."
+msgstr "Telefonen glömmer sina uppgifter och börjar med en tom lista. Andra länkade telefoner behåller sina; finns inga tas uppgifterna bort."
+
+#. Snackbar after joining
+#: src/screens/link.tsx
+msgid "This phone now shares the other phone’s tasks"
+msgstr "Telefonen delar nu den andra telefonens uppgifter"
+
+#. Warning before moving to another sync server
+#: src/screens/settings.tsx
+msgid "This phone signs in to {nextHost} and shows the tasks there instead. Its tasks stay on the old server, but changes not synced yet are lost."
+msgstr "Telefonen loggar in på {nextHost} och visar uppgifterna där i stället. Dess uppgifter finns kvar på den gamla servern, men ändringar som inte har synkats försvinner."
+
+#. Pairing explanation for the joining phone
+#: src/screens/link.tsx
+msgid "This phone then shows the other phone’s lists instead of its own."
+msgstr "Telefonen visar då den andra telefonens listor i stället för sina egna."
+
+#. Opened a deleted task
+#: src/screens/task.tsx
+msgid "This task is gone"
+msgstr "Uppgiften finns inte längre"
+
+#. Label of how many times a task repeats
+#: src/components/repeat-editor.tsx
+msgid "Times"
+msgstr "Gånger"
+
+#. Field label: a subtask’s title
+#. Label of a task’s title field
+#. Label of a task’s title field
+#. Sort option: alphabetically
+#: src/components/task-form.tsx
+#: src/screens/task.tsx
+#: src/ui/format.ts
+msgid "Title"
+msgstr "Titel"
+
+#. Title of the main screen: the app name
+#: src/screens/tasks.tsx
+msgid "Toda"
+msgstr "Toda"
+
+#. Update dialog offering a new version, with its version name
+#. placeholder {0}: state.update.versionName
+#: src/components/update-alert.tsx
+msgid "Toda {0} is ready to install."
+msgstr "Toda {0} är redo att installeras."
+
+#. Explanation on the first-launch server page
+#: src/components/server-setup.tsx
+msgid "Toda keeps your tasks on a Convex server of your own, and works offline in between. Enter its address to start."
+msgstr "Toda sparar dina uppgifter på en egen Convex-server och fungerar offline däremellan. Ange adressen för att börja."
+
+#. Update dialog while the system installs the new version
+#: src/components/update-alert.tsx
+msgid "Toda restarts once Android has installed it."
+msgstr "Toda startar om när Android har installerat den."
+
+#. A date that is today, inside a sentence
+#: src/ui/format.ts
+msgid "today"
+msgstr "i dag"
+
+#. A date that is today
+#. Filter chip: tasks due today and overdue
+#. Morning digest title: the day it is for
+#. Section of tasks for today
+#. The widget shows today’s tasks
+#. Widget title: today’s tasks
+#: src/components/app-sync.tsx
+#: src/reminders/notifications.ts
+#: src/screens/settings.tsx
+#: src/screens/tasks.tsx
+#: src/ui/format.ts
+msgid "Today"
+msgstr "I dag"
+
+#. Notification channel for the morning digest
+#: src/reminders/notifications.ts
+msgid "Today’s tasks"
+msgstr "Dagens uppgifter"
+
+#. A date that is tomorrow, inside a sentence
+#: src/ui/format.ts
+msgid "tomorrow"
+msgstr "i morgon"
+
+#. A date that is tomorrow
+#. Morning digest title: the day it is for
+#. Notification button moving the task to tomorrow
+#. Section of tasks for tomorrow
+#: src/reminders/notifications.ts
+#: src/ui/format.ts
+msgid "Tomorrow"
+msgstr "I morgon"
+
+#. Retries a failed update
+#. Retries after an app-wide error
+#: src/components/app-error.tsx
+#: src/components/update-alert.tsx
+msgid "Try again"
+msgstr "Försök igen"
+
+#. Snackbar button taking back the change just made
+#. Snackbar button taking back the change just made
+#: src/components/task-commands.ts
+#: src/screens/settings.tsx
+msgid "Undo"
+msgstr "Ångra"
+
+#. Label of days, weeks, months or years
+#: src/components/repeat-editor.tsx
+msgid "Unit"
+msgstr "Enhet"
+
+#. Repeat summary suffix: the end date
+#. placeholder {0}: fullDate(repeat.end.date)
+#: src/ui/format.ts
+msgid "until {0}"
+msgstr "till {0}"
+
+#. Settings row when no update is available
+#: src/screens/settings.tsx
+msgid "Up to date"
+msgstr "Senaste versionen"
+
+#. Filter chip: tasks with a later date
+#: src/screens/tasks.tsx
+msgid "Upcoming"
+msgstr "Kommande"
+
+#. Downloads and installs the new version
+#: src/components/update-alert.tsx
+msgid "Update"
+msgstr "Uppdatera"
+
+#. Dialog title offering a new version
+#. Settings row when an update is available
+#: src/components/update-alert.tsx
+#: src/screens/settings.tsx
+msgid "Update available"
+msgstr "Uppdatering tillgänglig"
+
+#. Dialog title
+#. Settings row: stable or nightly builds
+#: src/screens/settings.tsx
+msgid "Update channel"
+msgstr "Uppdateringskanal"
+
+#. Dialog title when an update failed
+#: src/components/update-alert.tsx
+msgid "Update failed"
+msgstr "Uppdateringen misslyckades"
+
+#. Settings section
+#: src/screens/settings.tsx
+msgid "Updates"
+msgstr "Uppdateringar"
+
+#. Pairing section: typing a code
+#: src/screens/link.tsx
+msgid "Use another phone’s tasks"
+msgstr "Använd en annan telefons uppgifter"
+
+#. Settings row showing the app version
+#: src/screens/settings.tsx
+msgid "Version"
+msgstr "Version"
+
+#. A date that was yesterday, inside a sentence
+#: src/ui/format.ts
+msgid "yesterday"
+msgstr "i går"
+
+#. A date that was yesterday
+#: src/ui/format.ts
+msgid "Yesterday"
+msgstr "I går"
+
+#. Settings section about the account and its phones
+#: src/screens/settings.tsx
+msgid "Your phones"
+msgstr "Dina telefoner"

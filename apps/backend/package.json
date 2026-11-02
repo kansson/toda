@@ -1,0 +1,28 @@
+{
+  "name": "@toda/backend",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./convex": "./src/convex.ts",
+    "./model": "./src/model.ts"
+  },
+  "scripts": {
+    "codegen": "convex codegen",
+    "deploy": "convex deploy --yes",
+    "dev": "convex dev",
+    "keys": "node scripts/set-auth-keys.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@convex-dev/auth": "catalog:",
+    "convex": "catalog:",
+    "convex-helpers": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "convex-test": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
