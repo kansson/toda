@@ -1,4 +1,5 @@
-import { planCompletion, planReopen } from '@/tasks/completion'
+import { completionMoment, planCompletion, planReopen } from '@/tasks/completion'
+import { type CalendarDate, localDate } from '@/tasks/dates'
 import { type List, type ListSort, newTask, type NewTask, type Task } from '@/tasks/model'
 import { bottomPosition, placeInOrder, topPosition } from '@/tasks/positions'
 import type { Db } from './db'
@@ -206,13 +207,18 @@ export function createActions(db: Db, onRefused: () => void) {
       patchTasks({ ids: [id], patch: { starredAt: starred ? now() : null } })
     },
 
-    /** Checks a task off; a repeating one gets its next occurrence. */
-    complete(id: string): Completion | null {
+    /**
+     * Checks a task off, as done today or on an earlier `day`; a repeating one gets its next
+     * occurrence, counted from that day where its repeat counts from completion.
+     */
+    complete(id: string, day: CalendarDate | null = null): Completion | null {
       const task = tasks.get(id)
 
       if (!task || task.completedAt !== null) return null
-      const at = now()
-      const plan = planCompletion(task, subtasksOf(id), at, newId)
+      const current = now()
+      const doneOn = day ?? localDate(current)
+      const at = completionMoment(doneOn, current)
+      const plan = planCompletion(task, subtasksOf(id), current, newId, doneOn)
 
       complete({ ids: plan.complete, at, spawn: plan.spawn })
 

@@ -101,7 +101,7 @@ msgid "{count, plural, one {year} other {years}}"
 msgstr "{count, plural, one {år} other {år}}"
 
 #. Snackbar after deleting several tasks
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "{count} tasks deleted"
 msgstr "{count} uppgifter borttagna"
 
@@ -271,6 +271,11 @@ msgstr "Tillåt Toda att installera appar i inställningen som öppnades, kom se
 msgid "Android couldn’t install the update."
 msgstr "Android kunde inte installera uppdateringen."
 
+#. Done-day sheet: pick the day it was done from a calendar
+#: src/components/done-day-sheet.tsx
+msgid "Another day…"
+msgstr "En annan dag…"
+
 #. Picks a custom summary time
 #: src/screens/settings.tsx
 msgid "Another time…"
@@ -295,6 +300,11 @@ msgstr "Vid tiden en uppgift är satt till"
 #: src/ui/screen.tsx
 msgid "Back"
 msgstr "Tillbaka"
+
+#. Done-day sheet: when the repeating task comes back if done on this day
+#: src/components/done-day-sheet.tsx
+msgid "Back {when}"
+msgstr "Tillbaka {when}"
 
 #. Closes a dialog without changes
 #. Closes a dialog without changes
@@ -517,8 +527,8 @@ msgid "Done"
 msgstr "Klar"
 
 #. Snackbar after completing a repeating task: when the next one is due
-#. placeholder {0}: datePhrase(completion.nextDue, today)
-#: src/components/task-commands.ts
+#. placeholder {0}: datePhrase(completion.nextDue, now)
+#: src/components/task-commands.tsx
 msgid "Done. Back {0}."
 msgstr "Klart. Tillbaka {0}."
 
@@ -652,6 +662,11 @@ msgstr "Installerar uppdatering"
 #: src/screens/task.tsx
 msgid "It is deleted from every phone."
 msgstr "Den tas bort från alla telefoner."
+
+#. Done-day sheet: the repeating task ends if done on this day
+#: src/components/done-day-sheet.tsx
+msgid "Its last time"
+msgstr "Sista gången"
 
 #. Confirms joining the other account
 #: src/screens/link.tsx
@@ -918,6 +933,11 @@ msgstr "Den {day}:e"
 #: src/screens/settings.tsx
 msgid "On every phone, for good"
 msgstr "På alla telefoner, för gott"
+
+#. Done-day sheet: the day it was due; then when it comes back if done that day
+#: src/components/done-day-sheet.tsx
+msgid "On its day · back {when}"
+msgstr "På sin dag · tillbaka {when}"
 
 #. Monthly repeat on e.g. the second Tuesday
 #. placeholder {0}: ordinalWeekLabel(week)
@@ -1224,17 +1244,17 @@ msgid "System default"
 msgstr "Systemstandard"
 
 #. Snackbar after deleting a task
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "Task deleted"
 msgstr "Uppgiften borttagen"
 
 #. Snackbar after completing a task
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "Task done"
 msgstr "Uppgiften klar"
 
 #. Snackbar after reopening a done task
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "Task not done"
 msgstr "Uppgiften inte klar"
 
@@ -1404,7 +1424,7 @@ msgstr "Försök igen"
 
 #. Snackbar button taking back the change just made
 #. Snackbar button taking back the change just made
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 #: src/screens/settings.tsx
 msgid "Undo"
 msgstr "Ångra"
@@ -1467,6 +1487,11 @@ msgstr "Använd en annan telefons uppgifter"
 #: src/screens/settings.tsx
 msgid "Version"
 msgstr "Version"
+
+#. Title of the sheet asking which day a late repeating task was done
+#: src/components/done-day-sheet.tsx
+msgid "When did you do it?"
+msgstr "När gjorde du den?"
 
 #. A date that was yesterday, inside a sentence
 #: src/ui/format.ts

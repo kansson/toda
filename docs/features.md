@@ -34,7 +34,8 @@ or 24-hour clock.
   No date; Deadline into Past deadline, Today, Tomorrow, Later and No deadline; Starred recently
   into Starred recently (within 30 days), Starred earlier and Not starred (`tasks/views.ts`).
 - In Relevance with one list shown, open tasks are held and dragged into place (`ReorderList`, a
-  native Compose list), staying within the list in view as it scrolls under them.
+  native Compose list), staying within the list in view as it scrolls under them. A held task
+  is tinted in its row's rounded outline, with no shadow.
   A task moves among its siblings; a subtask among its parent's subtasks.
 - Done tasks gather under Completed (n), closed by default and remembered per list. The list menu
   deletes them all, with Undo.
@@ -92,6 +93,14 @@ leaves it in Completed and creates the next one as a new task with the same deta
 subtasks (open again), and the snackbar says when it comes back. That next occurrence stays out of
 lists, widgets and Today until its day, so a series shows one open task at a time. Undo, or
 reopening the done one, takes the new occurrence back while it is still open.
+
+A repeating task whose date has passed asks **When did you do it?** as it is checked off, in the
+list or on its page: today, each day back to its own date (a week at most), or another day from a
+calendar, each saying when the task comes back if that day is taken. A daily task forgotten
+yesterday and marked done on yesterday comes back today, where marking it done today would bring
+tomorrow's; the done occurrence is recorded on that day. Closing the
+sheet leaves the task open. A widget's check box and a notification's Mark done cannot ask, so
+they count today (`tasks/completion.ts`).
 
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.

@@ -4,14 +4,19 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.HapticFeedbackConstants
 import android.view.View
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -57,8 +62,22 @@ data class ReorderListProps(
   val draggable: MutableState<List<Boolean>> = mutableStateOf(emptyList()),
   val contentPadding: MutableState<GatedListPadding?> = mutableStateOf(null),
   /** Space between items, in dp. */
-  val spacing: MutableState<Double> = mutableStateOf(0.0)
+  val spacing: MutableState<Double> = mutableStateOf(0.0),
+  /**
+   * The shape items draw themselves in, inset from the list's edges, for items with no background
+   * of their own: a held one is tinted in it, with no shadow. Without it a held item is lifted
+   * on a shadowed surface as wide as the list.
+   */
+  val heldTint: MutableState<ReorderHeldTint?> = mutableStateOf(null)
 ) : ComposeProps
+
+@OptimizedRecord
+data class ReorderHeldTint(
+  /** From each side of the list, in dp. */
+  @Field val inset: Int = 0,
+  /** The corners' radius, in dp. */
+  @Field val corner: Int = 0
+) : Record
 
 @OptimizedRecord
 data class ReorderEvent(
@@ -97,6 +116,7 @@ class ReorderListView(context: Context, appContext: AppContext) :
     val keys = props.keys.value
     val draggable = props.draggable.value
     val padding = props.contentPadding.value
+    val heldTint = props.heldTint.value
     val count = childTotal.intValue
     val view = LocalView.current
     val list = rememberLazyListState()
@@ -134,7 +154,6 @@ class ReorderListView(context: Context, appContext: AppContext) :
         val canDrag = draggable.getOrNull(index) ?: false
 
         ReorderableItem(reorder, key = key, enabled = canDrag) { dragging ->
-          val elevation by animateDpAsState(if (dragging) 8.dp else 0.dp, label = "drag-elevation")
           val itemBounds = remember { Bounds() }
           val handle = if (canDrag) {
             Modifier.draggableHandle(
@@ -149,17 +168,11 @@ class ReorderListView(context: Context, appContext: AppContext) :
             Modifier
           }
 
-          Surface(
-            // Where it is drawn, the drag's offset included, unclipped by the list.
-            modifier = handle.onGloballyPositioned {
-              itemBounds.rect = Rect(it.positionInWindow(), it.size.toSize())
-            },
-            color = if (dragging) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
-            // Rounded only while lifted: at rest the shape would clip a row's ripple, which runs
-            // edge to edge.
-            shape = if (dragging) MaterialTheme.shapes.large else RectangleShape,
-            shadowElevation = elevation
-          ) {
+          // Where it is drawn, the drag's offset included, unclipped by the list.
+          val placed = handle.onGloballyPositioned {
+            itemBounds.rect = Rect(it.positionInWindow(), it.size.toSize())
+          }
+          val content: @Composable () -> Unit = {
             if (child != null) {
               with(scope) {
                 with(child) {
@@ -167,6 +180,35 @@ class ReorderListView(context: Context, appContext: AppContext) :
                 }
               }
             }
+          }
+
+          if (heldTint != null) {
+            val tint by animateColorAsState(
+              if (dragging) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
+              label = "drag-tint"
+            )
+
+            Box(modifier = placed) {
+              Box(
+                Modifier
+                  .matchParentSize()
+                  .padding(horizontal = heldTint.inset.dp)
+                  .background(tint, RoundedCornerShape(heldTint.corner.dp))
+              )
+              content()
+            }
+          } else {
+            val elevation by animateDpAsState(if (dragging) 8.dp else 0.dp, label = "drag-elevation")
+
+            Surface(
+              modifier = placed,
+              color = if (dragging) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
+              // Rounded only while lifted: at rest the shape would clip a row's ripple, which runs
+              // edge to edge.
+              shape = if (dragging) MaterialTheme.shapes.large else RectangleShape,
+              shadowElevation = elevation,
+              content = content
+            )
           }
         }
       }

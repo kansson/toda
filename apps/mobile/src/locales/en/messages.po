@@ -101,7 +101,7 @@ msgid "{count, plural, one {year} other {years}}"
 msgstr "{count, plural, one {year} other {years}}"
 
 #. Snackbar after deleting several tasks
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "{count} tasks deleted"
 msgstr "{count} tasks deleted"
 
@@ -271,6 +271,11 @@ msgstr "Allow Toda to install apps in the setting that opened, then come back an
 msgid "Android couldn’t install the update."
 msgstr "Android couldn’t install the update."
 
+#. Done-day sheet: pick the day it was done from a calendar
+#: src/components/done-day-sheet.tsx
+msgid "Another day…"
+msgstr "Another day…"
+
 #. Picks a custom summary time
 #: src/screens/settings.tsx
 msgid "Another time…"
@@ -295,6 +300,11 @@ msgstr "At the time a task is set for"
 #: src/ui/screen.tsx
 msgid "Back"
 msgstr "Back"
+
+#. Done-day sheet: when the repeating task comes back if done on this day
+#: src/components/done-day-sheet.tsx
+msgid "Back {when}"
+msgstr "Back {when}"
 
 #. Closes a dialog without changes
 #. Closes a dialog without changes
@@ -517,8 +527,8 @@ msgid "Done"
 msgstr "Done"
 
 #. Snackbar after completing a repeating task: when the next one is due
-#. placeholder {0}: datePhrase(completion.nextDue, today)
-#: src/components/task-commands.ts
+#. placeholder {0}: datePhrase(completion.nextDue, now)
+#: src/components/task-commands.tsx
 msgid "Done. Back {0}."
 msgstr "Done. Back {0}."
 
@@ -652,6 +662,11 @@ msgstr "Installing update"
 #: src/screens/task.tsx
 msgid "It is deleted from every phone."
 msgstr "It is deleted from every phone."
+
+#. Done-day sheet: the repeating task ends if done on this day
+#: src/components/done-day-sheet.tsx
+msgid "Its last time"
+msgstr "Its last time"
 
 #. Confirms joining the other account
 #: src/screens/link.tsx
@@ -918,6 +933,11 @@ msgstr "On day {day}"
 #: src/screens/settings.tsx
 msgid "On every phone, for good"
 msgstr "On every phone, for good"
+
+#. Done-day sheet: the day it was due; then when it comes back if done that day
+#: src/components/done-day-sheet.tsx
+msgid "On its day · back {when}"
+msgstr "On its day · back {when}"
 
 #. Monthly repeat on e.g. the second Tuesday
 #. placeholder {0}: ordinalWeekLabel(week)
@@ -1224,17 +1244,17 @@ msgid "System default"
 msgstr "System default"
 
 #. Snackbar after deleting a task
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "Task deleted"
 msgstr "Task deleted"
 
 #. Snackbar after completing a task
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "Task done"
 msgstr "Task done"
 
 #. Snackbar after reopening a done task
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 msgid "Task not done"
 msgstr "Task not done"
 
@@ -1404,7 +1424,7 @@ msgstr "Try again"
 
 #. Snackbar button taking back the change just made
 #. Snackbar button taking back the change just made
-#: src/components/task-commands.ts
+#: src/components/task-commands.tsx
 #: src/screens/settings.tsx
 msgid "Undo"
 msgstr "Undo"
@@ -1467,6 +1487,11 @@ msgstr "Use another phone’s tasks"
 #: src/screens/settings.tsx
 msgid "Version"
 msgstr "Version"
+
+#. Title of the sheet asking which day a late repeating task was done
+#: src/components/done-day-sheet.tsx
+msgid "When did you do it?"
+msgstr "When did you do it?"
 
 #. A date that was yesterday, inside a sentence
 #: src/ui/format.ts

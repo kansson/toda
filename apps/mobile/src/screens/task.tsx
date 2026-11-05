@@ -116,10 +116,7 @@ export function TaskScreen() {
           <Fab
             glyph='check'
             label={t({ message: 'Mark done', comment: 'Task page button completing it' })}
-            onPress={() => {
-              commands.toggle(task)
-              router.back()
-            }}
+            onPress={() => commands.toggle(task, () => router.back())}
           />
         )
       }
@@ -359,6 +356,7 @@ export function TaskScreen() {
         />
       ) : null}
       {details.dialog}
+      {commands.prompt}
     </Screen>
   )
 }

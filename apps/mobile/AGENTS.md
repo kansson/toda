@@ -20,6 +20,8 @@
   positions, sharing); `src/data/` the collections, outbox and session; `src/reminders/`,
   `src/widgets/` and `src/updates/` the work beside the screens, wired in
   `src/components/app-sync.tsx`.
+- Check tasks off through `useTaskCommands().toggle` and render its `prompt`: a late repeating
+  task asks which day it was done.
 - Write data only through `useActions()` (`src/data/actions.ts`): each write is an offline action
   that must be synchronous in its `onMutate`. Never await a transaction in the UI; offline it
   stays pending for as long as the phone is offline.
@@ -90,3 +92,7 @@
   24-hour clock rather than the language's.
 - Metro loses track of files while Gradle regenerates `android/`; restart it with `--clear`.
 - Test on an emulator; never drive the owner's phone.
+- After a native change, build the development APK (`./gradlew :app:assembleDebug` in
+  `android/`, or `vp run mobile:android`) and install it on the owner's phone whenever one is
+  connected (`adb devices`; `adb -s <serial> install -r`), keeping its data. Installing is not
+  driving it: leave the app's UI to the owner.

@@ -1,6 +1,54 @@
-import { type CalendarDate, localDate } from './dates'
+import { addDays, type CalendarDate, localDate, localTime, momentOf } from './dates'
 import type { Task } from './model'
 import { nextOccurrence } from './recurrence'
+
+/** The most days a late repeating task offers as when it was done, today included. */
+const DONE_DAY_CHOICES = 7
+
+/**
+ * Whether checking a task off asks which day it was done: a repeating task whose date has passed,
+ * where that day decides when it comes back and whether it counts as kept.
+ */
+export function asksDoneDay(task: Task, today: CalendarDate) {
+  return (
+    task.completedAt === null &&
+    task.parentId === null &&
+    task.repeat !== null &&
+    task.dueDate !== null &&
+    task.dueDate < today
+  )
+}
+
+/**
+ * The days a late task can be marked done on, today first and back to its own date, at most a
+ * week of them; an earlier day is picked from a calendar.
+ */
+export function doneDayChoices(task: Task, today: CalendarDate): CalendarDate[] {
+  const days: CalendarDate[] = []
+
+  for (let day = today; days.length < DONE_DAY_CHOICES; day = addDays(day, -1)) {
+    days.push(day)
+
+    if (task.dueDate === null || day <= task.dueDate) break
+  }
+
+  return days
+}
+
+/**
+ * The moment a task done on `day` is recorded as completed: now for today, and the same time of
+ * day on an earlier day, so a task done yesterday sorts as done yesterday.
+ */
+export function completionMoment(day: CalendarDate, now: number) {
+  return day >= localDate(now) ? now : momentOf(day, localTime(now)).getTime()
+}
+
+/** When a repeating task comes back if it was done on `day`; null when it would not. */
+export function nextDueIfDone(task: Task, day: CalendarDate) {
+  return task.repeat && task.dueDate && task.parentId === null
+    ? nextOccurrence(task.repeat, task.dueDate, day, task.occurrence)
+    : null
+}
 
 export type CompletionPlan = {
   /** Tasks to mark done now: the task and its open subtasks. */
@@ -14,23 +62,22 @@ export type CompletionPlan = {
 /**
  * What checking a task off does. Its open subtasks are done with it. A repeating top-level task
  * gets its next occurrence as a new task in the same place, with its subtasks open again, so the
- * one done stays in Completed with the day it was done.
+ * one done stays in Completed with the day it was done. That day is today unless the task was
+ * done earlier and only checked off now; a repeat counted from completion counts from it.
  */
 export function planCompletion(
   task: Task,
   subtasks: readonly Task[],
   now: number,
   newId: () => string,
+  doneOn: CalendarDate = localDate(now),
 ): CompletionPlan {
   const complete = [
     task.clientId,
     ...subtasks.flatMap((subtask) => (subtask.completedAt === null ? [subtask.clientId] : [])),
   ]
 
-  const nextDue =
-    task.repeat && task.dueDate && task.parentId === null
-      ? nextOccurrence(task.repeat, task.dueDate, localDate(now), task.occurrence)
-      : null
+  const nextDue = nextDueIfDone(task, doneOn)
 
   if (!task.repeat || nextDue === null) return { complete, spawn: [], nextDue: null }
 

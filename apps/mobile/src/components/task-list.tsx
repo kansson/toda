@@ -12,6 +12,7 @@ import { sectionTitle } from '@/ui/format'
 import type { Glyph } from '@/ui/glyphs'
 import { Empty, LoadingPage, SectionHeader } from '@/ui/primitives'
 import { BodyCentre, ReorderList } from '../../modules/ui'
+import { TASK_ROW_OUTLINE } from './task-row'
 
 type Item = { key: string; draggable: boolean; node: ReactNode }
 
@@ -190,9 +191,12 @@ export function TaskList({
       <ReorderList
         keys={items.map((item) => item.key)}
         draggable={items.map((item) => item.draggable)}
-        // Room under the panel's curved top for the first row, which scrolls up into it; a label
-        // first gets more, so its rounded ripple starts below the curve.
-        contentPadding={{ top: items[0]?.key.startsWith('section:') ? 20 : 12 }}
+        // Room under the panel's curved top, whose corners are 28 dp, for whatever comes first:
+        // its rounded ripple starts below the curve, and then scrolls up into it. A label keeps
+        // 8 dp of its own over its ripple; a row has none, so it takes all 28 dp here.
+        contentPadding={{ top: items[0]?.key.startsWith('section:') ? 20 : 28 }}
+        // A held row is tinted in its own inset, rounded shape, the one its ripple has.
+        heldTint={TASK_ROW_OUTLINE}
         onReorder={(key, order) => actions.reorderTask(key, order)}
       >
         {items.map((item) => (
@@ -216,6 +220,7 @@ export function TaskList({
           <Empty glyph={shownEmpty.glyph} title={shownEmpty.title} height='content' />
         </BodyCentre>
       </AnimatedVisibility>
+      {commands.prompt}
     </Box>
   )
 }
