@@ -92,3 +92,7 @@
   24-hour clock rather than the language's.
 - Metro loses track of files while Gradle regenerates `android/`; restart it with `--clear`.
 - Test on an emulator; never drive the owner's phone.
+- After a native change, build the development APK (`./gradlew :app:assembleDebug` in
+  `android/`, or `vp run mobile:android`) and install it on the owner's phone whenever one is
+  connected (`adb devices`; `adb -s <serial> install -r`), keeping its data. Installing is not
+  driving it: leave the app's UI to the owner.
