@@ -7,13 +7,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -21,16 +22,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
@@ -38,8 +46,8 @@ import kotlinx.coroutines.launch
 
 /**
  * What a list widget shows, chosen as it is placed and again when it is reconfigured, as Google
- * Tasks asks: Today, Starred or one of the lists, in the app's order and language. Choosing one
- * places the widget; leaving without a choice cancels it.
+ * Tasks asks: Today, Starred or one of the lists, in the app's order and language, and the sort
+ * it shows them in. Save places the widget; leaving without saving cancels it.
  */
 class TasksWidgetConfigureActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,17 +64,20 @@ class TasksWidgetConfigureActivity : ComponentActivity() {
     if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return finish()
 
     val snapshot = snapshotState(this).value
-    val current = snapshot.source(choiceState(this).value[widgetId])?.key
+    val choice = choiceState(this).value[widgetId] ?: WidgetChoice()
+    val current = snapshot.source(choice.source)?.key
 
     enableEdgeToEdge()
     setContent {
       WidgetTheme {
         ChooseSource(
           sources = snapshot.sources,
+          sorts = snapshot.labels.sorts,
           selected = current,
+          selectedSort = choice.sort,
           onClose = { finish() },
-          onChoose = { key ->
-            chooseSource(this, widgetId, key)
+          onSave = { key, sort ->
+            chooseSource(this, widgetId, key, sort)
             lifecycleScope.launch {
               val glanceId = GlanceAppWidgetManager(this@TasksWidgetConfigureActivity)
                 .getGlanceIdBy(widgetId)
@@ -96,14 +107,25 @@ private fun WidgetTheme(content: @Composable () -> Unit) {
   MaterialTheme(colorScheme = scheme, content = content)
 }
 
+/**
+ * The lists, then the sorts, as Material's full-screen dialog: close to cancel, Save to keep the
+ * choice. A widget given no sort shows its source's own, so a list's follows its sort in the app;
+ * the one it shows is ticked until another is chosen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChooseSource(
   sources: List<WidgetSource>,
+  sorts: List<WidgetSort>,
   selected: String?,
+  selectedSort: String?,
   onClose: () -> Unit,
-  onChoose: (String) -> Unit,
+  onSave: (source: String, sort: String?) -> Unit,
 ) {
+  var source by rememberSaveable { mutableStateOf(selected) }
+  var sort by rememberSaveable { mutableStateOf(selectedSort) }
+  val shownSort = sort ?: sources.firstOrNull { it.key == source }?.sort
+
   Scaffold(
     topBar = {
       TopAppBar(
@@ -116,21 +138,42 @@ private fun ChooseSource(
             )
           }
         },
+        actions = {
+          TextButton(onClick = { source?.let { onSave(it, sort) } }, enabled = source != null) {
+            Text(stringResource(R.string.toda_widget_save))
+          }
+        },
       )
     },
   ) { padding ->
     LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-      items(sources, key = { it.key }) { source ->
-        ListItem(
-          headlineContent = { Text(source.title) },
-          leadingContent = {
-            RadioButton(selected = source.key == selected, onClick = { onChoose(source.key) })
-          },
-          modifier = Modifier.clickable { onChoose(source.key) },
+      items(sources, key = { "source:${it.key}" }) { option ->
+        Choice(option.title, option.key == source) { source = option.key }
+      }
+      item(key = "sorts") {
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Text(
+          stringResource(R.string.toda_widget_sort_by),
+          style = MaterialTheme.typography.titleSmall,
+          color = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
+      }
+      items(sorts, key = { "sort:${it.key}" }) { option ->
+        Choice(option.label, option.key == shownSort) { sort = option.key }
       }
     }
   }
+}
+
+/** One choice of a group, a radio button before it; a tap anywhere on the row chooses it. */
+@Composable
+private fun Choice(label: String, selected: Boolean, onChoose: () -> Unit) {
+  ListItem(
+    headlineContent = { Text(label) },
+    leadingContent = { RadioButton(selected = selected, onClick = null) },
+    modifier = Modifier.selectable(selected = selected, role = Role.RadioButton, onClick = onChoose),
+  )
 }
 
 /** Gives a widget pinned from the app's Settings the source chosen there. */

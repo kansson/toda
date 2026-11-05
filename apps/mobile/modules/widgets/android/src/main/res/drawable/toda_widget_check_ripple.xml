@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The check box's ripple: a 40 dp circle inside its 48 dp target, as the app's icon buttons draw
+  theirs, where Glance's own clickable ripple would fill the whole square.
+-->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?android:attr/colorControlHighlight">
+  <item android:id="@android:id/mask">
+    <inset android:inset="4dp">
+      <shape android:shape="oval">
+        <solid android:color="@android:color/white" />
+      </shape>
+    </inset>
+  </item>
+</ripple>

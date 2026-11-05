@@ -15,4 +15,11 @@
   <string name="toda_widget_cancel">Cancel</string>
   <string name="toda_widget_today">Today</string>
   <string name="toda_widget_starred">Starred</string>
+  <string name="toda_widget_save">Save</string>
+  <string name="toda_widget_sort_by">Sort by</string>
+  <string name="toda_widget_sort_manual">Relevance</string>
+  <string name="toda_widget_sort_date">Date</string>
+  <string name="toda_widget_sort_deadline">Deadline</string>
+  <string name="toda_widget_sort_starred">Starred recently</string>
+  <string name="toda_widget_sort_title">Title</string>
 </resources>

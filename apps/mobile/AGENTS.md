@@ -43,8 +43,9 @@
   use Glance's own colour resources (`@color/glance_color*`) so they match in light, dark and
   Material You. The app writes a JSON snapshot of every source, Today, Starred and each list
   (`src/widgets/types.ts` mirrors `WidgetSnapshot.kt`; change both together), and redraws them.
-  Each list widget keeps the source chosen as it was placed (`TasksWidgetConfigureActivity`, also
-  its reconfigure screen) by its widget id; a widget pinned from Settings gets the choice made
+  Each list widget keeps the source and sort chosen as it was placed (`TasksWidgetConfigureActivity`,
+  also its reconfigure screen) by its widget id; the app writes every source's tasks in every sort
+  (`src/widgets/snapshot.ts`), so the widget only picks an order and never sorts itself; a widget pinned from Settings gets the choice made
   there through the pin's callback (`PinnedWidgetReceiver`). A check box records the task
   natively and the app completes it through `takeCompletions`. All text reaches them translated
   in the snapshot, with fallbacks in the module's string resources.

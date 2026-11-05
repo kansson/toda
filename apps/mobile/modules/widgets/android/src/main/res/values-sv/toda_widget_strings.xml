@@ -15,4 +15,11 @@
   <string name="toda_widget_cancel">Avbryt</string>
   <string name="toda_widget_today">I dag</string>
   <string name="toda_widget_starred">Stjärnmärkta</string>
+  <string name="toda_widget_save">Spara</string>
+  <string name="toda_widget_sort_by">Sortera efter</string>
+  <string name="toda_widget_sort_manual">Relevans</string>
+  <string name="toda_widget_sort_date">Datum</string>
+  <string name="toda_widget_sort_deadline">Deadline</string>
+  <string name="toda_widget_sort_starred">Nyligen stjärnmärkta</string>
+  <string name="toda_widget_sort_title">Titel</string>
 </resources>

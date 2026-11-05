@@ -54,8 +54,9 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 
 /**
- * The list widget: Today, Starred or a list, chosen as it is placed (`TasksWidgetConfigureActivity`)
- * and changed by reconfiguring it, under its title with its open tasks as cards. A task's check box
+ * The list widget: Today, Starred or a list in a sort, chosen as it is placed
+ * (`TasksWidgetConfigureActivity`) and changed by reconfiguring it, under its title with its open
+ * tasks as cards. A task's check box
  * completes it right away, without opening the app, and + adds a task to it; a tap anywhere else
  * opens the app as its icon does. Every colour is a dynamic Material 3 role from the wallpaper,
  * light or dark with the system.
@@ -70,17 +71,18 @@ class TasksWidget : GlanceAppWidget() {
       GlanceTheme(DynamicThemeColorProviders) {
         val snapshot by snapshotState(context).collectAsState()
         val choices by choiceState(context).collectAsState()
-        TasksContent(snapshot, snapshot.source(choices[widgetId]))
+        val choice = choices[widgetId] ?: WidgetChoice()
+        val source = snapshot.source(choice.source)
+        TasksContent(snapshot, source, source?.tasksIn(choice.sort).orEmpty())
       }
     }
   }
 }
 
 @Composable
-private fun TasksContent(snapshot: WidgetSnapshot, source: WidgetSource?) {
+private fun TasksContent(snapshot: WidgetSnapshot, source: WidgetSource?, tasks: List<WidgetTask>) {
   val context = LocalContext.current
   val colors = GlanceTheme.colors
-  val tasks = source?.tasks.orEmpty()
   // Anywhere but a check box or + opens the app as its icon does, where it was left.
   val openApp = actionStartActivity(openIntent(context, ""))
 
@@ -180,11 +182,14 @@ private fun TaskCard(task: WidgetTask, labels: WidgetLabels, taskLink: String) {
       .padding(start = 8.dp, end = 20.dp),
     verticalAlignment = Alignment.Vertical.CenterVertically,
   ) {
-    // The toggle's own 48 dp target, the circle centred in it.
+    // The toggle's own 48 dp target, the circle centred in it, with a round ripple as the app's.
     Box(
       modifier = GlanceModifier
         .size(48.dp)
-        .clickable(actionRunCallback<CompleteTaskAction>(actionParametersOf(TASK_ID to task.id)))
+        .clickable(
+          rippleOverride = R.drawable.toda_widget_check_ripple,
+          onClick = actionRunCallback<CompleteTaskAction>(actionParametersOf(TASK_ID to task.id)),
+        )
         .semantics { contentDescription = "${labels.complete}: ${task.title}" },
       contentAlignment = Alignment.Center,
     ) {
