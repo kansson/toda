@@ -180,11 +180,14 @@ private fun TaskCard(task: WidgetTask, labels: WidgetLabels, taskLink: String) {
       .padding(start = 8.dp, end = 20.dp),
     verticalAlignment = Alignment.Vertical.CenterVertically,
   ) {
-    // The toggle's own 48 dp target, the circle centred in it.
+    // The toggle's own 48 dp target, the circle centred in it, with a round ripple as the app's.
     Box(
       modifier = GlanceModifier
         .size(48.dp)
-        .clickable(actionRunCallback<CompleteTaskAction>(actionParametersOf(TASK_ID to task.id)))
+        .clickable(
+          rippleOverride = R.drawable.toda_widget_check_ripple,
+          onClick = actionRunCallback<CompleteTaskAction>(actionParametersOf(TASK_ID to task.id)),
+        )
         .semantics { contentDescription = "${labels.complete}: ${task.title}" },
       contentAlignment = Alignment.Center,
     ) {

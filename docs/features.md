@@ -137,7 +137,7 @@ a panel whose top corners curve down into it. A task's row shows every line of i
   Starred or a list, chosen as it is placed, as in Google Tasks, and changed later through the
   widget's settings on a long press. Each widget keeps its own, so several can show different
   lists. Its open tasks sit under its title, in bold beside a tonal +, on its own background, each with a
-  round toggle; with none open it shows the done glyph over No tasks, centred under its title. A
+  round toggle whose ripple is round, as in the app; with none open it shows the done glyph over No tasks, centred under its title. A
   tap on a task opens its page in the app; anywhere else but a toggle or +, the space under the
   tasks and the empty state included, opens the app as its icon does, with one ripple across the
   whole card. Tasks that fit stand still; more scroll, where it was left. A task's check box
