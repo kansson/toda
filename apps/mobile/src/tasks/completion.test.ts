@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { planCompletion, planReopen } from './completion'
+import {
+  asksDoneDay,
+  completionMoment,
+  doneDayChoices,
+  nextDueIfDone,
+  planCompletion,
+  planReopen,
+} from './completion'
 import { momentOf } from './dates'
 import { newTask, type Task } from './model'
 import { defaultRepeat } from './recurrence'
@@ -50,6 +57,44 @@ describe('completing a task', () => {
     })
 
     expect(planCompletion(last, [], now, nextId).spawn).toEqual([])
+  })
+})
+
+describe('a late repeating task done on an earlier day', () => {
+  const daily = task('p', { dueDate: '2026-11-02', repeat: defaultRepeat('day') })
+
+  it('comes back today when it was done on its own day, yesterday', () => {
+    // Checked off on Tuesday, done on Monday: Tuesday's comes, rather than Wednesday's.
+    expect(planCompletion(daily, [], now, nextId).nextDue).toBe('2026-11-04')
+    expect(planCompletion(daily, [], now, nextId, '2026-11-02').nextDue).toBe('2026-11-03')
+  })
+
+  it('keeps today on a fixed schedule when it was done on its day', () => {
+    const fixed = task('p', {
+      dueDate: '2026-11-02',
+      repeat: { ...defaultRepeat('day'), anchor: 'due' },
+    })
+
+    expect(nextDueIfDone(fixed, '2026-11-03')).toBe('2026-11-04')
+    expect(nextDueIfDone(fixed, '2026-11-02')).toBe('2026-11-03')
+  })
+
+  it('is asked about only while late, repeating and top-level', () => {
+    expect(asksDoneDay(daily, '2026-11-03')).toBe(true)
+    expect(asksDoneDay(daily, '2026-11-02')).toBe(false)
+    expect(asksDoneDay({ ...daily, repeat: null }, '2026-11-03')).toBe(false)
+    expect(asksDoneDay({ ...daily, parentId: 'q' }, '2026-11-03')).toBe(false)
+    expect(asksDoneDay({ ...daily, completedAt: 1 }, '2026-11-03')).toBe(false)
+  })
+
+  it('offers today back to its own date, a week at most', () => {
+    expect(doneDayChoices(daily, '2026-11-04')).toEqual(['2026-11-04', '2026-11-03', '2026-11-02'])
+    expect(doneDayChoices({ ...daily, dueDate: '2026-10-01' }, '2026-11-04')).toHaveLength(7)
+  })
+
+  it('is recorded at the same time of day on the day it was done', () => {
+    expect(completionMoment('2026-11-03', now)).toBe(now)
+    expect(completionMoment('2026-11-02', now)).toBe(momentOf('2026-11-02', '10:00').getTime())
   })
 })
 

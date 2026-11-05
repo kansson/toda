@@ -20,6 +20,8 @@
   positions, sharing); `src/data/` the collections, outbox and session; `src/reminders/`,
   `src/widgets/` and `src/updates/` the work beside the screens, wired in
   `src/components/app-sync.tsx`.
+- Check tasks off through `useTaskCommands().toggle` and render its `prompt`: a late repeating
+  task asks which day it was done.
 - Write data only through `useActions()` (`src/data/actions.ts`): each write is an offline action
   that must be synchronous in its `onMutate`. Never await a transaction in the UI; offline it
   stays pending for as long as the phone is offline.

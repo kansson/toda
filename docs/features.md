@@ -93,6 +93,14 @@ subtasks (open again), and the snackbar says when it comes back. That next occur
 lists, widgets and Today until its day, so a series shows one open task at a time. Undo, or
 reopening the done one, takes the new occurrence back while it is still open.
 
+A repeating task whose date has passed asks **When did you do it?** as it is checked off, in the
+list or on its page: today, each day back to its own date (a week at most), or another day from a
+calendar, each saying when the task comes back if that day is taken. A daily task forgotten
+yesterday and marked done on yesterday comes back today, where marking it done today would bring
+tomorrow's; the done occurrence is recorded on that day. Closing the
+sheet leaves the task open. A widget's check box and a notification's Mark done cannot ask, so
+they count today (`tasks/completion.ts`).
+
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.
 

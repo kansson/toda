@@ -216,6 +216,7 @@ export function TaskList({
           <Empty glyph={shownEmpty.glyph} title={shownEmpty.title} height='content' />
         </BodyCentre>
       </AnimatedVisibility>
+      {commands.prompt}
     </Box>
   )
 }
