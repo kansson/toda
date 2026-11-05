@@ -10,11 +10,12 @@ import { useAllTasks, useLists, useToday } from '@/data/queries'
 import { scheduleReminders } from '@/reminders/notifications'
 import { respondToReminder } from '@/reminders/respond'
 import { usePreferences } from '@/settings/preferences'
-import type { Task } from '@/tasks/model'
+import type { ListSort, Task } from '@/tasks/model'
 import { sharedTask } from '@/tasks/share'
-import { isVisible, listView, todayView, starredView } from '@/tasks/views'
-import { dueLabel, isOverdue } from '@/ui/format'
+import { listSorts } from '@/tasks/views'
+import { dueLabel, isOverdue, sortLabels } from '@/ui/format'
 import { checkForUpdatesDaily } from '@/updates/app-updates'
+import { sortedTasks, viewTasks, type WidgetView } from '@/widgets/snapshot'
 import {
   onWidgetCompletion,
   redrawWidgets,
@@ -30,7 +31,7 @@ const link = (path: string) => `${scheme}://${path}`
 
 const reminderDataSchema = z.object({ taskIds: z.array(z.string()) }).catch({ taskIds: [] })
 
-/** How many tasks the widget gets; it scrolls, but a phone shows a dozen at most. */
+/** How many tasks the widget gets in each sort; it scrolls, but a phone shows a dozen at most. */
 const WIDGET_TASKS = 40
 
 /**
@@ -39,7 +40,7 @@ const WIDGET_TASKS = 40
  * other apps opened as a new task, and a daily look for updates.
  */
 export function AppSync() {
-  const { t } = useLingui()
+  const { i18n, t } = useLingui()
   const router = useRouter()
   const actions = useActions()
   const tasks = useAllTasks()
@@ -78,59 +79,69 @@ export function AppSync() {
     return () => clearTimeout(timer)
   }, [tasks, listTitles, preferences.digestTime])
 
-  // Every widget picks its own source as it is placed, so each one gets written: Today, Starred
-  // and every list.
+  // Every widget picks its own source and sort as it is placed, so each one gets written: Today,
+  // Starred and every list, in every sort.
   useEffect(() => {
     const timer = setTimeout(() => {
-      const widgetTasks = (shown: Task[]): WidgetTask[] =>
-        shown
-          .filter((task) => isVisible(task, today))
-          .slice(0, WIDGET_TASKS)
-          .map((task) => ({
-            id: task.clientId,
-            title:
-              task.title.trim() ||
-              t({ message: '(No title)', comment: 'Shown for a task without a title' }),
-            due: dueLabel(task, today),
-            overdue: isOverdue(task, today),
-            starred: task.starredAt !== null,
-          }))
+      const now = Date.now()
 
-      const viewTasks = (sections: { rows: { task: Task }[] }[]) =>
-        sections.flatMap((section) => section.rows.map((row) => row.task))
+      const widgetTask = (task: Task): WidgetTask => ({
+        id: task.clientId,
+        title:
+          task.title.trim() ||
+          t({ message: '(No title)', comment: 'Shown for a task without a title' }),
+        due: dueLabel(task, today),
+        overdue: isOverdue(task, today),
+        starred: task.starredAt !== null,
+      })
+
+      const source = (
+        key: string,
+        title: string,
+        addLink: string,
+        view: WidgetView,
+        sort: ListSort,
+      ): WidgetSource => {
+        const sorted = sortedTasks(
+          (option) => viewTasks(tasks, view, option, today, now),
+          sort,
+          WIDGET_TASKS,
+        )
+
+        return {
+          key,
+          title,
+          addLink,
+          sort,
+          tasks: sorted.tasks.map(widgetTask),
+          orders: sorted.orders,
+        }
+      }
 
       const sources: WidgetSource[] = [
-        {
-          key: 'today',
-          title: t({ message: 'Today', comment: 'Widget title: today’s tasks' }),
-          addLink: link('add'),
-          tasks: widgetTasks(viewTasks(todayView(tasks, today))),
-        },
-        {
-          key: 'starred',
-          title: t({ message: 'Starred', comment: 'Widget title: starred tasks' }),
-          addLink: link('add?starred=1'),
-          tasks: widgetTasks(viewTasks(starredView(tasks, today, Date.now()))),
-        },
-        ...lists.map((list) => {
-          const view = listView(
-            tasks.filter((task) => task.listId === list.clientId),
+        source(
+          'today',
+          t({ message: 'Today', comment: 'Widget title: today’s tasks' }),
+          link('add'),
+          { kind: 'today' },
+          'manual',
+        ),
+        source(
+          'starred',
+          t({ message: 'Starred', comment: 'Widget title: starred tasks' }),
+          link('add?starred=1'),
+          { kind: 'starred' },
+          'manual',
+        ),
+        ...lists.map((list) =>
+          source(
+            list.clientId,
+            list.title,
+            link(`add?list=${list.clientId}`),
+            { kind: 'list', listId: list.clientId },
             list.sort,
-            today,
-            Date.now(),
-          )
-
-          return {
-            key: list.clientId,
-            title: list.title,
-            addLink: link(`add?list=${list.clientId}`),
-            tasks: widgetTasks(
-              view.open.flatMap((section) =>
-                section.rows.filter((row) => row.depth === 0).map((row) => row.task),
-              ),
-            ),
-          }
-        }),
+          ),
+        ),
       ]
 
       void updateWidgets({
@@ -140,6 +151,7 @@ export function AppSync() {
           emptyTitle: t({ message: 'No tasks', comment: 'Widget with no open tasks' }),
           newTask: t({ message: 'New task', comment: 'Widget button adding a task' }),
           complete: t({ message: 'Mark done', comment: 'Widget check box completing a task' }),
+          sorts: listSorts.map((key) => ({ key, label: i18n._(sortLabels[key]) })),
         },
         sources,
       }).catch((error: Error) => {
@@ -148,7 +160,7 @@ export function AppSync() {
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [tasks, lists, today, t])
+  }, [tasks, lists, today, i18n, t])
 
   // Tasks checked off in a widget are completed here, with their repeat and sync: at once while
   // the app runs, and on its next start or return for those checked off while it did not.

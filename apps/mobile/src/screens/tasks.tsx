@@ -10,7 +10,7 @@ import { fillMaxWidth, padding, weight } from '@/lib/compose-modifiers'
 import { Box, Column, Row } from '@/lib/compose-ui'
 import { setPreference, usePreferences } from '@/settings/preferences'
 import type { ListSort } from '@/tasks/model'
-import type { Filter } from '@/tasks/views'
+import { type Filter, listSorts } from '@/tasks/views'
 import { sortLabels } from '@/ui/format'
 import { ChipRow, Fab, type FilterChoice } from '@/ui/primitives'
 import { Action, Screen } from '@/ui/screen'
@@ -31,8 +31,6 @@ function newTaskParams(list: string | null, view: Filter) {
 }
 
 const views = ['today', 'upcoming', 'starred', 'completed'] as const
-
-const sorts: ListSort[] = ['manual', 'date', 'deadline', 'starred', 'title']
 
 function isView(value: string | undefined): value is (typeof views)[number] {
   return views.some((view) => view === value)
@@ -166,7 +164,7 @@ export function TasksScreen() {
           {(close) => (
             <MenuRows
               close={close}
-              rows={sorts.map((option) => ({
+              rows={listSorts.map((option) => ({
                 key: option,
                 label: i18n._(sortLabels[option]),
                 selected: option === sort,

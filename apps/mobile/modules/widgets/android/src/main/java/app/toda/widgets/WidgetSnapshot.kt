@@ -12,6 +12,7 @@ private const val PREFERENCES = "toda-widgets"
 private const val SNAPSHOT_KEY = "snapshot"
 private const val COMPLETED_KEY = "completed"
 private const val SOURCE_PREFIX = "source-"
+private const val SORT_PREFIX = "sort-"
 
 /** What a list widget shows unless it was given another: the first list. */
 internal const val DEFAULT_SOURCE = "default"
@@ -26,11 +27,16 @@ internal data class WidgetTask(
   val starred: Boolean,
 )
 
+/** A sort a widget can be given, named as the app's sort sheet names it. */
+internal data class WidgetSort(val key: String, val label: String)
+
 /** The text the widgets show, in the app's language. */
 internal data class WidgetLabels(
   val emptyTitle: String,
   val newTask: String,
   val complete: String,
+  /** Every sort, in the app's order. */
+  val sorts: List<WidgetSort>,
 )
 
 /** What one list widget can show: Today, Starred or a list, with its open tasks. */
@@ -40,8 +46,24 @@ internal data class WidgetSource(
   val title: String,
   /** Opens a new task in it. */
   val addLink: String,
+  /** The sort it shows in until a widget is given one: the list's own, or My order. */
+  val sort: String,
+  /** Its tasks, each once, in [sort]'s order and then those only another sort shows. */
   val tasks: List<WidgetTask>,
-)
+  /** Every sort's tasks, by id, in that sort's order. */
+  val orders: Map<String, List<String>>,
+) {
+  /** Its tasks in `sort`, or its own sort for none; as they came for a snapshot without orders. */
+  fun tasksIn(sort: String?): List<WidgetTask> {
+    val order = orders[sort ?: this.sort] ?: orders[this.sort] ?: return tasks
+    val byId = tasks.associateBy { it.id }
+
+    return order.mapNotNull { byId[it] }
+  }
+}
+
+/** What a list widget shows: its source, and its sort where it was given one. */
+internal data class WidgetChoice(val source: String? = null, val sort: String? = null)
 
 /** Everything the widgets draw, as the app last wrote it. */
 internal data class WidgetSnapshot(
@@ -59,14 +81,21 @@ internal data class WidgetSnapshot(
       ?: sources.firstOrNull()
 
   fun without(taskIds: Set<String>) =
-    copy(sources = sources.map { source -> source.copy(tasks = source.tasks.filterNot { it.id in taskIds }) })
+    copy(
+      sources = sources.map { source ->
+        source.copy(
+          tasks = source.tasks.filterNot { it.id in taskIds },
+          orders = source.orders.mapValues { (_, ids) -> ids.filterNot { it in taskIds } },
+        )
+      },
+    )
 }
 
 private fun preferences(context: Context) =
   context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
 
 private var shown: MutableStateFlow<WidgetSnapshot>? = null
-private var chosen: MutableStateFlow<Map<Int, String>>? = null
+private var chosen: MutableStateFlow<Map<Int, WidgetChoice>>? = null
 
 /**
  * What the widgets draw. A widget whose session is still open, as it is just after a tap, only
@@ -76,9 +105,9 @@ private var chosen: MutableStateFlow<Map<Int, String>>? = null
 internal fun snapshotState(context: Context): StateFlow<WidgetSnapshot> =
   shown ?: MutableStateFlow(loadSnapshot(context)).also { shown = it }
 
-/** Each list widget's source by its id, chosen as it was placed or since. */
+/** Each list widget's source and sort by its id, chosen as it was placed or since. */
 @Synchronized
-internal fun choiceState(context: Context): StateFlow<Map<Int, String>> =
+internal fun choiceState(context: Context): StateFlow<Map<Int, WidgetChoice>> =
   chosen ?: MutableStateFlow(loadChoices(context)).also { chosen = it }
 
 private fun show(context: Context, snapshot: WidgetSnapshot) {
@@ -102,27 +131,44 @@ private fun loadSnapshot(context: Context): WidgetSnapshot =
     preferences(context).getString(SNAPSHOT_KEY, null)?.let { parseSnapshot(JSONObject(it)) }
   }.getOrNull() ?: fallbackSnapshot(context)
 
-/** Gives the list widget `widgetId` its source. */
+/**
+ * Gives the list widget `widgetId` its source and sort; with no sort it shows the source's own,
+ * following the list's sort in the app.
+ */
 @Synchronized
-internal fun chooseSource(context: Context, widgetId: Int, key: String) {
-  preferences(context).edit().putString("$SOURCE_PREFIX$widgetId", key).apply()
-  (choiceState(context) as MutableStateFlow).value = choiceState(context).value + (widgetId to key)
+internal fun chooseSource(context: Context, widgetId: Int, key: String, sort: String? = null) {
+  val editor = preferences(context).edit().putString("$SOURCE_PREFIX$widgetId", key)
+  if (sort == null) editor.remove("$SORT_PREFIX$widgetId") else editor.putString("$SORT_PREFIX$widgetId", sort)
+  editor.apply()
+  (choiceState(context) as MutableStateFlow).value =
+    choiceState(context).value + (widgetId to WidgetChoice(key, sort))
 }
 
-/** Forgets the sources of widgets taken off the home screen. */
+/** Forgets the sources and sorts of widgets taken off the home screen. */
 @Synchronized
 internal fun forgetSources(context: Context, widgetIds: IntArray) {
   val editor = preferences(context).edit()
-  widgetIds.forEach { editor.remove("$SOURCE_PREFIX$it") }
+  widgetIds.forEach {
+    editor.remove("$SOURCE_PREFIX$it")
+    editor.remove("$SORT_PREFIX$it")
+  }
   editor.apply()
   (choiceState(context) as MutableStateFlow).value = choiceState(context).value - widgetIds.toSet()
 }
 
-private fun loadChoices(context: Context): Map<Int, String> =
-  preferences(context).all.mapNotNull { (key, value) ->
-    val id = key.removePrefix(SOURCE_PREFIX).toIntOrNull()
-    if (key.startsWith(SOURCE_PREFIX) && id != null && value is String) id to value else null
-  }.toMap()
+private fun loadChoices(context: Context): Map<Int, WidgetChoice> {
+  val stored = preferences(context).all
+  val chosen = { prefix: String ->
+    stored.mapNotNull { (key, value) ->
+      val id = key.removePrefix(prefix).toIntOrNull()
+      if (key.startsWith(prefix) && id != null && value is String) id to value else null
+    }.toMap()
+  }
+  val sources = chosen(SOURCE_PREFIX)
+  val sorts = chosen(SORT_PREFIX)
+
+  return (sources.keys + sorts.keys).associateWith { WidgetChoice(sources[it], sorts[it]) }
+}
 
 /** A task checked off in a widget: hidden there at once, completed by the app when it runs. */
 @Synchronized
@@ -158,8 +204,18 @@ private fun parseTask(task: JSONObject) = WidgetTask(
   starred = task.optBoolean("starred"),
 )
 
+private fun parseOrders(orders: JSONObject?): Map<String, List<String>> {
+  if (orders == null) return emptyMap()
+
+  return orders.keys().asSequence().associateWith { sort ->
+    val ids = orders.optJSONArray(sort) ?: JSONArray()
+    List(ids.length()) { ids.optString(it) }
+  }
+}
+
 private fun parseSnapshot(root: JSONObject): WidgetSnapshot {
   val labels = root.optJSONObject("labels") ?: JSONObject()
+  val sorts = labels.optJSONArray("sorts") ?: JSONArray()
   val sources = root.optJSONArray("sources") ?: JSONArray()
 
   return WidgetSnapshot(
@@ -169,6 +225,10 @@ private fun parseSnapshot(root: JSONObject): WidgetSnapshot {
       emptyTitle = labels.optString("emptyTitle"),
       newTask = labels.optString("newTask"),
       complete = labels.optString("complete"),
+      sorts = List(sorts.length()) { index ->
+        val sort = sorts.getJSONObject(index)
+        WidgetSort(key = sort.optString("key"), label = sort.optString("label"))
+      },
     ),
     sources = List(sources.length()) { index ->
       val source = sources.getJSONObject(index)
@@ -177,7 +237,9 @@ private fun parseSnapshot(root: JSONObject): WidgetSnapshot {
         key = source.optString("key"),
         title = source.optString("title"),
         addLink = source.optString("addLink"),
+        sort = source.optString("sort", "manual"),
         tasks = List(tasks.length()) { parseTask(tasks.getJSONObject(it)) },
+        orders = parseOrders(source.optJSONObject("orders")),
       )
     },
   )
@@ -198,14 +260,20 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
           .put("starred", task.starred)
       )
     }
+    val orders = JSONObject()
+    source.orders.forEach { (sort, ids) -> orders.put(sort, JSONArray(ids)) }
     sources.put(
       JSONObject()
         .put("key", source.key)
         .put("title", source.title)
         .put("addLink", source.addLink)
+        .put("sort", source.sort)
         .put("tasks", tasks)
+        .put("orders", orders)
     )
   }
+  val sorts = JSONArray()
+  snapshot.labels.sorts.forEach { sorts.put(JSONObject().put("key", it.key).put("label", it.label)) }
 
   return JSONObject()
     .put("newTaskLink", snapshot.newTaskLink)
@@ -216,13 +284,14 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
         .put("emptyTitle", snapshot.labels.emptyTitle)
         .put("newTask", snapshot.labels.newTask)
         .put("complete", snapshot.labels.complete)
+        .put("sorts", sorts)
     )
     .put("sources", sources)
 }
 
 /**
  * Before the app has written anything: the widget's own strings, Today, Starred and the first
- * list with nothing in them, and a tap opens the app.
+ * list with nothing in them, the app's sorts, and a tap opens the app.
  */
 private fun fallbackSnapshot(context: Context) = WidgetSnapshot(
   newTaskLink = "",
@@ -231,11 +300,18 @@ private fun fallbackSnapshot(context: Context) = WidgetSnapshot(
     emptyTitle = context.getString(R.string.toda_widget_empty_title),
     newTask = context.getString(R.string.toda_widget_new_task),
     complete = context.getString(R.string.toda_widget_complete),
+    sorts = listOf(
+      WidgetSort("manual", context.getString(R.string.toda_widget_sort_manual)),
+      WidgetSort("date", context.getString(R.string.toda_widget_sort_date)),
+      WidgetSort("deadline", context.getString(R.string.toda_widget_sort_deadline)),
+      WidgetSort("starred", context.getString(R.string.toda_widget_sort_starred)),
+      WidgetSort("title", context.getString(R.string.toda_widget_sort_title)),
+    ),
   ),
   sources = listOf(
-    WidgetSource("today", context.getString(R.string.toda_widget_today), "", emptyList()),
-    WidgetSource("starred", context.getString(R.string.toda_widget_starred), "", emptyList()),
-    WidgetSource(DEFAULT_SOURCE, context.getString(R.string.toda_widget_preview_list), "", emptyList()),
+    WidgetSource("today", context.getString(R.string.toda_widget_today), "", "manual", emptyList(), emptyMap()),
+    WidgetSource("starred", context.getString(R.string.toda_widget_starred), "", "manual", emptyList(), emptyMap()),
+    WidgetSource(DEFAULT_SOURCE, context.getString(R.string.toda_widget_preview_list), "", "manual", emptyList(), emptyMap()),
   ),
 )
 

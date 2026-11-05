@@ -67,6 +67,9 @@ function byTitle(a: Task, b: Task) {
   return collator.compare(a.title, b.title) || byPosition(a, b)
 }
 
+/** The list sorts, in Google Tasks' order, as the sort sheet and the widgets offer them. */
+export const listSorts: readonly ListSort[] = ['manual', 'date', 'deadline', 'starred', 'title']
+
 const comparators: Record<ListSort, (a: Task, b: Task) => number> = {
   manual: byPosition,
   date: byDue,
