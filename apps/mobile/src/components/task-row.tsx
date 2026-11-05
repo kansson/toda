@@ -13,6 +13,12 @@ import type { Task } from '@/tasks/model'
 import { deadlineLabel, dueLabel, isOverdue } from '@/ui/format'
 import { glyphs } from '@/ui/glyphs'
 
+/**
+ * A row's inset from the list's sides and its corners, in dp: where its ripple is drawn, and
+ * where it is tinted while held to drag.
+ */
+export const TASK_ROW_OUTLINE = { inset: 8, corner: 12 }
+
 export type TaskRowProps = {
   task: Task
   depth: 0 | 1
@@ -72,13 +78,14 @@ export function TaskRow({
     <ListItem
       // Compose reads a ListItem's slots once, so a row that gains a line is drawn afresh.
       key={`${task.clientId}:${hasSupporting ? 's' : ''}`}
-      colors={{ containerColor: colors.surface }}
+      // None of its own, so the list's tint shows through it while it is held.
+      colors={{ containerColor: 'transparent' }}
       modifiers={[
         fillMaxWidth(),
         // Inset and rounded as a group's label is, so their ripples line up; rows and labels
         // still meet with no space between them.
-        padding(8, 0, 8, 0),
-        clip(composeGeometry.RoundedCorner(12)),
+        padding(TASK_ROW_OUTLINE.inset, 0, TASK_ROW_OUTLINE.inset, 0),
+        clip(composeGeometry.RoundedCorner(TASK_ROW_OUTLINE.corner)),
         clickable(onOpen),
         padding(depth === 1 ? 32 : 0, 0, 0, 0),
       ]}

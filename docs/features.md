@@ -34,7 +34,8 @@ or 24-hour clock.
   No date; Deadline into Past deadline, Today, Tomorrow, Later and No deadline; Starred recently
   into Starred recently (within 30 days), Starred earlier and Not starred (`tasks/views.ts`).
 - In Relevance with one list shown, open tasks are held and dragged into place (`ReorderList`, a
-  native Compose list), staying within the list in view as it scrolls under them.
+  native Compose list), staying within the list in view as it scrolls under them. A held task
+  is tinted in its row's rounded outline, with no shadow.
   A task moves among its siblings; a subtask among its parent's subtasks.
 - Done tasks gather under Completed (n), closed by default and remembered per list. The list menu
   deletes them all, with Undo.

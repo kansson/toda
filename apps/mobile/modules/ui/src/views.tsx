@@ -181,6 +181,12 @@ export type ReorderListProps = {
   draggable: boolean[]
   contentPadding?: Padding
   spacing?: number
+  /**
+   * The shape items draw themselves in, in dp from the list's sides, for items without a
+   * background of their own: a held item is tinted in it, with no shadow. Without it, a held
+   * item is lifted on a shadowed surface as wide as the list.
+   */
+  heldTint?: { inset: number; corner: number }
   /** The order after a drop, with the key of the item that moved. */
   onReorder: (key: string, order: string[]) => void
   children: ReactNode
