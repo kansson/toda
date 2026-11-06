@@ -17,9 +17,9 @@ import { dueLabel, isOverdue, sortLabels } from '@/ui/format'
 import { checkForUpdatesDaily } from '@/updates/app-updates'
 import { sortedTasks, viewTasks, type WidgetView } from '@/widgets/snapshot'
 import {
+  completeWidgetTasks,
   onWidgetCompletion,
   redrawWidgets,
-  takeWidgetCompletions,
   updateWidgets,
 } from '@/widgets/sync'
 import type { WidgetSource, WidgetTask } from '@/widgets/types'
@@ -81,10 +81,12 @@ export function AppSync() {
   }, [tasks, listTitles, preferences.digestTime])
 
   // Every widget picks its own source and sort as it is placed, so each one gets written: Today,
-  // Starred and every list, in every sort.
+  // Starred and every list, in every sort. The tasks are read as they are when it is built, not
+  // as the last render had them: a widget check-off completed since then must show as done.
   useEffect(() => {
     const timer = setTimeout(() => {
       const now = Date.now()
+      const current = [...db.tasks.values()]
 
       const widgetTask = (task: Task): WidgetTask => ({
         id: task.clientId,
@@ -104,7 +106,7 @@ export function AppSync() {
         sort: ListSort,
       ): WidgetSource => {
         const sorted = sortedTasks(
-          (option) => viewTasks(tasks, view, option, today, now),
+          (option) => viewTasks(current, view, option, today, now),
           sort,
           WIDGET_TASKS,
         )
@@ -161,7 +163,7 @@ export function AppSync() {
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [tasks, lists, today, i18n, t])
+  }, [db, tasks, lists, today, i18n, t])
 
   // Tasks checked off in a widget are completed here, with their repeat and sync: at once while
   // the app runs, and on its next start or return for those checked off while it did not. They
@@ -176,7 +178,7 @@ export function AppSync() {
         () => {
           if (!alive) return
 
-          for (const taskId of takeWidgetCompletions()) actionsRef.current.complete(taskId)
+          completeWidgetTasks((taskId) => actionsRef.current.complete(taskId))
         },
         // Left in the widget's keeping; the next start or return takes them.
         () => undefined,
