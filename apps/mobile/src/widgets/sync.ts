@@ -3,9 +3,16 @@ import type { WidgetSnapshot } from './types'
 
 let writing: Promise<void> = Promise.resolve()
 
-/** Hands the widgets what to show, one write at a time; the last one wins. */
+/** The last round of widget check-offs this app has taken and completed; none yet on a start. */
+let completedRound: number | null = null
+
+/**
+ * Hands the widgets what to show, one write at a time; the last one wins. Build `snapshot` from
+ * the collections as they are now, not from an earlier render: it tells the widgets that every
+ * check-off taken so far is completed in it, so they stop hiding those tasks.
+ */
 export function updateWidgets(snapshot: WidgetSnapshot) {
-  const json = JSON.stringify(snapshot)
+  const json = JSON.stringify({ ...snapshot, completedRound })
 
   // A launcher that fails one update must not hold back the next.
   writing = writing.catch(() => undefined).then(async () => await Widgets?.update(json))
@@ -13,9 +20,17 @@ export function updateWidgets(snapshot: WidgetSnapshot) {
   return writing
 }
 
-/** Tasks checked off in a widget since the app last asked, once each. */
-export function takeWidgetCompletions() {
-  return Widgets?.takeCompletions() ?? []
+/**
+ * Completes the tasks checked off in a widget since the app last asked, once each. `complete`
+ * must write synchronously, so that every snapshot built after this returns shows them done.
+ */
+export function completeWidgetTasks(complete: (taskId: string) => void) {
+  const taken = Widgets?.takeCompletions()
+
+  if (!taken) return
+
+  for (const taskId of taken.taskIds) complete(taskId)
+  completedRound = taken.round
 }
 
 /** Called when a task is checked off in a widget while the app runs. */

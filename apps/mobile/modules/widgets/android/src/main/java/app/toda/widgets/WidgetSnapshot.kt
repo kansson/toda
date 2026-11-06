@@ -11,6 +11,8 @@ import org.json.JSONObject
 private const val PREFERENCES = "toda-widgets"
 private const val SNAPSHOT_KEY = "snapshot"
 private const val COMPLETED_KEY = "completed"
+private const val TAKEN_KEY = "taken"
+private const val ROUND_KEY = "taken-round"
 private const val SOURCE_PREFIX = "source-"
 private const val SORT_PREFIX = "sort-"
 
@@ -116,13 +118,22 @@ private fun show(context: Context, snapshot: WidgetSnapshot) {
 
 /**
  * Keeps what the app sent, leaving out tasks checked off in a widget that the app has not
- * completed yet, so a snapshot written in between never brings them back.
+ * completed yet, so a snapshot written in between never brings them back. That holds for those
+ * the app has taken too, until it sends a snapshot built once it had completed them: one built
+ * before, but written after, still shows them open. `completedRound` in the JSON is the last
+ * round of [takePendingCompletions] the app had completed as it built the snapshot.
  */
 @Synchronized
 internal fun storeSnapshot(context: Context, json: String) {
-  val visible = parseSnapshot(JSONObject(json)).without(pendingCompletions(context))
+  val root = JSONObject(json)
+  val completedRound = root.optInt("completedRound", -1)
+  val taken = takenCompletions(context).filterValues { it > completedRound }
+  val visible = parseSnapshot(root).without(pendingCompletions(context) + taken.keys)
 
-  preferences(context).edit().putString(SNAPSHOT_KEY, encodeSnapshot(visible).toString()).apply()
+  preferences(context).edit()
+    .putString(SNAPSHOT_KEY, encodeSnapshot(visible).toString())
+    .putString(TAKEN_KEY, encodeTaken(taken))
+    .apply()
   show(context, visible)
 }
 
@@ -184,17 +195,40 @@ internal fun recordCompletion(context: Context, taskId: String) {
   show(context, visible)
 }
 
-/** The tasks checked off in widgets since the app last took them, once. */
-@Synchronized
-internal fun takePendingCompletions(context: Context): List<String> {
-  val pending = pendingCompletions(context)
-  preferences(context).edit().remove(COMPLETED_KEY).apply()
+/** Tasks checked off in widgets, taken by the app in one round. */
+internal data class TakenCompletions(val taskIds: List<String>, val round: Int)
 
-  return pending.toList()
+/**
+ * The tasks checked off in widgets since the app last took them, once, and the round they were
+ * taken in. They stay off the widgets until the app sends a snapshot of that round or later.
+ */
+@Synchronized
+internal fun takePendingCompletions(context: Context): TakenCompletions {
+  val prefs = preferences(context)
+  val pending = pendingCompletions(context)
+  val round = prefs.getInt(ROUND_KEY, 0) + if (pending.isEmpty()) 0 else 1
+  val taken = takenCompletions(context) + pending.associateWith { round }
+
+  prefs.edit()
+    .remove(COMPLETED_KEY)
+    .putInt(ROUND_KEY, round)
+    .putString(TAKEN_KEY, encodeTaken(taken))
+    .apply()
+
+  return TakenCompletions(pending.toList(), round)
 }
 
 private fun pendingCompletions(context: Context): Set<String> =
   preferences(context).getStringSet(COMPLETED_KEY, emptySet())?.toSet() ?: emptySet()
+
+/** Tasks the app has taken but not yet sent a snapshot after completing, by round. */
+private fun takenCompletions(context: Context): Map<String, Int> =
+  runCatching {
+    val stored = JSONObject(preferences(context).getString(TAKEN_KEY, null) ?: "{}")
+    stored.keys().asSequence().associateWith { stored.getInt(it) }
+  }.getOrDefault(emptyMap())
+
+private fun encodeTaken(taken: Map<String, Int>) = JSONObject(taken).toString()
 
 private fun parseTask(task: JSONObject) = WidgetTask(
   id = task.optString("id"),

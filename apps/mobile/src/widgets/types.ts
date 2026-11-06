@@ -25,7 +25,10 @@ export type WidgetSource = {
   orders: Record<ListSort, string[]>
 }
 
-/** Everything the widgets draw (`modules/widgets`, `WidgetSnapshot.kt`), in the app's language. */
+/**
+ * Everything the widgets draw (`modules/widgets`, `WidgetSnapshot.kt`), in the app's language.
+ * `updateWidgets` adds `completedRound`, which `storeSnapshot` reads and does not keep.
+ */
 export type WidgetSnapshot = {
   /** Opens a new task from the New task widget. */
   newTaskLink: string

@@ -49,7 +49,9 @@
   also its reconfigure screen) by its widget id; the app writes every source's tasks in every sort
   (`src/widgets/snapshot.ts`), so the widget only picks an order and never sorts itself; a widget pinned from Settings gets the choice made
   there through the pin's callback (`PinnedWidgetReceiver`). A check box records the task
-  natively and the app completes it through `takeCompletions`. All text reaches them translated
+  natively and the app completes it through `takeCompletions` once the tasks have loaded; the
+  widgets keep it hidden until a snapshot carries the round it was taken in (`completedRound`), so
+  build snapshots from the collections, never a render's copy. All text reaches them translated
   in the snapshot, with fallbacks in the module's string resources.
 - Colour roles follow Material 3: screens on `surface`, cards on `surfaceContainerHigh`, sheets on
   `surfaceContainerLow`; colour comes from the dynamic palette.

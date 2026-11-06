@@ -16,6 +16,10 @@ import io.github.expo.modules.v2.react.androidContext
 @Record
 class WidgetSignal
 
+/** Tasks checked off in widgets, taken in one round. */
+@Record
+data class WidgetCompletions(val taskIds: List<String>, val round: Int)
+
 /** Reports widget check boxes to a running app; set while the module is loaded. */
 internal object WidgetEvents {
   @Volatile var completed: (() -> Unit)? = null
@@ -54,9 +58,13 @@ class WidgetsModule : Module() {
     NewTaskWidget().updateAll(androidContext)
   }
 
-  /** The ids of tasks checked off in widgets since the last call, once. */
+  /**
+   * The ids of tasks checked off in widgets since the last call, once, and the round they were
+   * taken in; the widgets keep them hidden until a snapshot says it was built after that round.
+   */
   @JS
-  fun takeCompletions(): List<String> = takePendingCompletions(androidContext)
+  fun takeCompletions(): WidgetCompletions =
+    takePendingCompletions(androidContext).let { WidgetCompletions(it.taskIds, it.round) }
 
   /**
    * Asks the launcher to add a widget (`tasks` or `newTask`); false where it cannot. A list widget
