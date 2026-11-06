@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import { useEffect, useMemo, useRef } from 'react'
 import { Appearance, AppState } from 'react-native'
 import { z } from 'zod'
-import { useActions } from '@/data/provider'
+import { useActions, useData } from '@/data/provider'
 import { useAllTasks, useLists, useToday } from '@/data/queries'
 import { scheduleReminders } from '@/reminders/notifications'
 import { respondToReminder } from '@/reminders/respond'
@@ -43,6 +43,7 @@ export function AppSync() {
   const { i18n, t } = useLingui()
   const router = useRouter()
   const actions = useActions()
+  const { db } = useData()
   const tasks = useAllTasks()
   const today = useToday()
   const preferences = usePreferences()
@@ -163,10 +164,23 @@ export function AppSync() {
   }, [tasks, lists, today, i18n, t])
 
   // Tasks checked off in a widget are completed here, with their repeat and sync: at once while
-  // the app runs, and on its next start or return for those checked off while it did not.
+  // the app runs, and on its next start or return for those checked off while it did not. They
+  // are taken only once the phone's copy has loaded: taking them hands them over for good, and a
+  // task not loaded yet cannot be completed, so on a cold start it came back in the app and, with
+  // the next snapshot, in the widget.
   useEffect(() => {
+    let alive = true
+
     const complete = () => {
-      for (const taskId of takeWidgetCompletions()) actionsRef.current.complete(taskId)
+      db.tasks.preload().then(
+        () => {
+          if (!alive) return
+
+          for (const taskId of takeWidgetCompletions()) actionsRef.current.complete(taskId)
+        },
+        // Left in the widget's keeping; the next start or return takes them.
+        () => undefined,
+      )
     }
 
     complete()
@@ -177,10 +191,11 @@ export function AppSync() {
     })
 
     return () => {
+      alive = false
       stop()
       subscription.remove()
     }
-  }, [])
+  }, [db])
 
   // The widgets take the new palette when the phone switches between light and dark.
   useEffect(() => {
