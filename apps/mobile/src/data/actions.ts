@@ -1,4 +1,4 @@
-import { completionMoment, planCompletion, planReopen } from '@/tasks/completion'
+import { checkedOff, completionMoment, planCompletion, planReopen } from '@/tasks/completion'
 import { type CalendarDate, localDate } from '@/tasks/dates'
 import { type List, type ListSort, newTask, type NewTask, type Task } from '@/tasks/model'
 import { bottomPosition, placeInOrder, topPosition } from '@/tasks/positions'
@@ -208,16 +208,22 @@ export function createActions(db: Db, onRefused: () => void) {
     },
 
     /**
-     * Checks a task off, as done today or on an earlier `day`; a repeating one gets its next
-     * occurrence, counted from that day where its repeat counts from completion.
+     * Checks a task off, as done today, on an earlier `day`, or at the moment `checkedAt` it was
+     * checked off somewhere the app only hears of later, as in a widget; a repeating one gets its
+     * next occurrence, counted from that day where its repeat counts from completion.
      */
-    complete(id: string, day: CalendarDate | null = null): Completion | null {
+    complete(
+      id: string,
+      day: CalendarDate | null = null,
+      checkedAt: number | null = null,
+    ): Completion | null {
       const task = tasks.get(id)
 
       if (!task || task.completedAt !== null) return null
       const current = now()
-      const doneOn = day ?? localDate(current)
-      const at = completionMoment(doneOn, current)
+      const checked = checkedAt === null ? null : checkedOff(checkedAt, current)
+      const doneOn = day ?? checked?.day ?? localDate(current)
+      const at = checked?.at ?? completionMoment(doneOn, current)
       const plan = planCompletion(task, subtasksOf(id), current, newId, doneOn)
 
       complete({ ids: plan.complete, at, spawn: plan.spawn })

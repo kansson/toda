@@ -178,7 +178,9 @@ export function AppSync() {
         () => {
           if (!alive) return
 
-          completeWidgetTasks((taskId) => actionsRef.current.complete(taskId))
+          completeWidgetTasks((taskId, checkedAt) =>
+            actionsRef.current.complete(taskId, null, checkedAt),
+          )
         },
         // Left in the widget's keeping; the next start or return takes them.
         () => undefined,

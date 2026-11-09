@@ -21,15 +21,16 @@ export function updateWidgets(snapshot: WidgetSnapshot) {
 }
 
 /**
- * Completes the tasks checked off in a widget since the app last asked, once each. `complete`
- * must write synchronously, so that every snapshot built after this returns shows them done.
+ * Completes the tasks checked off in a widget since the app last asked, once each, as done at the
+ * moment each was checked off: the app may take them hours later, past midnight. `complete` must
+ * write synchronously, so that every snapshot built after this returns shows them done.
  */
-export function completeWidgetTasks(complete: (taskId: string) => void) {
+export function completeWidgetTasks(complete: (taskId: string, checkedAt: number) => void) {
   const taken = Widgets?.takeCompletions()
 
   if (!taken) return
 
-  for (const taskId of taken.taskIds) complete(taskId)
+  taken.taskIds.forEach((taskId, index) => complete(taskId, taken.checkedAt[index] ?? Date.now()))
   completedRound = taken.round
 }
 

@@ -43,6 +43,18 @@ export function completionMoment(day: CalendarDate, now: number) {
   return day >= localDate(now) ? now : momentOf(day, localTime(now)).getTime()
 }
 
+/**
+ * When a task checked off at `moment` but completed only `now` was done: on the day it was
+ * checked off, at that moment. A widget's check box is taken by the app when it next runs, maybe
+ * after midnight, and counting that day would skip an occurrence of a repeat. A moment ahead of
+ * the phone's clock counts as now.
+ */
+export function checkedOff(moment: number, now: number) {
+  const at = Math.min(moment, now)
+
+  return { day: localDate(at), at }
+}
+
 /** When a repeating task comes back if it was done on `day`; null when it would not. */
 export function nextDueIfDone(task: Task, day: CalendarDate) {
   return task.repeat && task.dueDate && task.parentId === null
