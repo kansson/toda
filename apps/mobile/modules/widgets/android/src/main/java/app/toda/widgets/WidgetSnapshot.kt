@@ -10,7 +10,10 @@ import org.json.JSONObject
 
 private const val PREFERENCES = "toda-widgets"
 private const val SNAPSHOT_KEY = "snapshot"
-private const val COMPLETED_KEY = "completed"
+/** Tasks checked off before the moment was kept with them; the app takes them as done now. */
+private const val LEGACY_COMPLETED_KEY = "completed"
+/** Tasks checked off and not yet taken, with the moment each was checked off. */
+private const val COMPLETED_KEY = "completed-at"
 private const val TAKEN_KEY = "taken"
 private const val ROUND_KEY = "taken-round"
 private const val SOURCE_PREFIX = "source-"
@@ -128,7 +131,7 @@ internal fun storeSnapshot(context: Context, json: String) {
   val root = JSONObject(json)
   val completedRound = root.optInt("completedRound", -1)
   val taken = takenCompletions(context).filterValues { it > completedRound }
-  val visible = parseSnapshot(root).without(pendingCompletions(context) + taken.keys)
+  val visible = parseSnapshot(root).without(pendingCompletions(context).keys + taken.keys)
 
   preferences(context).edit()
     .putString(SNAPSHOT_KEY, encodeSnapshot(visible).toString())
@@ -181,22 +184,29 @@ private fun loadChoices(context: Context): Map<Int, WidgetChoice> {
   return (sources.keys + sorts.keys).associateWith { WidgetChoice(sources[it], sorts[it]) }
 }
 
-/** A task checked off in a widget: hidden there at once, completed by the app when it runs. */
+/**
+ * A task checked off in a widget at `at` (epoch milliseconds): hidden there at once, completed by
+ * the app when it runs, as done at that moment however much later that is.
+ */
 @Synchronized
-internal fun recordCompletion(context: Context, taskId: String) {
+internal fun recordCompletion(context: Context, taskId: String, at: Long) {
   val prefs = preferences(context)
-  val pending = pendingCompletions(context) + taskId
+  val earlier = pendingCompletions(context)
+  val pending = earlier + (taskId to (earlier[taskId] ?: at))
   val visible = snapshotState(context).value.without(setOf(taskId))
 
   prefs.edit()
-    .putStringSet(COMPLETED_KEY, pending)
+    .putString(COMPLETED_KEY, JSONObject(pending).toString())
     .putString(SNAPSHOT_KEY, encodeSnapshot(visible).toString())
     .apply()
   show(context, visible)
 }
 
-/** Tasks checked off in widgets, taken by the app in one round. */
-internal data class TakenCompletions(val taskIds: List<String>, val round: Int)
+/**
+ * Tasks checked off in widgets, taken by the app in one round, with the moment each was checked
+ * off (epoch milliseconds) at the same index.
+ */
+internal data class TakenCompletions(val taskIds: List<String>, val checkedAt: List<Long>, val round: Int)
 
 /**
  * The tasks checked off in widgets since the app last took them, once, and the round they were
@@ -207,19 +217,35 @@ internal fun takePendingCompletions(context: Context): TakenCompletions {
   val prefs = preferences(context)
   val pending = pendingCompletions(context)
   val round = prefs.getInt(ROUND_KEY, 0) + if (pending.isEmpty()) 0 else 1
-  val taken = takenCompletions(context) + pending.associateWith { round }
+  val taken = takenCompletions(context) + pending.keys.associateWith { round }
 
   prefs.edit()
     .remove(COMPLETED_KEY)
+    .remove(LEGACY_COMPLETED_KEY)
     .putInt(ROUND_KEY, round)
     .putString(TAKEN_KEY, encodeTaken(taken))
     .apply()
 
-  return TakenCompletions(pending.toList(), round)
+  val entries = pending.entries.toList()
+
+  return TakenCompletions(entries.map { it.key }, entries.map { it.value }, round)
 }
 
-private fun pendingCompletions(context: Context): Set<String> =
-  preferences(context).getStringSet(COMPLETED_KEY, emptySet())?.toSet() ?: emptySet()
+/**
+ * Tasks checked off in widgets and not yet taken, with the moment each was checked off; one
+ * stored before moments were kept counts as checked off now.
+ */
+private fun pendingCompletions(context: Context): Map<String, Long> {
+  val prefs = preferences(context)
+  val now = System.currentTimeMillis()
+  val legacy = prefs.getStringSet(LEGACY_COMPLETED_KEY, emptySet())?.associateWith { now } ?: emptyMap()
+  val stored = runCatching {
+    val json = JSONObject(prefs.getString(COMPLETED_KEY, null) ?: "{}")
+    json.keys().asSequence().associateWith { json.getLong(it) }
+  }.getOrDefault(emptyMap())
+
+  return legacy + stored
+}
 
 /** Tasks the app has taken but not yet sent a snapshot after completing, by round. */
 private fun takenCompletions(context: Context): Map<String, Int> =

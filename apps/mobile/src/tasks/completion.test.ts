@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   asksDoneDay,
+  checkedOff,
   completionMoment,
   doneDayChoices,
   nextDueIfDone,
@@ -95,6 +96,33 @@ describe('a late repeating task done on an earlier day', () => {
   it('is recorded at the same time of day on the day it was done', () => {
     expect(completionMoment('2026-11-03', now)).toBe(now)
     expect(completionMoment('2026-11-02', now)).toBe(momentOf('2026-11-02', '10:00').getTime())
+  })
+})
+
+describe('a task checked off in a widget and completed later', () => {
+  const evening = momentOf('2026-11-08', '22:30').getTime()
+  const afterMidnight = momentOf('2026-11-09', '00:24').getTime()
+
+  it('counts the day and moment it was checked off, not when the app took it', () => {
+    expect(checkedOff(evening, afterMidnight)).toEqual({ day: '2026-11-08', at: evening })
+  })
+
+  it('comes back the next day, not the day after', () => {
+    const daily = task('p', { dueDate: '2026-11-08', repeat: defaultRepeat('day') })
+
+    const fixed = task('f', {
+      dueDate: '2026-11-08',
+      repeat: { ...defaultRepeat('day'), anchor: 'due' },
+    })
+
+    const { day } = checkedOff(evening, afterMidnight)
+
+    expect(nextDueIfDone(daily, day)).toBe('2026-11-09')
+    expect(nextDueIfDone(fixed, day)).toBe('2026-11-09')
+  })
+
+  it('counts a moment ahead of the clock as now', () => {
+    expect(checkedOff(afterMidnight, evening)).toEqual({ day: '2026-11-08', at: evening })
   })
 })
 

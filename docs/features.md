@@ -100,7 +100,9 @@ calendar, each saying when the task comes back if that day is taken. A daily tas
 yesterday and marked done on yesterday comes back today, where marking it done today would bring
 tomorrow's; the done occurrence is recorded on that day. Closing the
 sheet leaves the task open. A widget's check box and a notification's Mark done cannot ask, so
-they count today (`tasks/completion.ts`).
+they count the day they were tapped (`tasks/completion.ts`): a widget keeps the moment of each
+check-off, so a task checked off on Sunday evening and taken by the app after midnight is still done
+on Sunday.
 
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.
@@ -153,7 +155,8 @@ a panel whose top corners curve down into it. A task's row shows every line of i
   tasks and the empty state included, opens the app as its icon does, with one ripple across the
   whole card. Tasks that fit stand still; more scroll, where it was left. A task's check box
   takes it off every widget at once, natively; the app completes it, with its repeat and sync, at
-  once while it runs and otherwise on its next start or return, and + adds a task to it. Every
+  once while it runs and otherwise on its next start or return, as done when it was checked off,
+  and + adds a task to it. Every
   colour is a dynamic Material 3
   role, light or dark with the system, and the widget picker shows a preview in the same roles.
 - Settings → Home screen widget → **Add to home screen** asks what it should show, then asks the

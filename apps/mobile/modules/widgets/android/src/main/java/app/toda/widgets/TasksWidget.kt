@@ -267,13 +267,14 @@ private val TASK_ID = ActionParameters.Key<String>("taskId")
 
 /**
  * A task checked off in the widget: it leaves every widget at once, and the app completes it,
- * with its repeat and its sync, the moment it runs; while it runs, at once.
+ * with its repeat and its sync, the moment it runs; while it runs, at once. It counts as done when
+ * it was checked off, so one taken after midnight still counts the day before.
  */
 class CompleteTaskAction : ActionCallback {
   override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
     val taskId = parameters[TASK_ID] ?: return
 
-    recordCompletion(context, taskId)
+    recordCompletion(context, taskId, System.currentTimeMillis())
     TasksWidget().updateAll(context)
     WidgetEvents.completed?.invoke()
   }
