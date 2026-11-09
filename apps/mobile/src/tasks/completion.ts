@@ -6,17 +6,21 @@ import { nextOccurrence } from './recurrence'
 const DONE_DAY_CHOICES = 7
 
 /**
+ * The day after which checking a task off asks which day it was done: a repeating top-level
+ * task's date; null for any other. The widgets get it to decide for themselves once it passes.
+ */
+export function asksDoneDayAfter(task: Task): CalendarDate | null {
+  return task.parentId === null && task.repeat !== null ? task.dueDate : null
+}
+
+/**
  * Whether checking a task off asks which day it was done: a repeating task whose date has passed,
  * where that day decides when it comes back and whether it counts as kept.
  */
 export function asksDoneDay(task: Task, today: CalendarDate) {
-  return (
-    task.completedAt === null &&
-    task.parentId === null &&
-    task.repeat !== null &&
-    task.dueDate !== null &&
-    task.dueDate < today
-  )
+  const after = asksDoneDayAfter(task)
+
+  return task.completedAt === null && after !== null && after < today
 }
 
 /**

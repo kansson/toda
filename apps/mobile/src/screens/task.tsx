@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DatePicker, TimePicker } from '@/components/date-pickers'
 import { RepeatEditor } from '@/components/repeat-editor'
 import { useTaskCommands } from '@/components/task-commands'
@@ -43,7 +43,8 @@ export function TaskScreen() {
   const { t } = useLingui()
   const router = useRouter()
   const colors = useMaterialColors()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  // `done` comes from a late repeating task's check box in a widget (`/done/<id>`).
+  const { id, done: checkedInWidget } = useLocalSearchParams<{ id: string; done?: string }>()
   const actions = useActions()
   const commands = useTaskCommands()
   const today = useToday()
@@ -52,6 +53,19 @@ export function TaskScreen() {
 
   const { task, subtasks } = useTask(id)
   const [overlay, setOverlay] = useState<Overlay>(null)
+
+  // Checked off in a widget: checked off here once it has loaded, so a late repeating task asks
+  // which day it was done and, once told, the page goes back to the tasks; closing the question
+  // leaves it open on its page. One done since is left as it is.
+  const checkedOff = useRef(false)
+
+  useEffect(() => {
+    if (checkedInWidget !== '1' || !task || checkedOff.current) return
+    checkedOff.current = true
+    router.setParams({ done: undefined })
+
+    if (task.completedAt === null) commands.toggle(task, () => router.back())
+  }, [checkedInWidget, task, commands, router])
 
   const pickList = useListPicker(lists.length > 0, () => setOverlay('list'))
 
