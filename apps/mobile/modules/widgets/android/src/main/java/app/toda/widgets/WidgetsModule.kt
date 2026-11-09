@@ -46,10 +46,11 @@ class WidgetsModule : Module() {
     WidgetEvents.completed = null
   }
 
-  /** Stores the snapshot (JSON) and redraws every widget. */
+  /** Stores the snapshot (JSON) and redraws every widget, and again just after midnight. */
   @JS
   suspend fun update(snapshot: String) {
     storeSnapshot(androidContext, snapshot)
+    scheduleDayChange(androidContext)
     TasksWidget().updateAll(androidContext)
     NewTaskWidget().updateAll(androidContext)
   }

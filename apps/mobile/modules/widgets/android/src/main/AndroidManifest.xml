@@ -27,6 +27,10 @@
     <receiver
       android:name="app.toda.widgets.PinnedWidgetReceiver"
       android:exported="false" />
+    <!-- Redraws the list widgets just after midnight, as tasks turn late. -->
+    <receiver
+      android:name="app.toda.widgets.DayChangeReceiver"
+      android:exported="false" />
     <!-- One tap to a new task. -->
     <receiver
       android:name="app.toda.widgets.NewTaskWidgetReceiver"

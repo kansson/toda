@@ -30,7 +30,15 @@ internal data class WidgetTask(
   val due: String,
   val overdue: Boolean,
   val starred: Boolean,
-)
+  /**
+   * A repeating task's date (`YYYY-MM-DD`), empty for any other: once it has passed, its check
+   * box asks in the app which day it was done.
+   */
+  val asksAfter: String,
+) {
+  /** Whether checking it off on `today` (`YYYY-MM-DD`) asks in the app which day it was done. */
+  fun asksDoneDay(today: String) = asksAfter.isNotEmpty() && asksAfter < today
+}
 
 /** A sort a widget can be given, named as the app's sort sheet names it. */
 internal data class WidgetSort(val key: String, val label: String)
@@ -75,6 +83,8 @@ internal data class WidgetSnapshot(
   val newTaskLink: String,
   /** A task's page, with the task's id after it; empty opens the app instead. */
   val taskLink: String,
+  /** Asks in the app which day a late repeating task was done, with its id after it; empty for none. */
+  val doneLink: String,
   val labels: WidgetLabels,
   /** Today, Starred and every list, in the order the app shows them. */
   val sources: List<WidgetSource>,
@@ -262,6 +272,7 @@ private fun parseTask(task: JSONObject) = WidgetTask(
   due = task.optString("due"),
   overdue = task.optBoolean("overdue"),
   starred = task.optBoolean("starred"),
+  asksAfter = task.optString("asksAfter"),
 )
 
 private fun parseOrders(orders: JSONObject?): Map<String, List<String>> {
@@ -281,6 +292,7 @@ private fun parseSnapshot(root: JSONObject): WidgetSnapshot {
   return WidgetSnapshot(
     newTaskLink = root.optString("newTaskLink"),
     taskLink = root.optString("taskLink"),
+    doneLink = root.optString("doneLink"),
     labels = WidgetLabels(
       emptyTitle = labels.optString("emptyTitle"),
       newTask = labels.optString("newTask"),
@@ -318,6 +330,7 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
           .put("due", task.due)
           .put("overdue", task.overdue)
           .put("starred", task.starred)
+          .put("asksAfter", task.asksAfter)
       )
     }
     val orders = JSONObject()
@@ -338,6 +351,7 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
   return JSONObject()
     .put("newTaskLink", snapshot.newTaskLink)
     .put("taskLink", snapshot.taskLink)
+    .put("doneLink", snapshot.doneLink)
     .put(
       "labels",
       JSONObject()
@@ -356,6 +370,7 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
 private fun fallbackSnapshot(context: Context) = WidgetSnapshot(
   newTaskLink = "",
   taskLink = "",
+  doneLink = "",
   labels = WidgetLabels(
     emptyTitle = context.getString(R.string.toda_widget_empty_title),
     newTask = context.getString(R.string.toda_widget_new_task),

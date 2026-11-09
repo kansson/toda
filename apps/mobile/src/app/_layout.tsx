@@ -117,6 +117,7 @@ function AppProviders() {
               {/* A link's stand-in for the new task's page, replaced by it without a slide. */}
               <Stack.Screen name='add' options={{ animation: 'none' }} />
               <Stack.Screen name='open/[id]' options={{ animation: 'none' }} />
+              <Stack.Screen name='done/[id]' options={{ animation: 'none' }} />
             </Stack>
             <UpdateAlert />
           </Data>

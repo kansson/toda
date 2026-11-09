@@ -10,6 +10,7 @@ import { useAllTasks, useLists, useToday } from '@/data/queries'
 import { scheduleReminders } from '@/reminders/notifications'
 import { respondToReminder } from '@/reminders/respond'
 import { usePreferences } from '@/settings/preferences'
+import { asksDoneDayAfter } from '@/tasks/completion'
 import type { ListSort, Task } from '@/tasks/model'
 import { sharedTask } from '@/tasks/share'
 import { listSorts } from '@/tasks/views'
@@ -96,6 +97,7 @@ export function AppSync() {
         due: dueLabel(task, today),
         overdue: isOverdue(task, today),
         starred: task.starredAt !== null,
+        asksAfter: asksDoneDayAfter(task) ?? '',
       })
 
       const source = (
@@ -150,6 +152,7 @@ export function AppSync() {
       void updateWidgets({
         newTaskLink: link('add'),
         taskLink: link('open/'),
+        doneLink: link('done/'),
         labels: {
           emptyTitle: t({ message: 'No tasks', comment: 'Widget with no open tasks' }),
           newTask: t({ message: 'New task', comment: 'Widget button adding a task' }),

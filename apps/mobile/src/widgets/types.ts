@@ -8,6 +8,11 @@ export type WidgetTask = {
   due: string
   overdue: boolean
   starred: boolean
+  /**
+   * A repeating task's date (`YYYY-MM-DD`), empty for any other: once it has passed, the check
+   * box opens `doneLink` to ask in the app which day it was done, rather than completing it.
+   */
+  asksAfter: string
 }
 
 /** What one list widget can show: Today, Starred or a list, with its open tasks. */
@@ -34,6 +39,8 @@ export type WidgetSnapshot = {
   newTaskLink: string
   /** A task's page, with the task's id after it, for a tap on a task in a widget. */
   taskLink: string
+  /** Asks in the app which day a late repeating task was done, with the task's id after it. */
+  doneLink: string
   labels: {
     emptyTitle: string
     newTask: string

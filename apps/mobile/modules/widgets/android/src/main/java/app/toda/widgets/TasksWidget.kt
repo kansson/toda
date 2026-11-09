@@ -57,7 +57,8 @@ import androidx.glance.text.TextStyle
  * The list widget: Today, Starred or a list in a sort, chosen as it is placed
  * (`TasksWidgetConfigureActivity`) and changed by reconfiguring it, under its title with its open
  * tasks as cards. A task's check box
- * completes it right away, without opening the app, and + adds a task to it; a tap anywhere else
+ * completes it right away, without opening the app, unless it is a late repeating task, which
+ * asks in the app which day it was done; + adds a task to it; a tap anywhere else
  * opens the app as its icon does. Every colour is a dynamic Material 3 role from the wallpaper,
  * light or dark with the system.
  */
@@ -66,21 +67,28 @@ class TasksWidget : GlanceAppWidget() {
 
   override suspend fun provideGlance(context: Context, id: GlanceId) {
     val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
+    val today = todayState()
 
     provideContent {
       GlanceTheme(DynamicThemeColorProviders) {
         val snapshot by snapshotState(context).collectAsState()
         val choices by choiceState(context).collectAsState()
+        val date by today.collectAsState()
         val choice = choices[widgetId] ?: WidgetChoice()
         val source = snapshot.source(choice.source)
-        TasksContent(snapshot, source, source?.tasksIn(choice.sort).orEmpty())
+        TasksContent(snapshot, source, source?.tasksIn(choice.sort).orEmpty(), date)
       }
     }
   }
 }
 
 @Composable
-private fun TasksContent(snapshot: WidgetSnapshot, source: WidgetSource?, tasks: List<WidgetTask>) {
+private fun TasksContent(
+  snapshot: WidgetSnapshot,
+  source: WidgetSource?,
+  tasks: List<WidgetTask>,
+  today: String,
+) {
   val context = LocalContext.current
   val colors = GlanceTheme.colors
   // Anywhere but a check box or + opens the app as its icon does, where it was left.
@@ -133,12 +141,12 @@ private fun TasksContent(snapshot: WidgetSnapshot, source: WidgetSource?, tasks:
           // Glance draws at most ten children in a column.
           if (tasks.size <= 10 && needed <= LocalSize.current.height) {
             Column(modifier = GlanceModifier.fillMaxWidth()) {
-              tasks.forEach { task -> TaskCard(task, snapshot.labels, snapshot.taskLink) }
+              tasks.forEach { task -> TaskCard(task, snapshot, today) }
             }
           } else {
             LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
               items(tasks, itemId = { task -> task.id.hashCode().toLong() }) { task ->
-                TaskCard(task, snapshot.labels, snapshot.taskLink)
+                TaskCard(task, snapshot, today)
               }
             }
           }
@@ -165,15 +173,23 @@ private fun rowHeight(task: WidgetTask): Dp {
 
 /**
  * One task on the widget's own background: a round toggle that completes it, its title over when
- * it is due, and a star when it has one. A tap anywhere else opens its page in the app.
+ * it is due, and a star when it has one. A tap anywhere else opens its page in the app. A
+ * repeating task whose date has passed before `today` cannot be completed here: which day it was
+ * done decides when it comes back, so its toggle opens the app to ask.
  */
 @Composable
-private fun TaskCard(task: WidgetTask, labels: WidgetLabels, taskLink: String) {
+private fun TaskCard(task: WidgetTask, snapshot: WidgetSnapshot, today: String) {
   val context = LocalContext.current
   val colors = GlanceTheme.colors
+  val labels = snapshot.labels
   // The task's page in the app, or the app itself before it has said how to reach one.
-  val link = if (taskLink.isEmpty()) "" else taskLink + Uri.encode(task.id)
+  val link = if (snapshot.taskLink.isEmpty()) "" else snapshot.taskLink + Uri.encode(task.id)
   val openTask = actionStartActivity(openIntent(context, link))
+  val check = if (snapshot.doneLink.isNotEmpty() && task.asksDoneDay(today)) {
+    actionStartActivity(openIntent(context, snapshot.doneLink + Uri.encode(task.id)))
+  } else {
+    actionRunCallback<CompleteTaskAction>(actionParametersOf(TASK_ID to task.id))
+  }
 
   Row(
     modifier = GlanceModifier
@@ -188,7 +204,7 @@ private fun TaskCard(task: WidgetTask, labels: WidgetLabels, taskLink: String) {
         .size(48.dp)
         .clickable(
           rippleOverride = R.drawable.toda_widget_check_ripple,
-          onClick = actionRunCallback<CompleteTaskAction>(actionParametersOf(TASK_ID to task.id)),
+          onClick = check,
         )
         .semantics { contentDescription = "${labels.complete}: ${task.title}" },
       contentAlignment = Alignment.Center,
@@ -266,7 +282,7 @@ private fun EmptyTasks(labels: WidgetLabels) {
 private val TASK_ID = ActionParameters.Key<String>("taskId")
 
 /**
- * A task checked off in the widget: it leaves every widget at once, and the app completes it,
+ * A task checked off in the widget, any but a late repeating one: it leaves every widget at once, and the app completes it,
  * with its repeat and its sync, the moment it runs; while it runs, at once. It counts as done when
  * it was checked off, so one taken after midnight still counts the day before.
  */
@@ -286,5 +302,15 @@ class TasksWidgetReceiver : GlanceAppWidgetReceiver() {
   override fun onDeleted(context: Context, appWidgetIds: IntArray) {
     super.onDeleted(context, appWidgetIds)
     forgetSources(context, appWidgetIds)
+  }
+
+  override fun onEnabled(context: Context) {
+    super.onEnabled(context)
+    scheduleDayChange(context)
+  }
+
+  override fun onDisabled(context: Context) {
+    super.onDisabled(context)
+    cancelDayChange(context)
   }
 }

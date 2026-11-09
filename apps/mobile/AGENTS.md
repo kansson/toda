@@ -13,7 +13,9 @@
   transition, and a link opened again must not pile one page on another. Never clear the app's task to open it (`FLAG_ACTIVITY_CLEAR_TASK`): the new activity
   mounts a second React root while the old one is still alive, so two apps run at once (React
   Navigation warns that linking is configured in multiple places). The root layout anchors the stack on `index`, so Back from a linked page returns to
-  the tasks. A tap on a widget task opens its page through `/open/<id>`, a stand-in as `/add` is; a
+  the tasks. A tap on a widget task opens its page through `/open/<id>`, a stand-in as `/add` is, and the check
+  box of a late repeating one through `/done/<id>`, which opens it with `done=1` so the page asks
+  which day it was done; a
   tap anywhere else but a check box or + opens the app with its launch intent, as its icon does,
   never a route: a pushed route would slide in over wherever the app was.
 - `src/tasks/` holds the rules as pure, tested functions (dates, recurrence, completion, views,
@@ -48,7 +50,9 @@
   Each list widget keeps the source and sort chosen as it was placed (`TasksWidgetConfigureActivity`,
   also its reconfigure screen) by its widget id; the app writes every source's tasks in every sort
   (`src/widgets/snapshot.ts`), so the widget only picks an order and never sorts itself; a widget pinned from Settings gets the choice made
-  there through the pin's callback (`PinnedWidgetReceiver`). A check box records the task
+  there through the pin's callback (`PinnedWidgetReceiver`). A task's `asksAfter` and the phone's
+  date (`DayChange.kt`, redrawn just after midnight) decide whether its check box asks in the app;
+  any other check box records the task
   natively and the app completes it through `takeCompletions` once the tasks have loaded; the
   widgets keep it hidden until a snapshot carries the round it was taken in (`completedRound`), so
   build snapshots from the collections, never a render's copy. All text reaches them translated

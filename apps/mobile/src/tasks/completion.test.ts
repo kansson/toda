@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   asksDoneDay,
+  asksDoneDayAfter,
   checkedOff,
   completionMoment,
   doneDayChoices,
@@ -86,6 +87,13 @@ describe('a late repeating task done on an earlier day', () => {
     expect(asksDoneDay({ ...daily, repeat: null }, '2026-11-03')).toBe(false)
     expect(asksDoneDay({ ...daily, parentId: 'q' }, '2026-11-03')).toBe(false)
     expect(asksDoneDay({ ...daily, completedAt: 1 }, '2026-11-03')).toBe(false)
+  })
+
+  it('tells the widgets the day after which it asks', () => {
+    expect(asksDoneDayAfter(daily)).toBe(daily.dueDate)
+    expect(asksDoneDayAfter({ ...daily, repeat: null })).toBeNull()
+    expect(asksDoneDayAfter({ ...daily, parentId: 'q' })).toBeNull()
+    expect(asksDoneDayAfter({ ...daily, dueDate: null })).toBeNull()
   })
 
   it('offers today back to its own date, a week at most', () => {
