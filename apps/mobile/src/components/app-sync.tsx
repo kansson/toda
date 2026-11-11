@@ -10,12 +10,11 @@ import { useAllTasks, useLists, useToday } from '@/data/queries'
 import { scheduleReminders } from '@/reminders/notifications'
 import { respondToReminder } from '@/reminders/respond'
 import { usePreferences } from '@/settings/preferences'
-import { cadenceOf } from '@/tasks/cadence'
 import { asksDoneDayAfter } from '@/tasks/completion'
 import type { ListSort, Task } from '@/tasks/model'
 import { sharedTask } from '@/tasks/share'
 import { listSorts } from '@/tasks/views'
-import { cadenceLabel, dueLabel, isOverdue, sortLabels } from '@/ui/format'
+import { dueLabel, isOverdue, sortLabels } from '@/ui/format'
 import { checkForUpdatesDaily } from '@/updates/app-updates'
 import { sortedTasks, viewTasks, type WidgetView } from '@/widgets/snapshot'
 import {
@@ -89,13 +88,6 @@ export function AppSync() {
     const timer = setTimeout(() => {
       const now = Date.now()
       const current = [...db.tasks.values()]
-      const byId = new Map(current.map((task) => [task.clientId, task]))
-
-      const cadenceText = (task: Task) => {
-        const cadence = task.parentId === null ? null : cadenceOf(task, byId.get(task.parentId))
-
-        return cadence ? cadenceLabel(cadence) : ''
-      }
 
       const widgetTask = (task: Task): WidgetTask => ({
         id: task.clientId,
@@ -107,7 +99,6 @@ export function AppSync() {
         starred: task.starredAt !== null,
         asksAfter: asksDoneDayAfter(task) ?? '',
         parentId: task.parentId ?? '',
-        cadence: cadenceText(task),
       })
 
       const source = (

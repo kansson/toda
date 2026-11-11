@@ -37,8 +37,6 @@ internal data class WidgetTask(
   val asksAfter: String,
   /** A subtask's task, drawn indented under it; empty for a task of its own. */
   val parentId: String = "",
-  /** How often a subtask of a repeating task is due, such as "Once every 3 times"; empty for none. */
-  val cadence: String = "",
 ) {
   val isSubtask get() = parentId.isNotEmpty()
 
@@ -283,7 +281,6 @@ private fun parseTask(task: JSONObject) = WidgetTask(
   starred = task.optBoolean("starred"),
   asksAfter = task.optString("asksAfter"),
   parentId = task.optString("parentId"),
-  cadence = task.optString("cadence"),
 )
 
 private fun parseOrders(orders: JSONObject?): Map<String, List<String>> {
@@ -343,7 +340,6 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
           .put("starred", task.starred)
           .put("asksAfter", task.asksAfter)
           .put("parentId", task.parentId)
-          .put("cadence", task.cadence)
       )
     }
     val orders = JSONObject()

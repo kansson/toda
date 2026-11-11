@@ -160,28 +160,24 @@ private fun TasksContent(
 private val TITLE_BAR = 64.dp
 
 /**
- * A task's height on the widget, at the most: its 48 dp toggle, or its title over its date (or a
- * subtask's cadence) in 10 dp of room each way, with a second line for a title long enough to
- * wrap, sooner for an indented subtask. Rounded up, so tasks that might not fit go in the
- * scrolling list rather than lose their last row.
+ * A task's height on the widget, at the most: its 48 dp toggle, or its title over its date in
+ * 10 dp of room each way, with a second line for a title long enough to wrap, sooner for an
+ * indented subtask. Rounded up, so tasks that might not fit go in the scrolling list rather than
+ * lose their last row.
  */
 private fun rowHeight(task: WidgetTask): Dp {
   val title = if (task.title.length > (if (task.isSubtask) 22 else 26)) 44 else 22
-  val detail = if (task.detail().isEmpty()) 0 else 18
+  val due = if (task.due.isEmpty()) 0 else 18
 
-  return maxOf(48, 20 + title + detail).dp
+  return maxOf(48, 20 + title + due).dp
 }
-
-/** The line under a task's title: when it is due, or how often a subtask is due. */
-private fun WidgetTask.detail() = due.ifEmpty { cadence }
 
 /** How far a subtask is drawn in under its task, as the app's list draws it. */
 private val SUBTASK_INDENT = 32.dp
 
 /**
  * One task on the widget's own background: a round toggle that completes it, its title over when
- * it is due, and a star when it has one; a subtask is drawn in under its task, with how often it
- * is due where it has a cadence. A tap anywhere else opens its page in the app. A
+ * it is due, and a star when it has one; a subtask is drawn in under its task. A tap anywhere else opens its page in the app. A
  * repeating task whose date has passed before `today` cannot be completed here: which day it was
  * done decides when it comes back, so its toggle opens the app to ask.
  */
@@ -233,9 +229,9 @@ private fun TaskCard(task: WidgetTask, snapshot: WidgetSnapshot, today: String) 
         maxLines = 2,
         style = TextStyle(color = colors.onSurface, fontSize = 15.sp, fontWeight = FontWeight.Normal),
       )
-      if (task.detail().isNotEmpty()) {
+      if (task.due.isNotEmpty()) {
         Text(
-          task.detail(),
+          task.due,
           maxLines = 1,
           style = TextStyle(
             color = if (task.overdue) colors.error else colors.onSurfaceVariant,

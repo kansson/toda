@@ -6,10 +6,9 @@ import { useActions } from '@/data/provider'
 import { useLists, useTaskSet, useToday } from '@/data/queries'
 import { fillMaxSize, fillMaxWidth, height } from '@/lib/compose-modifiers'
 import { AnimatedVisibility, Box, EnterTransition, ExitTransition } from '@/lib/compose-ui'
-import { cadenceOf } from '@/tasks/cadence'
 import type { ListSort, Task } from '@/tasks/model'
 import { browseView, type Filter, matchingTasks, type SectionKind } from '@/tasks/views'
-import { cadenceLabel, sectionTitle } from '@/ui/format'
+import { sectionTitle } from '@/ui/format'
 import type { Glyph } from '@/ui/glyphs'
 import { Empty, LoadingPage, SectionHeader } from '@/ui/primitives'
 import { BodyCentre, ReorderList } from '../../modules/ui'
@@ -71,15 +70,6 @@ export function TaskList({
   )
 
   const listTitle = (id: string | null) => lists.find((list) => list.clientId === id)?.title ?? ''
-
-  const byId = new Map(all.map((task) => [task.clientId, task]))
-
-  // How often a subtask is due under its repeating task, where it has a cadence of its own.
-  const cadenceOfRow = (task: Task) => {
-    const cadence = task.parentId === null ? null : cadenceOf(task, byId.get(task.parentId))
-
-    return cadence ? cadenceLabel(cadence) : undefined
-  }
 
   const sections = browseView(
     tasks,
@@ -144,7 +134,6 @@ export function TaskList({
         depth={depth}
         today={today}
         listTitle={named ? listTitle(task.listId) : undefined}
-        cadence={cadenceOfRow(task)}
         onToggle={() => commands.toggle(task)}
         onStar={() => commands.star(task)}
         onOpen={() => commands.open(task)}

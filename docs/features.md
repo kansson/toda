@@ -160,9 +160,8 @@ holds; tapping it folds the group away and back, its rows fading and the rest sl
 A group that holds everything shown and says nothing, such as No date when no task shown has a
 date, goes without one. Changing the view or sort keeps the one list on screen and only moves its
 rows. The main screen's bar and chips sit on a tinted backdrop and stay put; the tasks scroll on
-a panel whose top corners curve down into it. A task's row shows every line of its details, and
-a subtask with a cadence of its own shows it under its title beside the repeat glyph, as a
-repeating task shows its repeat.
+a panel whose top corners curve down into it. A task's row shows every line of its details. A
+subtask's row says nothing of its cadence, which its page and its task's page show.
 
 - **Today**: open tasks dated today or earlier, under Overdue and then Due today.
 - **Upcoming**: open tasks dated later, by day for two weeks, then Later.
@@ -195,8 +194,8 @@ repeating task shows its repeat.
   keeping both; until one is chosen it follows the list's own sort in the app, Today and Starred
   their own order, and a sort sorts Today and Starred within their sections, as the main screen
   does. Each widget keeps its own, so several can show different lists or sorts. Its open tasks sit under its title, in bold beside a tonal +, on its own background, each followed by
-  its open subtasks drawn in under it, as the app lists them, those not due this time left out
-  and a subtask's cadence under its title; each has a
+  its open subtasks drawn in under it, as the app lists them, those not due this time left out;
+  each has a
   round toggle whose ripple is round, as in the app; with none open it shows the done glyph over No tasks, centred under its title. A
   tap on a task opens its page in the app; anywhere else but a toggle or +, the space under the
   tasks and the empty state included, opens the app as its icon does, with one ripple across the
