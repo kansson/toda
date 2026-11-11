@@ -1,13 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useRef, useState } from 'react'
-import {
-  animateContentSize,
-  clickable,
-  clip,
-  composeGeometry,
-  fillMaxWidth,
-  padding,
-} from '@/lib/compose-modifiers'
+import { animateContentSize, clickable, clip, fillMaxWidth, padding } from '@/lib/compose-modifiers'
 import {
   Column,
   Icon,
@@ -184,23 +177,28 @@ export function FieldCards({ rows }: { rows: FieldCardRow[] }) {
   )
 }
 
-export type SubtaskItem = { key: string; title: string; done: boolean }
+export type SubtaskItem = {
+  key: string
+  title: string
+  done: boolean
+  /** Resting this time, as its cadence has it: when it is next due. */
+  waiting?: string | null
+}
 
 /**
  * A task's subtasks as connected cards under a Subtasks card whose + adds one in a dialog. Each
- * has its circle, to check it off where that applies, and a button to remove it.
+ * shows whether it is done by its circle, which only shows (a subtask is checked off on its own
+ * page or in the list), and has a button to remove it. One resting this time is dimmed, with the
+ * upcoming glyph for a circle, and says when it is next due.
  */
 export function SubtaskCards({
   subtasks,
   onAdd,
-  onToggle,
   onOpen,
   onRemove,
 }: {
   subtasks: SubtaskItem[]
   onAdd: (title: string) => void
-  /** Checks a subtask off or on; without it the circles only show. */
-  onToggle?: (key: string) => void
   onOpen?: (key: string) => void
   onRemove: (key: string) => void
 }) {
@@ -235,50 +233,61 @@ export function SubtaskCards({
           </IconButton>
         </ListItem.TrailingContent>
       </ListItem>
-      {subtasks.map((subtask, index) => (
-        <ListItem
-          key={subtask.key}
-          colors={{ containerColor: colors.surfaceContainerHigh }}
-          modifiers={[
-            fillMaxWidth(),
-            clip(cardCorners(index + 1, count)),
-            ...(onOpen ? [clickable(() => onOpen(subtask.key))] : []),
-          ]}
-        >
-          <ListItem.LeadingContent>
-            {/* A 24 dp leading icon, as the other cards have, so the rows line up. */}
-            <Icon
-              source={subtask.done ? glyphs.completed : glyphs.open}
-              size={24}
-              tint={subtask.done ? colors.primary : colors.onSurfaceVariant}
-              modifiers={
-                onToggle
-                  ? [
-                      clip(composeGeometry.RoundedCorner(12)),
-                      clickable(() => onToggle(subtask.key)),
-                    ]
-                  : []
-              }
-            />
-          </ListItem.LeadingContent>
-          <ListItem.HeadlineContent>
-            <Text color={subtask.done ? colors.onSurfaceVariant : colors.onSurface}>
-              {subtask.title ||
-                t({ message: '(No title)', comment: 'Shown for a task without a title' })}
-            </Text>
-          </ListItem.HeadlineContent>
-          <ListItem.TrailingContent>
-            <IconButton onClick={() => onRemove(subtask.key)}>
+      {subtasks.map((subtask, index) => {
+        const waiting = subtask.waiting ?? null
+        const dimmed = subtask.done || waiting !== null
+
+        return (
+          <ListItem
+            // Compose reads a ListItem's slots once, so one that starts or stops resting is drawn
+            // afresh with its line under the title.
+            key={`${subtask.key}:${waiting === null ? '' : 'w'}`}
+            colors={{ containerColor: colors.surfaceContainerHigh }}
+            modifiers={[
+              fillMaxWidth(),
+              clip(cardCorners(index + 1, count)),
+              ...(onOpen ? [clickable(() => onOpen(subtask.key))] : []),
+            ]}
+          >
+            <ListItem.LeadingContent>
+              {/* A 24 dp leading icon, as the other cards have, so the rows line up. */}
               <Icon
-                source={glyphs.clear}
-                size={20}
-                tint={colors.onSurfaceVariant}
-                contentDescription={t({ message: 'Delete subtask', comment: 'Removes a subtask' })}
+                source={
+                  waiting !== null ? glyphs.upcoming : subtask.done ? glyphs.completed : glyphs.open
+                }
+                size={24}
+                tint={subtask.done ? colors.primary : colors.onSurfaceVariant}
               />
-            </IconButton>
-          </ListItem.TrailingContent>
-        </ListItem>
-      ))}
+            </ListItem.LeadingContent>
+            <ListItem.HeadlineContent>
+              <Text color={dimmed ? colors.onSurfaceVariant : colors.onSurface}>
+                {subtask.title ||
+                  t({ message: '(No title)', comment: 'Shown for a task without a title' })}
+              </Text>
+            </ListItem.HeadlineContent>
+            {waiting !== null ? (
+              <ListItem.SupportingContent>
+                <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
+                  {waiting}
+                </Text>
+              </ListItem.SupportingContent>
+            ) : null}
+            <ListItem.TrailingContent>
+              <IconButton onClick={() => onRemove(subtask.key)}>
+                <Icon
+                  source={glyphs.clear}
+                  size={20}
+                  tint={colors.onSurfaceVariant}
+                  contentDescription={t({
+                    message: 'Delete subtask',
+                    comment: 'Removes a subtask',
+                  })}
+                />
+              </IconButton>
+            </ListItem.TrailingContent>
+          </ListItem>
+        )
+      })}
       {adding ? (
         <TextDialog
           title={t({ message: 'Add subtask', comment: 'Dialog title' })}

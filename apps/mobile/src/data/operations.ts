@@ -26,6 +26,7 @@ const taskFields = [
   'repeat',
   'seriesId',
   'occurrence',
+  'cadence',
   'createdAt',
 ] as const satisfies (keyof Task)[]
 

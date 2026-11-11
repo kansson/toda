@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
+import { CadenceEditor } from '@/components/cadence-editor'
 import { DatePicker, TimePicker } from '@/components/date-pickers'
 import { RepeatEditor } from '@/components/repeat-editor'
 import { useTaskCommands } from '@/components/task-commands'
@@ -15,11 +16,21 @@ import {
 import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
 import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
-import { Column, FilledTonalButton, Row, Text, useMaterialColors } from '@/lib/compose-ui'
+import { Column, Text, useMaterialColors } from '@/lib/compose-ui'
+import { cadenceOf, nextDue, rests } from '@/tasks/cadence'
 import { localDate } from '@/tasks/dates'
 import { NO_LIST, TITLE_MAX } from '@/tasks/model'
 import { ChoiceDialog, ConfirmDialog, TextDialog } from '@/ui/dialogs'
-import { datePhrase, dayLabel, deadlineLabel, isOverdue, repeatLabel, timeLabel } from '@/ui/format'
+import {
+  cadenceLabel,
+  datePhrase,
+  dayLabel,
+  deadlineLabel,
+  isOverdue,
+  nextDueLabel,
+  repeatLabel,
+  timeLabel,
+} from '@/ui/format'
 import { Empty, Fab } from '@/ui/primitives'
 import { Action, Screen } from '@/ui/screen'
 
@@ -29,6 +40,7 @@ type Overlay =
   | 'time'
   | 'deadline'
   | 'repeat'
+  | 'cadence'
   | 'list'
   | 'delete'
   | 'deadlineRepeat'
@@ -36,8 +48,10 @@ type Overlay =
 
 /**
  * A task's page: its title in the large app bar, renamed in a dialog, then the new task page's
- * cards for its details, list, date, time, repeat and deadline, its subtasks, and Done. Every
- * change is saved as it is made; deleting asks first.
+ * cards for its details, list, date, time, repeat and deadline, its subtasks, and Done. A subtask
+ * of a repeating task has, in their place, when it is due; on its task's page a subtask
+ * resting this time says when its turn is. Every change is saved as it is made; deleting asks
+ * first.
  */
 export function TaskScreen() {
   const { t } = useLingui()
@@ -52,7 +66,11 @@ export function TaskScreen() {
   const lists = useLists()
 
   const { task, subtasks } = useTask(id)
+  // A subtask's task, which decides whether it can have a cadence: only under a repeating one.
+  const { task: parent } = useTask(task?.parentId ?? '')
   const [overlay, setOverlay] = useState<Overlay>(null)
+  // The subtask whose delete button was tapped, asked about before it goes.
+  const [removing, setRemoving] = useState<string | null>(null)
 
   // Checked off in a widget: checked off here once it has loaded, so a late repeating task asks
   // which day it was done and, once told, the page goes back to the tasks; closing the question
@@ -88,6 +106,23 @@ export function TaskScreen() {
   const done = task.completedAt !== null
   const list = lists.find((candidate) => candidate.clientId === task.listId)
   const isSubtask = task.parentId !== null
+  const repeatingParent = isSubtask && parent?.repeat ? parent : undefined
+  const removingSubtask = subtasks.find((subtask) => subtask.clientId === removing)
+
+  const removingTitle =
+    removingSubtask?.title.trim() ||
+    t({ message: '(No title)', comment: 'Shown for a task without a title' })
+
+  const cadence = cadenceOf(task, repeatingParent)
+
+  // When a subtask resting this time is next due, or that it was not due, its task done.
+  const waiting = (subtask: (typeof subtasks)[number]) => {
+    if (!rests(subtask, task, today)) return null
+
+    return done
+      ? t({ message: 'Skipped this time', comment: 'Subtask resting while its task was done' })
+      : nextDueLabel(nextDue(subtask, task, today), today)
+  }
 
   return (
     <Screen
@@ -142,6 +177,27 @@ export function TaskScreen() {
         <FieldCards
           rows={[
             details.row,
+            ...(repeatingParent
+              ? [
+                  {
+                    key: 'cadence',
+                    glyph: 'repeat' as const,
+                    label: t({
+                      message: 'Due every time the task repeats',
+                      comment: 'Subtask field: when it is due, unset',
+                    }),
+                    value: cadence ? cadenceLabel(cadence) : null,
+                    onPress: () => setOverlay('cadence'),
+                    clear: {
+                      label: t({
+                        message: 'Due every time',
+                        comment: 'Makes a subtask due every time its task repeats',
+                      }),
+                      onPress: () => actions.updateTask(task.clientId, { cadence: null }),
+                    },
+                  },
+                ]
+              : []),
             ...(isSubtask
               ? []
               : [
@@ -235,31 +291,20 @@ export function TaskScreen() {
               key: subtask.clientId,
               title: subtask.title,
               done: subtask.completedAt !== null,
+              waiting: waiting(subtask),
             }))}
             onAdd={(value) =>
               actions.createTask({ listId: task.listId, parentId: task.clientId, title: value })
             }
-            onToggle={(key) => {
-              const subtask = subtasks.find((candidate) => candidate.clientId === key)
-
-              if (subtask) commands.toggle(subtask)
-            }}
             onOpen={(key) => router.push({ pathname: '/task/[id]', params: { id: key } })}
-            onRemove={(key) => {
-              const subtask = subtasks.find((candidate) => candidate.clientId === key)
-
-              if (subtask) commands.remove([subtask])
-            }}
+            // Asks first, as deleting the task itself does.
+            onRemove={(key) => setRemoving(key)}
           />
         )}
-        {isSubtask ? (
-          <Row modifiers={[fillMaxWidth()]}>
-            <FilledTonalButton onClick={() => actions.outdent(task.clientId)}>
-              <Text>
-                {t({ message: 'Make a task', comment: 'Turns a subtask into a task of its own' })}
-              </Text>
-            </FilledTonalButton>
-          </Row>
+        {cadence && repeatingParent && !done ? (
+          <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
+            {nextDueLabel(nextDue(task, repeatingParent, today), today)}
+          </Text>
         ) : null}
         {done && task.completedAt ? (
           <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
@@ -317,6 +362,15 @@ export function TaskScreen() {
           onDismiss={() => setOverlay(null)}
         />
       ) : null}
+      {overlay === 'cadence' && repeatingParent ? (
+        <CadenceEditor
+          subtask={task}
+          parent={repeatingParent}
+          today={today}
+          onSave={(next) => actions.updateTask(task.clientId, { cadence: next })}
+          onDismiss={() => setOverlay(null)}
+        />
+      ) : null}
       {overlay === 'deadlineRepeat' ? (
         <ConfirmDialog
           title={t({ message: 'Repeating tasks have no deadline', comment: 'Dialog title' })}
@@ -367,6 +421,18 @@ export function TaskScreen() {
             router.back()
           }}
           onDismiss={() => setOverlay(null)}
+        />
+      ) : null}
+      {removingSubtask ? (
+        <ConfirmDialog
+          title={t({ message: 'Delete subtask?', comment: 'Dialog title' })}
+          message={t({
+            message: `“${removingTitle}” is deleted from every phone.`,
+            comment: 'Deleting a subtask from its task’s page',
+          })}
+          confirmLabel={t({ message: 'Delete', comment: 'Confirms deleting a task' })}
+          onConfirm={() => commands.remove([removingSubtask])}
+          onDismiss={() => setRemoving(null)}
         />
       ) : null}
       {details.dialog}

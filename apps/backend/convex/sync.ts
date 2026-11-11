@@ -6,6 +6,7 @@ import { operationValidator, v, type Infer } from './schema'
 import { MAX_TASKS } from './tasks'
 import { requireUser } from './users'
 import {
+  checkCadence,
   checkDate,
   checkFinite,
   checkListTitle,
@@ -57,6 +58,8 @@ function checkTaskValue(value: Partial<Doc<'tasks'>>) {
   if (value.deadline !== undefined) checkDate(value.deadline, 'Deadline')
 
   if (value.repeat !== undefined) checkRepeat(value.repeat)
+
+  checkCadence(value.cadence)
 
   if (
     value.occurrence !== undefined &&

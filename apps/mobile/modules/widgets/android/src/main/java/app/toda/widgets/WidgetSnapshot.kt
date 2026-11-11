@@ -35,7 +35,11 @@ internal data class WidgetTask(
    * box asks in the app which day it was done.
    */
   val asksAfter: String,
+  /** A subtask's task, drawn indented under it; empty for a task of its own. */
+  val parentId: String = "",
 ) {
+  val isSubtask get() = parentId.isNotEmpty()
+
   /** Whether checking it off on `today` (`YYYY-MM-DD`) asks in the app which day it was done. */
   fun asksDoneDay(today: String) = asksAfter.isNotEmpty() && asksAfter < today
 }
@@ -95,12 +99,15 @@ internal data class WidgetSnapshot(
       ?: sources.firstOrNull { it.key == DEFAULT_SOURCE }
       ?: sources.firstOrNull()
 
+  /** Without the tasks checked off, nor the subtasks of those, which are done with them. */
   fun without(taskIds: Set<String>) =
     copy(
       sources = sources.map { source ->
+        val gone = taskIds + source.tasks.filter { it.parentId in taskIds }.map { it.id }
+
         source.copy(
-          tasks = source.tasks.filterNot { it.id in taskIds },
-          orders = source.orders.mapValues { (_, ids) -> ids.filterNot { it in taskIds } },
+          tasks = source.tasks.filterNot { it.id in gone },
+          orders = source.orders.mapValues { (_, ids) -> ids.filterNot { it in gone } },
         )
       },
     )
@@ -273,6 +280,7 @@ private fun parseTask(task: JSONObject) = WidgetTask(
   overdue = task.optBoolean("overdue"),
   starred = task.optBoolean("starred"),
   asksAfter = task.optString("asksAfter"),
+  parentId = task.optString("parentId"),
 )
 
 private fun parseOrders(orders: JSONObject?): Map<String, List<String>> {
@@ -331,6 +339,7 @@ private fun encodeSnapshot(snapshot: WidgetSnapshot): JSONObject {
           .put("overdue", task.overdue)
           .put("starred", task.starred)
           .put("asksAfter", task.asksAfter)
+          .put("parentId", task.parentId)
       )
     }
     val orders = JSONObject()

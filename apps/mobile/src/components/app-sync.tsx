@@ -98,6 +98,7 @@ export function AppSync() {
         overdue: isOverdue(task, today),
         starred: task.starredAt !== null,
         asksAfter: asksDoneDayAfter(task) ?? '',
+        parentId: task.parentId ?? '',
       })
 
       const source = (

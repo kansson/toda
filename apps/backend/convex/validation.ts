@@ -1,6 +1,6 @@
 import { NOTES_MAX, TITLE_MAX } from './constants'
 import { refusal } from './errors'
-import type { Infer, repeatValidator } from './schema'
+import type { cadenceValidator, Infer, repeatValidator } from './schema'
 
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/u
 
@@ -88,4 +88,30 @@ export function checkRepeat(repeat: Infer<typeof repeatValidator> | null) {
     (!Number.isInteger(repeat.end.count) || repeat.end.count < 1 || repeat.end.count > 9999)
   )
     invalid('Repeat count must be 1 to 9999')
+}
+
+const isWhole = (value: number, min: number, max: number) =>
+  Number.isInteger(value) && value >= min && value <= max
+
+/** A subtask's cadence the app can count with: whole, bounded numbers and real dates. */
+export function checkCadence(cadence: Infer<typeof cadenceValidator> | null | undefined) {
+  if (cadence === null || cadence === undefined) return
+
+  if (cadence.kind === 'every') {
+    if (!isWhole(cadence.count, 1, 999)) invalid('A subtask comes round every 1 to 999 times')
+
+    if (!isWhole(cadence.from, 1, Number.MAX_SAFE_INTEGER))
+      invalid('A subtask’s first time must be a positive whole number')
+
+    return
+  }
+
+  if (!isWhole(cadence.interval, 1, 999)) invalid('A subtask’s interval must be 1 to 999')
+
+  checkDate(cadence.from, 'A subtask’s schedule start')
+  checkDate(cadence.next, 'A subtask’s next date')
+
+  if (cadence.next < cadence.from) invalid('A subtask’s next date is before its schedule starts')
+
+  if (!isWhole(cadence.leeway, 0, 365)) invalid('A subtask’s leeway must be 0 to 365 days')
 }

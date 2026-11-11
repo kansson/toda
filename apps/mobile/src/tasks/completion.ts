@@ -1,3 +1,4 @@
+import { carriedCadence, isDue } from './cadence'
 import { addDays, type CalendarDate, localDate, localTime, momentOf } from './dates'
 import type { Task } from './model'
 import { nextOccurrence } from './recurrence'
@@ -67,7 +68,7 @@ export function nextDueIfDone(task: Task, day: CalendarDate) {
 }
 
 export type CompletionPlan = {
-  /** Tasks to mark done now: the task and its open subtasks. */
+  /** Tasks to mark done now: the task and its open subtasks, but for those resting this time. */
   complete: string[]
   /** The next occurrence of a repeating task, with fresh copies of its subtasks. */
   spawn: Task[]
@@ -76,10 +77,12 @@ export type CompletionPlan = {
 }
 
 /**
- * What checking a task off does. Its open subtasks are done with it. A repeating top-level task
- * gets its next occurrence as a new task in the same place, with its subtasks open again, so the
- * one done stays in Completed with the day it was done. That day is today unless the task was
- * done earlier and only checked off now; a repeat counted from completion counts from it.
+ * What checking a task off does. Its open subtasks are done with it, but for those whose cadence
+ * rests them this time, which stay as they are. A repeating top-level task gets its next
+ * occurrence as a new task in the same place, with its subtasks open again, each carrying its
+ * cadence on, so the one done stays in Completed with the day it was done. That day is today
+ * unless the task was done earlier and only checked off now; a repeat counted from completion
+ * counts from it.
  */
 export function planCompletion(
   task: Task,
@@ -88,9 +91,14 @@ export function planCompletion(
   newId: () => string,
   doneOn: CalendarDate = localDate(now),
 ): CompletionPlan {
+  // Whether each subtask is due is judged as the list showed it, on today's date.
+  const today = localDate(now)
+
   const complete = [
     task.clientId,
-    ...subtasks.flatMap((subtask) => (subtask.completedAt === null ? [subtask.clientId] : [])),
+    ...subtasks.flatMap((subtask) =>
+      subtask.completedAt === null && isDue(subtask, task, today) ? [subtask.clientId] : [],
+    ),
   ]
 
   const nextDue = nextDueIfDone(task, doneOn)
@@ -117,6 +125,7 @@ export function planCompletion(
     clientId: newId(),
     parentId: nextId,
     completedAt: null,
+    cadence: carriedCadence(subtask, task, today, doneOn),
     createdAt: now,
     updatedAt: now,
   }))
@@ -125,31 +134,14 @@ export function planCompletion(
 }
 
 export type ReopenPlan = {
-  /** Tasks to mark open again: the task and the subtasks done with it. */
+  /** Tasks to mark open again: the task and the subtasks done with it, or a subtask's task. */
   reopen: string[]
   /** The occurrence completing it made, while still open: it goes again. */
   remove: string[]
 }
 
-/**
- * What unchecking a done task does: it opens again with the subtasks that were done at the same
- * moment, and a repeating task takes back the next occurrence completing it created, unless that
- * one has been done since.
- */
-export function planReopen(
-  task: Task,
-  subtasks: readonly Task[],
-  all: readonly Task[],
-): ReopenPlan {
-  const reopen = [
-    task.clientId,
-    ...subtasks.flatMap((subtask) =>
-      subtask.completedAt !== null && subtask.completedAt === task.completedAt
-        ? [subtask.clientId]
-        : [],
-    ),
-  ]
-
+/** The open next occurrence completing a repeating task created, which reopening it takes back. */
+function openNextOccurrence(task: Task, all: readonly Task[]) {
   const seriesId = task.seriesId ?? task.clientId
 
   const next = task.repeat
@@ -162,5 +154,34 @@ export function planReopen(
       )
     : undefined
 
-  return { reopen, remove: next ? [next.clientId] : [] }
+  return next ? [next.clientId] : []
+}
+
+/**
+ * What unchecking a done task does: it opens again with the subtasks that were done at the same
+ * moment, and a repeating task takes back the next occurrence completing it created, unless that
+ * one has been done since. A subtask of a done task opens its task again too, as a task is only
+ * done once all its subtasks are; the task's other subtasks stay done.
+ */
+export function planReopen(
+  task: Task,
+  subtasks: readonly Task[],
+  all: readonly Task[],
+): ReopenPlan {
+  const parent =
+    task.parentId === null ? undefined : all.find((other) => other.clientId === task.parentId)
+
+  if (parent !== undefined && parent.completedAt !== null)
+    return { reopen: [task.clientId, parent.clientId], remove: openNextOccurrence(parent, all) }
+
+  const reopen = [
+    task.clientId,
+    ...subtasks.flatMap((subtask) =>
+      subtask.completedAt !== null && subtask.completedAt === task.completedAt
+        ? [subtask.clientId]
+        : [],
+    ),
+  ]
+
+  return { reopen, remove: openNextOccurrence(task, all) }
 }

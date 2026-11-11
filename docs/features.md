@@ -56,9 +56,12 @@ or 24-hour clock.
   floating button marks it done or not done. Then cards: the details, edited in a dialog, the
   list, date, time, repeat and deadline, each set one with a button to clear it, and Subtasks,
   whose + adds one in a dialog. A task's page saves every change as it is made; deleting asks
-  first. Dialogs that take text start with the cursor after what is there. Subtasks are checked off,
-  opened and removed there, and a subtask can be made a task of its own.
+  first. Dialogs that take text start with the cursor after what is there. Subtasks are opened
+  and removed there, removing asking first; their circles only show whether each is done, as a
+  subtask is checked off on its own page or in the list. A subtask stays a subtask.
 - Completing a task completes its open subtasks. Reopening it reopens those done with it.
+  Reopening a subtask of a done task, as from Completed, reopens the task too, since a task is
+  done only once all its subtasks are; its other subtasks stay done.
   Completing and deleting show a snackbar with Undo.
 - Tasks move to another list with their subtasks from the list card on a task's page, which picks
   among the lists and is cleared with its button to leave the task in none. With no lists it says
@@ -111,17 +114,59 @@ still done on Sunday.
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.
 
+### Subtasks of a repeating task (`tasks/cadence.ts`)
+
+Not in Google Tasks. A subtask of a repeating task is due every time by default; its page has a
+**Due every time the task repeats** card that chooses otherwise, in a sheet laid out as the
+repeat sheet (**When it’s due**), its answer and when the subtask is next due spelled out at the
+bottom:
+
+- **Every few times**: once every N times the task repeats, starting this time or a few times
+  on. Changing the filter on every third cleaning.
+- **On its own schedule**: every N days, weeks, months or years. Its dates are **fixed** (the
+  default, from a first date chosen in the sheet) or, with Fixed schedule off, each counts from
+  the day it was last done. Each date lands on one of the task's, chosen in a dialog that says
+  what each choice does:
+  - **Closest date**: whichever is nearer, the earlier on a tie.
+  - **Never late**: the task's last date on or before it.
+  - **Never early**: the task's first date on or after it.
+
+  Never late and never early take a **leeway** of days ("Up to 2 days late is fine"): a date that
+  far on the other side takes it instead when that one is nearer. A monthly descaling meant for
+  the 1st on a Saturday chore, never early with three days' leeway, takes the Saturday two days
+  before rather than waiting until the 6th.
+
+  A schedule the task keeps up with anyway, such as a weekly one on a weekly task, says in the
+  sheet that it is due every time anyway.
+
+The task's coming dates are counted as if each is done on its day. A task whose date has passed
+counts from today instead, as it would if done now: whether a subtask is due is judged against
+the date the task would really come back on, which for a task that repeats from when it is done
+is later the later it is done, and a subtask whose own date passed while the task waited is due
+now.
+
+A subtask that is due in the task's current occurrence says so on its page ("Due with the task
+today"). One that is not rests in that occurrence: it is left out of the lists, left open when
+the task is done, and on the task's page dimmed, with the upcoming glyph, saying when it is next
+due ("Skips 3 times, next due on Sat, 28 Nov"), or "Skipped this time" under a done task. Each
+occurrence carries every subtask on; one on its own schedule that was due moves on to its next
+date. A subtask moved to another list on its own, or a task made a subtask, leaves its cadence
+behind.
+
 ## Views and search
 
 These are the chips after the divider; each narrows the tasks of the lists shown, and the sort
-orders tasks within its sections unless it is Relevance.
+orders tasks within its sections unless it is Relevance. In every view a task's subtasks follow
+it, as in its list, and stay with it whatever the sort; a starred subtask shows once in Starred,
+on a row of its own.
 
 Every group of tasks, a view's or a sort's, sits under a compact label with how many tasks it
 holds; tapping it folds the group away and back, its rows fading and the rest sliding into place.
 A group that holds everything shown and says nothing, such as No date when no task shown has a
 date, goes without one. Changing the view or sort keeps the one list on screen and only moves its
 rows. The main screen's bar and chips sit on a tinted backdrop and stay put; the tasks scroll on
-a panel whose top corners curve down into it. A task's row shows every line of its details.
+a panel whose top corners curve down into it. A task's row shows every line of its details. A
+subtask's row says nothing of its cadence, which its page and its task's page show.
 
 - **Today**: open tasks dated today or earlier, under Overdue and then Due today.
 - **Upcoming**: open tasks dated later, by day for two weeks, then Later.
@@ -153,12 +198,15 @@ a panel whose top corners curve down into it. A task's row shows every line of i
   widget's settings on a long press. The same screen sorts it by any of the app's sorts, Save
   keeping both; until one is chosen it follows the list's own sort in the app, Today and Starred
   their own order, and a sort sorts Today and Starred within their sections, as the main screen
-  does. Each widget keeps its own, so several can show different lists or sorts. Its open tasks sit under its title, in bold beside a tonal +, on its own background, each with a
+  does. Each widget keeps its own, so several can show different lists or sorts. Its open tasks sit under its title, in bold beside a tonal +, on its own background, each followed by
+  its open subtasks drawn in under it, as the app lists them, those not due this time left out;
+  each has a
   round toggle whose ripple is round, as in the app; with none open it shows the done glyph over No tasks, centred under its title. A
   tap on a task opens its page in the app; anywhere else but a toggle or +, the space under the
   tasks and the empty state included, opens the app as its icon does, with one ripple across the
   whole card. Tasks that fit stand still; more scroll, where it was left. A task's check box
-  takes it off every widget at once, natively; the app completes it, with its repeat and sync, at
+  takes it off every widget at once, natively, with its subtasks; the app completes it, with its
+  repeat and sync, at
   once while it runs and otherwise on its next start or return, as done when it was checked off.
   A late repeating task's check box instead opens the app to ask which day it was done (see
   Repeating tasks). + adds a task to it. Every

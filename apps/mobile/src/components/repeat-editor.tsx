@@ -40,7 +40,14 @@ import { type CalendarDate, daysInMonth, localDate, parts, weekday } from '@/tas
 import type { Repeat } from '@/tasks/model'
 import { defaultRepeat, fixedRepeat, intervalRepeat, snap } from '@/tasks/recurrence'
 import { ChoiceDialog, TextDialog } from '@/ui/dialogs'
-import { fullDate, ordinalWeekLabel, repeatLabel, weekdayName, weekdaysPhrase } from '@/ui/format'
+import {
+  everyLabel,
+  fullDate,
+  ordinalWeekLabel,
+  repeatLabel,
+  weekdayName,
+  weekdaysPhrase,
+} from '@/ui/format'
 import { type Glyph, glyphs } from '@/ui/glyphs'
 import { cardCorners, SummaryCard } from '@/ui/primitives'
 import { PrimaryAction } from '@/ui/screen'
@@ -72,25 +79,11 @@ function unitWord(unit: Units, count: number) {
 
 const UNITS: Units[] = ['day', 'week', 'month', 'year']
 
-/** How often, as in "Every 3 days". */
-function everyLabel(unit: Units, count: number) {
-  switch (unit) {
-    case 'day':
-      return plural(count, { one: 'Every day', other: 'Every # days' })
-    case 'week':
-      return plural(count, { one: 'Every week', other: 'Every # weeks' })
-    case 'month':
-      return plural(count, { one: 'Every month', other: 'Every # months' })
-    case 'year':
-      return plural(count, { one: 'Every year', other: 'Every # years' })
-  }
-}
-
 /**
  * One of the editor's connected cards, as a task's field cards are: its glyph and value, or what
  * it sets dimmed while unset, with a button to clear a set value; or a control of its own.
  */
-function SettingCard({
+export function SettingCard({
   glyph,
   label,
   value,
@@ -158,7 +151,7 @@ function SettingCard({
  * How often, as a number and a unit chosen together. A new repeat has no number yet and counts in
  * days until another unit is chosen; there is always one.
  */
-function IntervalDialog({
+export function IntervalDialog({
   interval,
   unit,
   onConfirm,

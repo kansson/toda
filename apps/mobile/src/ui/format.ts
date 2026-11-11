@@ -1,6 +1,7 @@
 import { msg, plural, t } from '@lingui/core/macro'
 import { getCalendars, getLocales } from 'expo-localization'
 import { i18n } from '@/i18n'
+import type { Cadence, Lean } from '@/tasks/cadence'
 import { addDays, type CalendarDate, daysBetween, momentOf, parts } from '@/tasks/dates'
 import type { Repeat, Task } from '@/tasks/model'
 import { isEveryWeekday } from '@/tasks/recurrence'
@@ -270,6 +271,154 @@ export function repeatLabel(repeat: Repeat) {
         : null
 
   return [base, anchor, end].filter(Boolean).join(', ')
+}
+
+/** How often, as in "Every 3 days". */
+export function everyLabel(unit: Repeat['unit'], count: number) {
+  switch (unit) {
+    case 'day':
+      return plural(count, { one: 'Every day', other: 'Every # days' })
+    case 'week':
+      return plural(count, { one: 'Every week', other: 'Every # weeks' })
+    case 'month':
+      return plural(count, { one: 'Every month', other: 'Every # months' })
+    case 'year':
+      return plural(count, { one: 'Every year', other: 'Every # years' })
+  }
+}
+
+/** A subtask due once every few times its task repeats, as in "Once every 3 times". */
+export function everyTimesLabel(count: number) {
+  return plural(count, { one: 'Every time', other: 'Once every # times' })
+}
+
+/** Which of its task's dates a subtask on its own schedule lands on, in a word or two. */
+export function leanLabel(lean: Lean) {
+  switch (lean) {
+    case 'closest':
+      return t({
+        message: 'Closest date',
+        comment: 'Subtask schedule: lands on whichever of the task’s dates is nearest its own',
+      })
+    case 'before':
+      return t({
+        message: 'Never late',
+        comment: 'Subtask schedule: lands on the last of the task’s dates on or before its own',
+      })
+    case 'after':
+      return t({
+        message: 'Never early',
+        comment: 'Subtask schedule: lands on the first of the task’s dates on or after its own',
+      })
+  }
+}
+
+/** What each choice of `leanLabel` does, under it in the choice dialog. */
+export function leanDescription(lean: Lean) {
+  switch (lean) {
+    case 'closest':
+      return t({
+        message: 'On whichever of the task’s dates is nearest',
+        comment: 'Explains the Closest date choice of a subtask schedule',
+      })
+    case 'before':
+      return t({
+        message: 'On the task’s last date on or before it',
+        comment: 'Explains the Never late choice of a subtask schedule',
+      })
+    case 'after':
+      return t({
+        message: 'On the task’s first date on or after it',
+        comment: 'Explains the Never early choice of a subtask schedule',
+      })
+  }
+}
+
+/** How far a never-late or never-early subtask may go the other way, as its card says it. */
+export function leewayLabel(lean: Lean, days: number) {
+  return lean === 'after'
+    ? plural(days, { one: 'Up to # day early is fine', other: 'Up to # days early is fine' })
+    : plural(days, { one: 'Up to # day late is fine', other: 'Up to # days late is fine' })
+}
+
+/** A subtask schedule's interval, with "after done" where it counts from when it was done. */
+function scheduleEvery(cadence: Extract<Cadence, { kind: 'schedule' }>) {
+  const every = everyLabel(cadence.unit, cadence.interval)
+
+  return cadence.anchor === 'completion'
+    ? t({
+        message: `${every} after done`,
+        comment:
+          'Subtask schedule counted from when it was last done, as in Every month after done',
+      })
+    : every
+}
+
+/**
+ * How often a subtask is due, in a few words: "Once every 3 times", or for one on its own
+ * schedule "Every month, never late" or "Every month, up to 2 days early".
+ */
+export function cadenceLabel(cadence: Cadence) {
+  if (cadence.kind === 'every') return everyTimesLabel(cadence.count)
+  const every = scheduleEvery(cadence)
+  const leeway = cadence.leeway
+
+  switch (cadence.lean) {
+    case 'closest':
+      return t({
+        message: `${every}, on the closest date`,
+        comment: 'Subtask schedule summary: on whichever of the task’s dates is nearest',
+      })
+    case 'before':
+      return leeway === 0
+        ? t({
+            message: `${every}, never late`,
+            comment: 'Subtask schedule summary: on the task’s date on or before its own',
+          })
+        : plural(leeway, {
+            one: `${every}, at most # day late`,
+            other: `${every}, at most # days late`,
+          })
+    case 'after':
+      return leeway === 0
+        ? t({
+            message: `${every}, never early`,
+            comment: 'Subtask schedule summary: on the task’s date on or after its own',
+          })
+        : plural(leeway, {
+            one: `${every}, at most # day early`,
+            other: `${every}, at most # days early`,
+          })
+  }
+}
+
+/**
+ * When a subtask is due: with the task's current occurrence ("Due with the task today"), or after
+ * skipping some ("Skips this time, next due on Sat, 21 Nov"); null once its task stops repeating
+ * first.
+ */
+export function nextDueLabel(
+  due: { date: CalendarDate; after: number } | null,
+  today: CalendarDate,
+) {
+  if (due === null)
+    return t({
+      message: 'Not due again before the task stops repeating',
+      comment: 'Subtask: its turn would come after its task stops repeating',
+    })
+  const { after } = due
+  const when = datePhrase(due.date, today)
+
+  if (after === 0)
+    return t({
+      message: `Due with the task ${when}`,
+      comment: 'Subtask: part of its task’s current occurrence, as in Due with the task today',
+    })
+
+  return plural(after, {
+    one: `Skips this time, next due ${when}`,
+    other: `Skips # times, next due ${when}`,
+  })
 }
 
 /** A section's heading in the reader's language. */

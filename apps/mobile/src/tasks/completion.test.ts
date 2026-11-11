@@ -146,6 +146,25 @@ describe('reopening a task', () => {
     })
   })
 
+  it('opens a subtask’s done task again with it, leaving its other subtasks done', () => {
+    const done = task('p', { dueDate: '2026-11-02', repeat: defaultRepeat('day'), completedAt: 9 })
+    const subtask = task('s', { parentId: 'p', completedAt: 9 })
+    const other = task('o', { parentId: 'p', completedAt: 9 })
+    const next = task('n', { seriesId: 'p', occurrence: 2 })
+
+    expect(planReopen(subtask, [], [done, subtask, other, next])).toEqual({
+      reopen: ['s', 'p'],
+      remove: ['n'],
+    })
+  })
+
+  it('opens a subtask alone under an open task', () => {
+    const open = task('p')
+    const subtask = task('s', { parentId: 'p', completedAt: 9 })
+
+    expect(planReopen(subtask, [], [open, subtask])).toEqual({ reopen: ['s'], remove: [] })
+  })
+
   it('keeps an occurrence done since', () => {
     const done = task('p', { dueDate: '2026-11-02', repeat: defaultRepeat('day'), completedAt: 9 })
     const doneToo = task('n', { seriesId: 'p', occurrence: 2, completedAt: 20 })

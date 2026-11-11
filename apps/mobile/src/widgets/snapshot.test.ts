@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { everyCadence } from '../tasks/cadence'
 import { momentOf } from '../tasks/dates'
 import { newTask, type Task } from '../tasks/model'
+import { defaultRepeat } from '../tasks/recurrence'
 import { sortedTasks, viewTasks } from './snapshot'
 
 const today = '2026-11-03'
@@ -22,12 +24,25 @@ describe('a widget’s tasks', () => {
     task('other', { listId: 'work', position: 0 }),
   ]
 
-  it('shows a list’s open top-level tasks in the sort given, as its page does', () => {
+  it('shows a list’s open tasks in the sort given, each over its subtasks, as its page does', () => {
     const list = { kind: 'list', listId: 'default' } as const
 
-    expect(ids(viewTasks(tasks, list, 'manual', today, now))).toEqual(['b', 'a', 'c'])
-    expect(ids(viewTasks(tasks, list, 'date', today, now))).toEqual(['a', 'b', 'c'])
-    expect(ids(viewTasks(tasks, list, 'title', today, now))).toEqual(['a', 'b', 'c'])
+    expect(ids(viewTasks(tasks, list, 'manual', today, now))).toEqual(['b', 'a', 'c', 'c1'])
+    expect(ids(viewTasks(tasks, list, 'date', today, now))).toEqual(['a', 'b', 'c', 'c1'])
+    expect(ids(viewTasks(tasks, list, 'title', today, now))).toEqual(['a', 'b', 'c', 'c1'])
+  })
+
+  it('shows Today’s tasks with their open subtasks, but none done or resting', () => {
+    const chore = task('chore', { dueDate: today, repeat: defaultRepeat('week') })
+
+    const due = [
+      chore,
+      task('open', { parentId: 'chore' }),
+      task('done', { parentId: 'chore', completedAt: 5 }),
+      task('resting', { parentId: 'chore', cadence: everyCadence(chore, 2, 1) }),
+    ]
+
+    expect(ids(viewTasks(due, { kind: 'today' }, 'manual', today, now))).toEqual(['chore', 'open'])
   })
 
   it('sorts Today within its sections, overdue first, unless it is My order', () => {

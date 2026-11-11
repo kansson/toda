@@ -1,4 +1,5 @@
 import type {
+  cadenceValidator,
   Infer,
   listValidator,
   operationValidator,
@@ -17,6 +18,9 @@ export type ListRow = Infer<typeof listValidator>
 export type TaskRow = Infer<typeof taskValidator>
 
 export type Repeat = Infer<typeof repeatValidator>
+
+/** How often a subtask of a repeating task comes round. */
+export type Cadence = Infer<typeof cadenceValidator>
 
 export type ListSort = Infer<typeof sortValidator>
 

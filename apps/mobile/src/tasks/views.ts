@@ -1,3 +1,4 @@
+import { rests } from './cadence'
 import { addDays, type CalendarDate, daysBetween } from './dates'
 import type { ListSort, Task } from './model'
 
@@ -129,6 +130,57 @@ function group(entries: { heading: SectionKind; rows: Row[] }[]) {
   return sections
 }
 
+/** Every task's subtasks, by its id. */
+function subtasksByParent(tasks: readonly Task[], today: CalendarDate) {
+  const children = new Map<string, Task[]>()
+
+  for (const task of tasks) {
+    if (task.parentId === null || !isVisible(task, today)) continue
+    const siblings = children.get(task.parentId) ?? []
+    siblings.push(task)
+    children.set(task.parentId, siblings)
+  }
+
+  return children
+}
+
+/**
+ * A task's subtasks as rows under it, open ones first and each in its own order. A subtask whose
+ * cadence rests it this time waits on the task's page for its turn.
+ */
+function subtaskRows(children: Map<string, Task[]>, parent: Task, today: CalendarDate): Row[] {
+  return (children.get(parent.clientId) ?? [])
+    .filter((task) => !rests(task, parent, today))
+    .slice()
+    .sort(
+      (a, b) => Number(a.completedAt !== null) - Number(b.completedAt !== null) || byPosition(a, b),
+    )
+    .map((task) => ({ task, depth: 1 }))
+}
+
+/**
+ * The sections with each top-level task followed by its subtasks, as a list shows them, but for
+ * one already shown on its own row, as a starred subtask is in Starred.
+ */
+function withSubtasks(sections: Section[], tasks: readonly Task[], today: CalendarDate) {
+  const children = subtasksByParent(tasks, today)
+  const shown = new Set(sections.flatMap((section) => section.rows.map((row) => row.task.clientId)))
+
+  return sections.map((section) => ({
+    ...section,
+    rows: section.rows.flatMap((row) =>
+      row.task.parentId === null
+        ? [
+            row,
+            ...subtaskRows(children, row.task, today).filter(
+              (subtask) => !shown.has(subtask.task.clientId),
+            ),
+          ]
+        : [row],
+    ),
+  }))
+}
+
 export type ListView = {
   /** Open tasks, in sections by the list's sort; one untitled section in its own order. */
   open: Section[]
@@ -141,7 +193,8 @@ export type ListView = {
 /**
  * A list's tasks as its screen shows them: open top-level tasks sorted and sectioned by the
  * list's sort, each followed by its subtasks in their own order (open first, then done), and the
- * done ones below. Later occurrences of a repeating task wait for their day.
+ * done ones below. Later occurrences of a repeating task wait for their day, and subtasks resting
+ * this time for their turn.
  */
 export function listView(
   tasks: readonly Task[],
@@ -149,30 +202,8 @@ export function listView(
   today: CalendarDate,
   now: number,
 ): ListView {
-  const children = new Map<string, Task[]>()
-  const parents: Task[] = []
-
-  for (const task of tasks) {
-    if (!isVisible(task, today)) continue
-
-    if (task.parentId === null) {
-      parents.push(task)
-    } else {
-      const siblings = children.get(task.parentId) ?? []
-      siblings.push(task)
-      children.set(task.parentId, siblings)
-    }
-  }
-
-  const subtaskRows = (parent: Task, done: boolean) =>
-    (children.get(parent.clientId) ?? [])
-      .filter((task) => done || task.completedAt === null)
-      .slice()
-      .sort(
-        (a, b) =>
-          Number(a.completedAt !== null) - Number(b.completedAt !== null) || byPosition(a, b),
-      )
-      .map((task): Row => ({ task, depth: 1 }))
+  const children = subtasksByParent(tasks, today)
+  const parents = tasks.filter((task) => task.parentId === null && isVisible(task, today))
 
   const open = parents
     .filter((task) => task.completedAt === null)
@@ -191,7 +222,7 @@ export function listView(
   const sections = group(
     open.map((task) => ({
       heading: heading(task),
-      rows: [{ task, depth: 0 as const }, ...subtaskRows(task, true)],
+      rows: [{ task, depth: 0 as const }, ...subtaskRows(children, task, today)],
     })),
   )
 
@@ -202,7 +233,10 @@ export function listView(
 
   return {
     open: sections,
-    completed: done.flatMap((task) => [{ task, depth: 0 as const }, ...subtaskRows(task, true)]),
+    completed: done.flatMap((task) => [
+      { task, depth: 0 as const },
+      ...subtaskRows(children, task, today),
+    ]),
     completedCount: done.length,
   }
 }
@@ -307,7 +341,8 @@ export type Filter = 'none' | 'today' | 'upcoming' | 'starred' | 'completed'
  * sort. With no filter, open tasks in the sort's sections, subtasks under their task; across every
  * list in My order, grouped by list in `listOrder`, those in no list last. Today, Upcoming and
  * Starred keep their own sections and order them by the sort unless it is My order. Completed
- * lists done tasks, most recently done first in My order.
+ * lists done tasks, most recently done first in My order. In every view a task's subtasks follow
+ * it, as in a list.
  */
 export function browseView(
   tasks: readonly Task[],
@@ -325,19 +360,22 @@ export function browseView(
           rows: section.rows.slice().sort((a, b) => comparators[sort](a.task, b.task)),
         }))
 
+  // Each task brings its subtasks once sorted, so a sort never parts them.
+  const shown = (sections: Section[]) => withSubtasks(sorted(sections), tasks, today)
+
   switch (filter) {
     case 'today':
-      return sorted(todayView(tasks, today))
+      return shown(todayView(tasks, today))
     case 'upcoming':
-      return sorted(upcomingView(tasks, today))
+      return shown(upcomingView(tasks, today))
     case 'starred':
-      return sorted(starredView(tasks, today, now))
+      return shown(starredView(tasks, today, now))
     case 'completed': {
       const done = listView(tasks, sort, today, now).completed.filter((row) => row.depth === 0)
 
       return done.length === 0
         ? []
-        : sorted([{ key: 'completed', heading: { kind: 'all' }, rows: done }])
+        : shown([{ key: 'completed', heading: { kind: 'all' }, rows: done }])
     }
 
     case 'none':
