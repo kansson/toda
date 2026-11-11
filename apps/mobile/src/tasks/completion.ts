@@ -134,31 +134,14 @@ export function planCompletion(
 }
 
 export type ReopenPlan = {
-  /** Tasks to mark open again: the task and the subtasks done with it. */
+  /** Tasks to mark open again: the task and the subtasks done with it, or a subtask's task. */
   reopen: string[]
   /** The occurrence completing it made, while still open: it goes again. */
   remove: string[]
 }
 
-/**
- * What unchecking a done task does: it opens again with the subtasks that were done at the same
- * moment, and a repeating task takes back the next occurrence completing it created, unless that
- * one has been done since.
- */
-export function planReopen(
-  task: Task,
-  subtasks: readonly Task[],
-  all: readonly Task[],
-): ReopenPlan {
-  const reopen = [
-    task.clientId,
-    ...subtasks.flatMap((subtask) =>
-      subtask.completedAt !== null && subtask.completedAt === task.completedAt
-        ? [subtask.clientId]
-        : [],
-    ),
-  ]
-
+/** The open next occurrence completing a repeating task created, which reopening it takes back. */
+function openNextOccurrence(task: Task, all: readonly Task[]) {
   const seriesId = task.seriesId ?? task.clientId
 
   const next = task.repeat
@@ -171,5 +154,34 @@ export function planReopen(
       )
     : undefined
 
-  return { reopen, remove: next ? [next.clientId] : [] }
+  return next ? [next.clientId] : []
+}
+
+/**
+ * What unchecking a done task does: it opens again with the subtasks that were done at the same
+ * moment, and a repeating task takes back the next occurrence completing it created, unless that
+ * one has been done since. A subtask of a done task opens its task again too, as a task is only
+ * done once all its subtasks are; the task's other subtasks stay done.
+ */
+export function planReopen(
+  task: Task,
+  subtasks: readonly Task[],
+  all: readonly Task[],
+): ReopenPlan {
+  const parent =
+    task.parentId === null ? undefined : all.find((other) => other.clientId === task.parentId)
+
+  if (parent !== undefined && parent.completedAt !== null)
+    return { reopen: [task.clientId, parent.clientId], remove: openNextOccurrence(parent, all) }
+
+  const reopen = [
+    task.clientId,
+    ...subtasks.flatMap((subtask) =>
+      subtask.completedAt !== null && subtask.completedAt === task.completedAt
+        ? [subtask.clientId]
+        : [],
+    ),
+  ]
+
+  return { reopen, remove: openNextOccurrence(task, all) }
 }
