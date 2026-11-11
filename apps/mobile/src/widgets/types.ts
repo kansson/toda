@@ -13,6 +13,10 @@ export type WidgetTask = {
    * box opens `doneLink` to ask in the app which day it was done, rather than completing it.
    */
   asksAfter: string
+  /** A subtask's task, drawn indented under it; empty for a task of its own. */
+  parentId: string
+  /** How often a subtask of a repeating task is due, such as "Once every 3 times"; empty for none. */
+  cadence: string
 }
 
 /** What one list widget can show: Today, Starred or a list, with its open tasks. */

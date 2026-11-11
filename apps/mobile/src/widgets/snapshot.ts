@@ -6,8 +6,9 @@ import { browseView, listView } from '../tasks/views'
 export type WidgetView = { kind: 'today' } | { kind: 'starred' } | { kind: 'list'; listId: string }
 
 /**
- * A view's open top-level tasks in one sort, as the app's main screen orders them: Today and
- * Starred keep their own sections and sort within them, a list sorts and sections as its page.
+ * A view's open tasks in one sort, as the app's main screen orders them, each task followed by
+ * its subtasks: Today and Starred keep their own sections and sort within them, a list sorts and
+ * sections as its page.
  */
 export function viewTasks(
   tasks: readonly Task[],
@@ -26,8 +27,9 @@ export function viewTasks(
         ).open
       : browseView(tasks, view.kind, sort, today, now, null)
 
+  // A done subtask stays on its task's page; the widget lists only what is left to do.
   return sections.flatMap((section) =>
-    section.rows.filter((row) => row.depth === 0).map((row) => row.task),
+    section.rows.flatMap((row) => (row.task.completedAt === null ? [row.task] : [])),
   )
 }
 
