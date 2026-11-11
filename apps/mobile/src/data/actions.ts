@@ -364,23 +364,6 @@ export function createActions(db: Db, onRefused: () => void) {
         })),
       })
     },
-
-    /** Makes a subtask a top-level task just below its parent, leaving its cadence behind. */
-    outdent(id: string) {
-      const task = tasks.get(id)
-      const parent = task?.parentId ? tasks.get(task.parentId) : undefined
-
-      if (!task || !parent) return
-
-      const after = openSiblings(task.listId, null).filter(
-        (sibling) => sibling.position > parent.position,
-      )
-
-      const next = Math.min(...after.map((sibling) => sibling.position))
-      const position = Number.isFinite(next) ? (parent.position + next) / 2 : parent.position + 1
-
-      moveTasks({ changes: [{ id, patch: { parentId: null, position, cadence: null } }] })
-    },
   }
 }
 

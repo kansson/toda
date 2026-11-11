@@ -1,13 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { useRef, useState } from 'react'
-import {
-  animateContentSize,
-  clickable,
-  clip,
-  composeGeometry,
-  fillMaxWidth,
-  padding,
-} from '@/lib/compose-modifiers'
+import { animateContentSize, clickable, clip, fillMaxWidth, padding } from '@/lib/compose-modifiers'
 import {
   Column,
   Icon,
@@ -194,20 +187,18 @@ export type SubtaskItem = {
 
 /**
  * A task's subtasks as connected cards under a Subtasks card whose + adds one in a dialog. Each
- * has its circle, to check it off where that applies, and a button to remove it. One resting
- * this time is dimmed, with no circle to check, and says when it is next due.
+ * shows whether it is done by its circle, which only shows (a subtask is checked off on its own
+ * page or in the list), and has a button to remove it. One resting this time is dimmed, with the
+ * upcoming glyph for a circle, and says when it is next due.
  */
 export function SubtaskCards({
   subtasks,
   onAdd,
-  onToggle,
   onOpen,
   onRemove,
 }: {
   subtasks: SubtaskItem[]
   onAdd: (title: string) => void
-  /** Checks a subtask off or on; without it the circles only show. */
-  onToggle?: (key: string) => void
   onOpen?: (key: string) => void
   onRemove: (key: string) => void
 }) {
@@ -266,14 +257,6 @@ export function SubtaskCards({
                 }
                 size={24}
                 tint={subtask.done ? colors.primary : colors.onSurfaceVariant}
-                modifiers={
-                  onToggle && waiting === null
-                    ? [
-                        clip(composeGeometry.RoundedCorner(12)),
-                        clickable(() => onToggle(subtask.key)),
-                      ]
-                    : []
-                }
               />
             </ListItem.LeadingContent>
             <ListItem.HeadlineContent>

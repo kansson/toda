@@ -393,8 +393,9 @@ export function cadenceLabel(cadence: Cadence) {
 }
 
 /**
- * When a subtask is next due: this time, or on which of its task's dates and after how many of
- * its occurrences; null once its task stops repeating first.
+ * When a subtask is due: with the task's current occurrence ("Due with the task today"), or after
+ * skipping some ("Skips this time, next due on Sat, 21 Nov"); null once its task stops repeating
+ * first.
  */
 export function nextDueLabel(
   due: { date: CalendarDate; after: number } | null,
@@ -405,14 +406,18 @@ export function nextDueLabel(
       message: 'Not due again before the task stops repeating',
       comment: 'Subtask: its turn would come after its task stops repeating',
     })
-
-  if (due.after === 0) return t({ message: 'Due this time', comment: 'Subtask: its turn is now' })
   const { after } = due
-  const day = dayLabel(due.date, today)
+  const when = datePhrase(due.date, today)
+
+  if (after === 0)
+    return t({
+      message: `Due with the task ${when}`,
+      comment: 'Subtask: part of its task’s current occurrence, as in Due with the task today',
+    })
 
   return plural(after, {
-    one: `Due next time, ${day}`,
-    other: `Due # times from now, ${day}`,
+    one: `Skips this time, next due ${when}`,
+    other: `Skips # times, next due ${when}`,
   })
 }
 

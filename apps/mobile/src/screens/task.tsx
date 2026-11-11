@@ -16,7 +16,7 @@ import {
 import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
 import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
-import { Column, FilledTonalButton, Row, Text, useMaterialColors } from '@/lib/compose-ui'
+import { Column, Text, useMaterialColors } from '@/lib/compose-ui'
 import { cadenceOf, nextDue, rests } from '@/tasks/cadence'
 import { localDate } from '@/tasks/dates'
 import { NO_LIST, TITLE_MAX } from '@/tasks/model'
@@ -69,6 +69,8 @@ export function TaskScreen() {
   // A subtask's task, which decides whether it can have a cadence: only under a repeating one.
   const { task: parent } = useTask(task?.parentId ?? '')
   const [overlay, setOverlay] = useState<Overlay>(null)
+  // The subtask whose delete button was tapped, asked about before it goes.
+  const [removing, setRemoving] = useState<string | null>(null)
 
   // Checked off in a widget: checked off here once it has loaded, so a late repeating task asks
   // which day it was done and, once told, the page goes back to the tasks; closing the question
@@ -105,6 +107,12 @@ export function TaskScreen() {
   const list = lists.find((candidate) => candidate.clientId === task.listId)
   const isSubtask = task.parentId !== null
   const repeatingParent = isSubtask && parent?.repeat ? parent : undefined
+  const removingSubtask = subtasks.find((subtask) => subtask.clientId === removing)
+
+  const removingTitle =
+    removingSubtask?.title.trim() ||
+    t({ message: '(No title)', comment: 'Shown for a task without a title' })
+
   const cadence = cadenceOf(task, repeatingParent)
 
   // When a subtask resting this time is next due, or that it was not due, its task done.
@@ -112,7 +120,7 @@ export function TaskScreen() {
     if (!rests(subtask, task, today)) return null
 
     return done
-      ? t({ message: 'Not due this time', comment: 'Subtask resting while its task was done' })
+      ? t({ message: 'Skipped this time', comment: 'Subtask resting while its task was done' })
       : nextDueLabel(nextDue(subtask, task, today), today)
   }
 
@@ -288,32 +296,15 @@ export function TaskScreen() {
             onAdd={(value) =>
               actions.createTask({ listId: task.listId, parentId: task.clientId, title: value })
             }
-            onToggle={(key) => {
-              const subtask = subtasks.find((candidate) => candidate.clientId === key)
-
-              if (subtask) commands.toggle(subtask)
-            }}
             onOpen={(key) => router.push({ pathname: '/task/[id]', params: { id: key } })}
-            onRemove={(key) => {
-              const subtask = subtasks.find((candidate) => candidate.clientId === key)
-
-              if (subtask) commands.remove([subtask])
-            }}
+            // Asks first, as deleting the task itself does.
+            onRemove={(key) => setRemoving(key)}
           />
         )}
         {cadence && repeatingParent && !done ? (
           <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
             {nextDueLabel(nextDue(task, repeatingParent, today), today)}
           </Text>
-        ) : null}
-        {isSubtask ? (
-          <Row modifiers={[fillMaxWidth()]}>
-            <FilledTonalButton onClick={() => actions.outdent(task.clientId)}>
-              <Text>
-                {t({ message: 'Make a task', comment: 'Turns a subtask into a task of its own' })}
-              </Text>
-            </FilledTonalButton>
-          </Row>
         ) : null}
         {done && task.completedAt ? (
           <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
@@ -430,6 +421,18 @@ export function TaskScreen() {
             router.back()
           }}
           onDismiss={() => setOverlay(null)}
+        />
+      ) : null}
+      {removingSubtask ? (
+        <ConfirmDialog
+          title={t({ message: 'Delete subtask?', comment: 'Dialog title' })}
+          message={t({
+            message: `“${removingTitle}” is deleted from every phone.`,
+            comment: 'Deleting a subtask from its task’s page',
+          })}
+          confirmLabel={t({ message: 'Delete', comment: 'Confirms deleting a task' })}
+          onConfirm={() => commands.remove([removingSubtask])}
+          onDismiss={() => setRemoving(null)}
         />
       ) : null}
       {details.dialog}

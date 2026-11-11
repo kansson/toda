@@ -7,6 +7,12 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#. Deleting a subtask from its task’s page
+#: src/screens/task.tsx
+msgid "“{removingTitle}” is deleted from every phone."
+msgstr "“{removingTitle}” is deleted from every phone."
+
+#. Shown for a task without a title
 #. Shown for a task without a title
 #. Shown for a task without a title
 #. Shown for a task without a title
@@ -65,8 +71,8 @@ msgid "{0} tasks deleted"
 msgstr "{0} tasks deleted"
 
 #: src/ui/format.ts
-msgid "{after, plural, one {Due next time, {day}} other {Due # times from now, {day}}}"
-msgstr "{after, plural, one {Due next time, {day}} other {Due # times from now, {day}}}"
+msgid "{after, plural, one {Skips this time, next due {when}} other {Skips # times, next due {when}}}"
+msgstr "{after, plural, one {Skips this time, next due {when}} other {Skips # times, next due {when}}}"
 
 #: src/reminders/notifications.ts
 msgid "{count, plural, one {# task} other {# tasks}}"
@@ -508,6 +514,7 @@ msgstr "Deadline"
 
 #. Confirms deleting a list
 #. Confirms deleting a task
+#. Confirms deleting a task
 #. Confirms deleting the done tasks
 #. List menu command
 #: src/components/lists-sheet.tsx
@@ -550,6 +557,11 @@ msgstr "Delete repeating task?"
 #: src/components/task-form.tsx
 msgid "Delete subtask"
 msgstr "Delete subtask"
+
+#. Dialog title
+#: src/screens/task.tsx
+msgid "Delete subtask?"
+msgstr "Delete subtask?"
 
 #. Task page button deleting it
 #: src/screens/task.tsx
@@ -614,11 +626,6 @@ msgstr "Due every time"
 msgid "Due every time the task repeats"
 msgstr "Due every time the task repeats"
 
-#. Subtask: its turn is now
-#: src/ui/format.ts
-msgid "Due this time"
-msgstr "Due this time"
-
 #. A deadline that is today
 #. Section of the Today view: tasks dated today
 #: src/components/task-list.tsx
@@ -630,6 +637,11 @@ msgstr "Due today"
 #: src/ui/format.ts
 msgid "Due tomorrow"
 msgstr "Due tomorrow"
+
+#. Subtask: part of its task’s current occurrence, as in Due with the task today
+#: src/ui/format.ts
+msgid "Due with the task {when}"
+msgstr "Due with the task {when}"
 
 #. Notification channel description: the morning digest
 #: src/reminders/notifications.ts
@@ -854,11 +866,6 @@ msgstr "Make a code"
 msgid "Make a code here, then type it on the other phone under “I have a code”. It works once, for ten minutes."
 msgstr "Make a code here, then type it on the other phone under “I have a code”. It works once, for ten minutes."
 
-#. Turns a subtask into a task of its own
-#: src/screens/task.tsx
-msgid "Make a task"
-msgstr "Make a task"
-
 #. Dialog message
 #. Dialog message
 #: src/screens/new-task.tsx
@@ -993,11 +1000,6 @@ msgstr "Not connected yet"
 #: src/ui/format.ts
 msgid "Not due again before the task stops repeating"
 msgstr "Not due again before the task stops repeating"
-
-#. Subtask resting while its task was done
-#: src/screens/task.tsx
-msgid "Not due this time"
-msgstr "Not due this time"
 
 #. Subtask cadence editor: no leeway for a never-early one
 #: src/components/cadence-editor.tsx
@@ -1346,6 +1348,11 @@ msgstr "Show every list"
 #: src/screens/settings.tsx
 msgid "Show in the widget"
 msgstr "Show in the widget"
+
+#. Subtask resting while its task was done
+#: src/screens/task.tsx
+msgid "Skipped this time"
+msgstr "Skipped this time"
 
 #. Title of the app-wide error screen
 #: src/components/app-error.tsx
