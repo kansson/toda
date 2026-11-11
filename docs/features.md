@@ -56,9 +56,12 @@ or 24-hour clock.
   floating button marks it done or not done. Then cards: the details, edited in a dialog, the
   list, date, time, repeat and deadline, each set one with a button to clear it, and Subtasks,
   whose + adds one in a dialog. A task's page saves every change as it is made; deleting asks
-  first. Dialogs that take text start with the cursor after what is there. Subtasks are checked off,
-  opened and removed there, and a subtask can be made a task of its own.
+  first. Dialogs that take text start with the cursor after what is there. Subtasks are opened
+  and removed there, removing asking first; their circles only show whether each is done, as a
+  subtask is checked off on its own page or in the list. A subtask stays a subtask.
 - Completing a task completes its open subtasks. Reopening it reopens those done with it.
+  Reopening a subtask of a done task, as from Completed, reopens the task too, since a task is
+  done only once all its subtasks are; its other subtasks stay done.
   Completing and deleting show a snackbar with Undo.
 - Tasks move to another list with their subtasks from the list card on a task's page, which picks
   among the lists and is cleared with its button to leave the task in none. With no lists it says
@@ -142,11 +145,13 @@ the date the task would really come back on, which for a task that repeats from 
 is later the later it is done, and a subtask whose own date passed while the task waited is due
 now.
 
-A subtask that is not due rests in that occurrence: it is left out of the lists, left open when
-the task is done, and on the task's page dimmed, without a check box, saying when it is next due
-("Due 3 times from now, Sat, 28 Nov"). Each occurrence carries every subtask on; one on its own
-schedule that was due moves on to its next date. A subtask made a task of its own, moved on its
-own or a task made a subtask leaves its cadence behind.
+A subtask that is due in the task's current occurrence says so on its page ("Due with the task
+today"). One that is not rests in that occurrence: it is left out of the lists, left open when
+the task is done, and on the task's page dimmed, with the upcoming glyph, saying when it is next
+due ("Skips 3 times, next due on Sat, 28 Nov"), or "Skipped this time" under a done task. Each
+occurrence carries every subtask on; one on its own schedule that was due moves on to its next
+date. A subtask moved to another list on its own, or a task made a subtask, leaves its cadence
+behind.
 
 ## Views and search
 
