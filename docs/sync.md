@@ -9,6 +9,8 @@ sees; the server is the meeting point of phones.
   `tasks.page` (every task, paginated so a change re-sends one page of 250 rather than all of
   them). Rows are keyed by `clientId`, a UUID made on the phone, so a row exists before the
   server has seen it; references (`listId`, `parentId`, `seriesId`) use client ids too.
+- **Optional fields.** A subtask's `cadence` is optional on the server, so rows written before it
+  existed, and by app versions that never set it, stay valid; the app reads a missing one as null.
 - **Persistence.** Both collections are wrapped in `persistedCollectionOptions` over expo-sqlite
   (`toda-cache.db`), so the app opens offline with everything in it. Raising `SCHEMA_VERSION` in
   `db.ts` drops the copy and syncs it again.
@@ -26,9 +28,9 @@ sees; the server is the meeting point of phones.
   them all or none. A receipt per key makes a replay after a lost answer a no-op, and inserts are
   upserts by `clientId`. Updates carry only changed fields; an update of a deleted row does
   nothing, so a delete always wins.
-- Each write is validated (lengths, real dates, times only with a date, repeat rules), and once
-  the batch is applied, relationships are checked: a task's list exists, and a subtask's parent
-  is a top-level task in the same list. Deleting a task deletes its subtasks; deleting a list its
+- Each write is validated (lengths, real dates, times only with a date, repeat rules and subtask
+  cadences), and once the batch is applied, relationships are checked: a task's list exists, and
+  a subtask's parent is a top-level task in the same list. Deleting a task deletes its subtasks; deleting a list its
   tasks; the default list cannot be deleted.
 - An account holds at most 1000 lists and 10,000 tasks, counted as they change.
 - A daily cron prunes receipts older than 90 days and expired pairing codes.

@@ -18,8 +18,8 @@
   which day it was done; a
   tap anywhere else but a check box or + opens the app with its launch intent, as its icon does,
   never a route: a pushed route would slide in over wherever the app was.
-- `src/tasks/` holds the rules as pure, tested functions (dates, recurrence, completion, views,
-  positions, sharing); `src/data/` the collections, outbox and session; `src/reminders/`,
+- `src/tasks/` holds the rules as pure, tested functions (dates, recurrence, subtask cadences,
+  completion, views, positions, sharing); `src/data/` the collections, outbox and session; `src/reminders/`,
   `src/widgets/` and `src/updates/` the work beside the screens, wired in
   `src/components/app-sync.tsx`.
 - Check tasks off through `useTaskCommands().toggle` and render its `prompt`: a late repeating

@@ -111,6 +111,28 @@ still done on Sunday.
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.
 
+### Subtasks of a repeating task (`tasks/cadence.ts`)
+
+Not in Google Tasks. A subtask of a repeating task comes round every time by default; its page
+has a card that chooses otherwise, in a sheet laid out as the repeat sheet, its answer and when
+the subtask next comes round spelled out at the bottom:
+
+- **Every few times**: once every N times the task comes round, starting this time or a few
+  times on. Changing the filter on every third cleaning.
+- **On a schedule of its own**: every N days, weeks, months or years from a date of its own, each
+  of those dates landing on one of the task's: **the closest** (the earlier on a tie), **the date
+  before** (never late) or **the date after** (never early). A **leeway** of days lets the other
+  side's date take it when that one is nearer, so a monthly descaling meant for the 1st on a
+  Saturday chore leaning after, with three days' leeway, takes the Saturday two days before
+  rather than waiting until the 6th. The schedule keeps its dates as a fixed repeat does; the
+  task's coming dates are counted as if each is done on its day.
+
+A subtask whose turn it is not rests in that occurrence: it is left out of the lists, left open
+when the task is done, and on the task's page dimmed, without a check box, saying when it comes
+round next ("In 3 times: Sat, 28 Nov"). Each occurrence carries every subtask on; one on its own
+schedule that came round moves on to its next date after the one it came with. A subtask made a
+task of its own, moved on its own or a task made a subtask leaves its cadence behind.
+
 ## Views and search
 
 These are the chips after the divider; each narrows the tasks of the lists shown, and the sort
