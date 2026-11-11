@@ -151,14 +151,18 @@ own or a task made a subtask leaves its cadence behind.
 ## Views and search
 
 These are the chips after the divider; each narrows the tasks of the lists shown, and the sort
-orders tasks within its sections unless it is Relevance.
+orders tasks within its sections unless it is Relevance. In every view a task's subtasks follow
+it, as in its list, and stay with it whatever the sort; a starred subtask shows once in Starred,
+on a row of its own.
 
 Every group of tasks, a view's or a sort's, sits under a compact label with how many tasks it
 holds; tapping it folds the group away and back, its rows fading and the rest sliding into place.
 A group that holds everything shown and says nothing, such as No date when no task shown has a
 date, goes without one. Changing the view or sort keeps the one list on screen and only moves its
 rows. The main screen's bar and chips sit on a tinted backdrop and stay put; the tasks scroll on
-a panel whose top corners curve down into it. A task's row shows every line of its details.
+a panel whose top corners curve down into it. A task's row shows every line of its details, and
+a subtask with a cadence of its own shows it under its title beside the repeat glyph, as a
+repeating task shows its repeat.
 
 - **Today**: open tasks dated today or earlier, under Overdue and then Due today.
 - **Upcoming**: open tasks dated later, by day for two weeks, then Later.
@@ -190,12 +194,15 @@ a panel whose top corners curve down into it. A task's row shows every line of i
   widget's settings on a long press. The same screen sorts it by any of the app's sorts, Save
   keeping both; until one is chosen it follows the list's own sort in the app, Today and Starred
   their own order, and a sort sorts Today and Starred within their sections, as the main screen
-  does. Each widget keeps its own, so several can show different lists or sorts. Its open tasks sit under its title, in bold beside a tonal +, on its own background, each with a
+  does. Each widget keeps its own, so several can show different lists or sorts. Its open tasks sit under its title, in bold beside a tonal +, on its own background, each followed by
+  its open subtasks drawn in under it, as the app lists them, those not due this time left out
+  and a subtask's cadence under its title; each has a
   round toggle whose ripple is round, as in the app; with none open it shows the done glyph over No tasks, centred under its title. A
   tap on a task opens its page in the app; anywhere else but a toggle or +, the space under the
   tasks and the empty state included, opens the app as its icon does, with one ripple across the
   whole card. Tasks that fit stand still; more scroll, where it was left. A task's check box
-  takes it off every widget at once, natively; the app completes it, with its repeat and sync, at
+  takes it off every widget at once, natively, with its subtasks; the app completes it, with its
+  repeat and sync, at
   once while it runs and otherwise on its next start or return, as done when it was checked off.
   A late repeating task's check box instead opens the app to ask which day it was done (see
   Repeating tasks). + adds a task to it. Every
