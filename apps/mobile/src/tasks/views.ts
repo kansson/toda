@@ -169,7 +169,7 @@ export function listView(
   const subtaskRows = (parent: Task, done: boolean) =>
     (children.get(parent.clientId) ?? [])
       // A subtask whose cadence rests it this time waits on the task's page for its turn.
-      .filter((task) => (done || task.completedAt === null) && !rests(task, parent))
+      .filter((task) => (done || task.completedAt === null) && !rests(task, parent, today))
       .slice()
       .sort(
         (a, b) =>

@@ -1,4 +1,4 @@
-import { carriedCadence, comesRound } from './cadence'
+import { carriedCadence, isDue } from './cadence'
 import { addDays, type CalendarDate, localDate, localTime, momentOf } from './dates'
 import type { Task } from './model'
 import { nextOccurrence } from './recurrence'
@@ -91,10 +91,13 @@ export function planCompletion(
   newId: () => string,
   doneOn: CalendarDate = localDate(now),
 ): CompletionPlan {
+  // Whether each subtask is due is judged as the list showed it, on today's date.
+  const today = localDate(now)
+
   const complete = [
     task.clientId,
     ...subtasks.flatMap((subtask) =>
-      subtask.completedAt === null && comesRound(subtask, task) ? [subtask.clientId] : [],
+      subtask.completedAt === null && isDue(subtask, task, today) ? [subtask.clientId] : [],
     ),
   ]
 
@@ -122,7 +125,7 @@ export function planCompletion(
     clientId: newId(),
     parentId: nextId,
     completedAt: null,
-    cadence: carriedCadence(subtask, task),
+    cadence: carriedCadence(subtask, task, today, doneOn),
     createdAt: now,
     updatedAt: now,
   }))

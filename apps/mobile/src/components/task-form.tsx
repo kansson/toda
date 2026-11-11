@@ -188,14 +188,14 @@ export type SubtaskItem = {
   key: string
   title: string
   done: boolean
-  /** Resting this time, as its cadence has it: when it next comes round. */
+  /** Resting this time, as its cadence has it: when it is next due. */
   waiting?: string | null
 }
 
 /**
  * A task's subtasks as connected cards under a Subtasks card whose + adds one in a dialog. Each
  * has its circle, to check it off where that applies, and a button to remove it. One resting
- * this time is dimmed, with no circle to check, and says when it comes round.
+ * this time is dimmed, with no circle to check, and says when it is next due.
  */
 export function SubtaskCards({
   subtasks,

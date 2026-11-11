@@ -17,7 +17,7 @@ import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
 import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
 import { Column, FilledTonalButton, Row, Text, useMaterialColors } from '@/lib/compose-ui'
-import { cadenceOf, nextRound, rests } from '@/tasks/cadence'
+import { cadenceOf, nextDue, rests } from '@/tasks/cadence'
 import { localDate } from '@/tasks/dates'
 import { NO_LIST, TITLE_MAX } from '@/tasks/model'
 import { ChoiceDialog, ConfirmDialog, TextDialog } from '@/ui/dialogs'
@@ -27,7 +27,7 @@ import {
   dayLabel,
   deadlineLabel,
   isOverdue,
-  nextRoundLabel,
+  nextDueLabel,
   repeatLabel,
   timeLabel,
 } from '@/ui/format'
@@ -49,7 +49,7 @@ type Overlay =
 /**
  * A task's page: its title in the large app bar, renamed in a dialog, then the new task page's
  * cards for its details, list, date, time, repeat and deadline, its subtasks, and Done. A subtask
- * of a repeating task has, in their place, when it comes round; on its task's page a subtask
+ * of a repeating task has, in their place, when it is due; on its task's page a subtask
  * resting this time says when its turn is. Every change is saved as it is made; deleting asks
  * first.
  */
@@ -107,13 +107,13 @@ export function TaskScreen() {
   const repeatingParent = isSubtask && parent?.repeat ? parent : undefined
   const cadence = cadenceOf(task, repeatingParent)
 
-  // When a subtask resting this time next comes round, or that it rested this time, its task done.
+  // When a subtask resting this time is next due, or that it was not due, its task done.
   const waiting = (subtask: (typeof subtasks)[number]) => {
-    if (!rests(subtask, task)) return null
+    if (!rests(subtask, task, today)) return null
 
     return done
-      ? t({ message: 'Not this time', comment: 'Subtask resting while its task was done' })
-      : nextRoundLabel(nextRound(subtask, task), today)
+      ? t({ message: 'Not due this time', comment: 'Subtask resting while its task was done' })
+      : nextDueLabel(nextDue(subtask, task, today), today)
   }
 
   return (
@@ -175,15 +175,15 @@ export function TaskScreen() {
                     key: 'cadence',
                     glyph: 'repeat' as const,
                     label: t({
-                      message: 'Every time the task comes round',
-                      comment: 'Subtask field: when it comes round, unset',
+                      message: 'Due every time the task repeats',
+                      comment: 'Subtask field: when it is due, unset',
                     }),
                     value: cadence ? cadenceLabel(cadence) : null,
                     onPress: () => setOverlay('cadence'),
                     clear: {
                       label: t({
-                        message: 'Every time',
-                        comment: 'Makes a subtask come round every time its task does',
+                        message: 'Due every time',
+                        comment: 'Makes a subtask due every time its task repeats',
                       }),
                       onPress: () => actions.updateTask(task.clientId, { cadence: null }),
                     },
@@ -303,7 +303,7 @@ export function TaskScreen() {
         )}
         {cadence && repeatingParent && !done ? (
           <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
-            {nextRoundLabel(nextRound(task, repeatingParent), today)}
+            {nextDueLabel(nextDue(task, repeatingParent, today), today)}
           </Text>
         ) : null}
         {isSubtask ? (

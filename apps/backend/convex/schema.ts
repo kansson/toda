@@ -60,8 +60,10 @@ export const repeatValidator = v.object({
  * - `every`: every `count`th occurrence of its task, counting from occurrence `from`.
  * - `schedule`: a schedule of its own, every `interval` units from `from`, that lands on one of
  *   its task's dates: `next` is the date it is next meant for. `lean` picks which of the task's
- *   dates around it takes it: the closest, the last on or before it, or the first on or after it;
- *   `leeway` lets a date that many days on the other side take it instead, where that is closer.
+ *   dates around it takes it: the closest, the last on or before it (never late), or the first on
+ *   or after it (never early); `leeway` lets a date that many days on the other side take it
+ *   instead, where that is closer. `anchor` counts its dates as a repeat does: `due` (or none)
+ *   keeps them fixed, `completion` counts each from the day it was last done.
  */
 export const cadenceValidator = v.union(
   v.object({ kind: v.literal('every'), count: v.number(), from: v.number() }),
@@ -73,6 +75,7 @@ export const cadenceValidator = v.union(
     next: v.string(),
     lean: v.union(v.literal('closest'), v.literal('before'), v.literal('after')),
     leeway: v.number(),
+    anchor: v.optional(v.union(v.literal('due'), v.literal('completion'))),
   }),
 )
 

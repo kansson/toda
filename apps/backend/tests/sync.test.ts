@@ -235,6 +235,7 @@ describe('sync.apply', () => {
       next: '2026-12-01',
       lean: 'before' as const,
       leeway: 2,
+      anchor: 'completion' as const,
     }
 
     await as.mutation(api.sync.apply, {

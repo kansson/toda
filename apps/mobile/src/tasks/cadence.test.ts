@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   type Cadence,
   carriedCadence,
-  comesRound,
+  dueEveryTime,
   everyCadence,
+  isDue,
   landsOn,
-  nextRound,
+  nextDue,
   rests,
   scheduleCadence,
 } from './cadence'
@@ -13,6 +14,9 @@ import { planCompletion } from './completion'
 import { momentOf } from './dates'
 import { newTask, type Task } from './model'
 import { defaultRepeat, fixedRepeat } from './recurrence'
+
+/** Before every date below, so no task is late unless a test says so. */
+const today = '2026-11-01'
 
 const task = (clientId: string, fields: Partial<Task> = {}) =>
   newTask(clientId, { listId: 'default', title: clientId, ...fields }, 1)
@@ -29,11 +33,11 @@ const sub = (cadence: Cadence | null, fields: Partial<Task> = {}) =>
   task('sub', { parentId: 'clean', cadence, ...fields })
 
 describe('a subtask every few times', () => {
-  it('comes round every third time from the time it was set', () => {
+  it('is due every third time from the time it was set', () => {
     const cadence = everyCadence(cleaning('2026-11-07', 4), 3)
 
     const shown = [4, 5, 6, 7, 8, 9, 10].map((occurrence) =>
-      comesRound(sub(cadence), cleaning('2026-11-07', occurrence)),
+      isDue(sub(cadence), cleaning('2026-11-07', occurrence), today),
     )
 
     expect(shown).toEqual([true, false, false, true, false, false, true])
@@ -42,9 +46,9 @@ describe('a subtask every few times', () => {
   it('starts a number of times later when asked', () => {
     const cadence = everyCadence(cleaning('2026-11-07', 1), 3, 1)
 
-    expect(comesRound(sub(cadence), cleaning('2026-11-07', 1))).toBe(false)
-    expect(comesRound(sub(cadence), cleaning('2026-11-14', 2))).toBe(true)
-    expect(nextRound(sub(cadence), cleaning('2026-11-07', 1))).toEqual({
+    expect(isDue(sub(cadence), cleaning('2026-11-07', 1), today)).toBe(false)
+    expect(isDue(sub(cadence), cleaning('2026-11-14', 2), today)).toBe(true)
+    expect(nextDue(sub(cadence), cleaning('2026-11-07', 1), today)).toEqual({
       date: '2026-11-14',
       after: 1,
     })
@@ -53,7 +57,13 @@ describe('a subtask every few times', () => {
   it('says nothing under a task that does not repeat', () => {
     const plain = task('clean', { dueDate: '2026-11-07' })
 
-    expect(comesRound(sub(everyCadence(plain, 3, 1)), plain)).toBe(true)
+    expect(isDue(sub(everyCadence(plain, 3, 1)), plain, today)).toBe(true)
+  })
+
+  it('is never the same as every time', () => {
+    expect(
+      dueEveryTime(everyCadence(cleaning('2026-11-07'), 2), cleaning('2026-11-07'), today),
+    ).toBe(false)
   })
 })
 
@@ -67,7 +77,7 @@ describe('a subtask on a schedule of its own', () => {
     expect(landsOn(monthly('closest'), '2026-11-21', '2026-11-28')).toBe(false)
   })
 
-  it('lands before its date, never after, unless a later date is near enough', () => {
+  it('is never late, unless a later date is within its leeway and nearer', () => {
     expect(landsOn(monthly('before'), '2026-11-28', '2026-12-05')).toBe(true)
 
     // Meant for Friday 1 January: Saturday 26 December is 6 days early, 2 January 1 day late.
@@ -77,7 +87,7 @@ describe('a subtask on a schedule of its own', () => {
     expect(landsOn({ ...newYear, leeway: 1 }, '2026-12-26', '2027-01-02')).toBe(false)
   })
 
-  it('lands after its date, never before, unless an earlier date is near enough', () => {
+  it('is never early, unless an earlier date is within its leeway and nearer', () => {
     expect(landsOn(monthly('after'), '2026-11-28', '2026-12-05')).toBe(false)
     expect(landsOn(monthly('after'), '2026-12-05', '2026-12-12')).toBe(true)
     expect(landsOn(monthly('after', 2), '2026-11-28', '2026-12-05')).toBe(false)
@@ -92,23 +102,30 @@ describe('a subtask on a schedule of its own', () => {
   it('says which of the task’s dates it comes with next', () => {
     const subtask = sub(monthly('closest'))
 
-    expect(rests(subtask, cleaning('2026-11-07'))).toBe(true)
-    expect(nextRound(subtask, cleaning('2026-11-07'))).toEqual({ date: '2026-11-28', after: 3 })
+    expect(rests(subtask, cleaning('2026-11-07'), today)).toBe(true)
+    expect(nextDue(subtask, cleaning('2026-11-07'), today)).toEqual({
+      date: '2026-11-28',
+      after: 3,
+    })
   })
 
-  it('moves on to its next date once it came round, and stays put while it rests', () => {
+  it('moves on to its next date once it was due, and stays put while it rests', () => {
     const subtask = sub(monthly('closest'))
 
-    expect(carriedCadence(subtask, cleaning('2026-11-28'))).toMatchObject({ next: '2027-01-01' })
-    expect(carriedCadence(subtask, cleaning('2026-11-21'))).toMatchObject({ next: '2026-12-01' })
+    expect(carriedCadence(subtask, cleaning('2026-11-28'), today)).toMatchObject({
+      next: '2027-01-01',
+    })
+    expect(carriedCadence(subtask, cleaning('2026-11-21'), today)).toMatchObject({
+      next: '2026-12-01',
+    })
   })
 
   it('keeps to the end of the month it started on', () => {
     const endOfMonth = sub(scheduleCadence('month', 1, '2027-01-31'))
-    const february = carriedCadence(endOfMonth, cleaning('2027-01-30'))
+    const february = carriedCadence(endOfMonth, cleaning('2027-01-30'), today)
 
     expect(february).toMatchObject({ next: '2027-02-28' })
-    expect(carriedCadence(sub(february), cleaning('2027-02-27'))).toMatchObject({
+    expect(carriedCadence(sub(february), cleaning('2027-02-27'), today)).toMatchObject({
       next: '2027-03-31',
     })
   })
@@ -116,7 +133,52 @@ describe('a subtask on a schedule of its own', () => {
   it('skips its dates that passed while the task was late', () => {
     const weekly = sub(scheduleCadence('week', 1, '2026-11-02'))
 
-    expect(carriedCadence(weekly, cleaning('2026-11-21'))).toMatchObject({ next: '2026-11-23' })
+    expect(carriedCadence(weekly, cleaning('2026-11-21'), today)).toMatchObject({
+      next: '2026-11-23',
+    })
+  })
+
+  it('counts from the day it was last done when its schedule is not fixed', () => {
+    const descale = { ...scheduleCadence('month', 1, '2026-11-07'), anchor: 'completion' as const }
+    const doneEarlier = sub(descale, { completedAt: momentOf('2026-11-05', '18:00').getTime() })
+
+    expect(carriedCadence(doneEarlier, cleaning('2026-11-07'), today)).toMatchObject({
+      from: '2026-11-05',
+      next: '2026-12-05',
+    })
+    // Done with the task, on the day the task was done.
+    expect(carriedCadence(sub(descale), cleaning('2026-11-07'), today, '2026-11-09')).toMatchObject(
+      { next: '2026-12-09' },
+    )
+  })
+
+  it('is the same as every time when the task repeats as often or less', () => {
+    const weekly = cleaning('2026-11-07')
+
+    expect(dueEveryTime(scheduleCadence('week', 1, '2026-11-04'), weekly, today)).toBe(true)
+    expect(dueEveryTime(scheduleCadence('day', 3, '2026-11-07'), weekly, today)).toBe(true)
+    expect(dueEveryTime(scheduleCadence('week', 2, '2026-11-07'), weekly, today)).toBe(false)
+    expect(dueEveryTime(scheduleCadence('month', 1, '2026-12-01'), weekly, today)).toBe(false)
+  })
+})
+
+describe('a subtask under a task that is late', () => {
+  it('is due once its own date has passed while the task waits', () => {
+    // Due Saturday 28 November, still open on Wednesday 2 December; meant for 1 December.
+    const late = sub(scheduleCadence('month', 1, '2026-12-01', 'after'))
+
+    expect(isDue(late, cleaning('2026-11-28'), '2026-11-27')).toBe(false)
+    expect(isDue(late, cleaning('2026-11-28'), '2026-12-02')).toBe(true)
+  })
+
+  it('counts the task’s next date from today when it repeats from when done', () => {
+    // Every 7 days from when done, due 21 November but still open on 30 November: done today, it
+    // comes back on 7 December, so 30 November is the date closest to 1 December.
+    const chore = task('clean', { dueDate: '2026-11-21', repeat: defaultRepeat('day', 7) })
+    const subtask = sub(scheduleCadence('month', 1, '2026-12-01'))
+
+    expect(isDue(subtask, chore, '2026-11-21')).toBe(false)
+    expect(isDue(subtask, chore, '2026-11-30')).toBe(true)
   })
 })
 

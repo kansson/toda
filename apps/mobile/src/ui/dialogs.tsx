@@ -25,7 +25,8 @@ import {
 
 export type ChoiceDialogProps<T extends string | number> = {
   title: string
-  options: { value: T; label: string }[]
+  /** Each choice, with a line under it saying what it does where its name alone would not. */
+  options: { value: T; label: string; description?: string }[]
   selected: T
   onSelect: (value: T) => void
   onDismiss: () => void
@@ -71,6 +72,13 @@ export function ChoiceDialog<T extends string | number>({
               <ListItem.HeadlineContent>
                 <Text>{option.label}</Text>
               </ListItem.HeadlineContent>
+              {option.description ? (
+                <ListItem.SupportingContent>
+                  <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
+                    {option.description}
+                  </Text>
+                </ListItem.SupportingContent>
+              ) : null}
             </ListItem>
           ))}
         </Column>

@@ -65,8 +65,8 @@ msgid "{0} tasks deleted"
 msgstr "{0} uppgifter borttagna"
 
 #: src/ui/format.ts
-msgid "{after, plural, one {Next time: {day}} other {In # times: {day}}}"
-msgstr "{after, plural, one {Nästa gång: {day}} other {Om # gånger: {day}}}"
+msgid "{after, plural, one {Due next time, {day}} other {Due # times from now, {day}}}"
+msgstr "{after, plural, one {Nästa gång, {day}} other {Om # gånger, {day}}}"
 
 #: src/reminders/notifications.ts
 msgid "{count, plural, one {# task} other {# tasks}}"
@@ -114,12 +114,17 @@ msgid "{count} tasks deleted"
 msgstr "{count} uppgifter borttagna"
 
 #: src/ui/format.ts
-msgid "{days, plural, one {Up to # day early} other {Up to # days early}}"
-msgstr "{days, plural, one {Upp till # dag tidigare} other {Upp till # dagar tidigare}}"
+msgid "{days, plural, one {Up to # day early is fine} other {Up to # days early is fine}}"
+msgstr "{days, plural, one {Upp till # dag tidigt går bra} other {Upp till # dagar tidigt går bra}}"
 
 #: src/ui/format.ts
-msgid "{days, plural, one {Up to # day late} other {Up to # days late}}"
-msgstr "{days, plural, one {Upp till # dag senare} other {Upp till # dagar senare}}"
+msgid "{days, plural, one {Up to # day late is fine} other {Up to # days late is fine}}"
+msgstr "{days, plural, one {Upp till # dag sent går bra} other {Upp till # dagar sent går bra}}"
+
+#. Subtask schedule counted from when it was last done, as in Every month after done
+#: src/ui/format.ts
+msgid "{every} after done"
+msgstr "{every} efter klart"
 
 #. Repeat summary: the weekly rule and its days
 #: src/ui/format.ts
@@ -142,28 +147,28 @@ msgstr "{every} på {which} {day}en"
 msgid "{every} on the last day"
 msgstr "{every} sista dagen"
 
-#. Subtask cadence summary: its own schedule, on the task’s nearest date
+#. Subtask schedule summary: on the task’s date on or after its own
+#: src/ui/format.ts
+msgid "{every}, never early"
+msgstr "{every}, aldrig tidigt"
+
+#. Subtask schedule summary: on the task’s date on or before its own
+#: src/ui/format.ts
+msgid "{every}, never late"
+msgstr "{every}, aldrig sent"
+
+#. Subtask schedule summary: on whichever of the task’s dates is nearest
 #: src/ui/format.ts
 msgid "{every}, on the closest date"
 msgstr "{every}, på närmaste datum"
 
-#. Subtask cadence summary: its own schedule, on the task’s date on or after
 #: src/ui/format.ts
-msgid "{every}, on the date after"
-msgstr "{every}, på datumet efter"
-
-#. Subtask cadence summary: its own schedule, on the task’s date on or before
-#: src/ui/format.ts
-msgid "{every}, on the date before"
-msgstr "{every}, på datumet före"
+msgid "{leeway, plural, one {{every}, at most # day early} other {{every}, at most # days early}}"
+msgstr "{leeway, plural, one {{every}, högst # dag tidigt} other {{every}, högst # dagar tidigt}}"
 
 #: src/ui/format.ts
-msgid "{leeway, plural, one {{every}, on the date after or # day early} other {{every}, on the date after or up to # days early}}"
-msgstr "{leeway, plural, one {{every}, på datumet efter eller # dag tidigare} other {{every}, på datumet efter eller upp till # dagar tidigare}}"
-
-#: src/ui/format.ts
-msgid "{leeway, plural, one {{every}, on the date before or # day late} other {{every}, on the date before or up to # days late}}"
-msgstr "{leeway, plural, one {{every}, på datumet före eller # dag senare} other {{every}, på datumet före eller upp till # dagar senare}}"
+msgid "{leeway, plural, one {{every}, at most # day late} other {{every}, at most # days late}}"
+msgstr "{leeway, plural, one {{every}, högst # dag sent} other {{every}, högst # dagar sent}}"
 
 #: src/ui/format.ts
 msgid "{n, plural, one {Daily} other {Every # days}}"
@@ -182,7 +187,7 @@ msgid "{n, plural, one {Yearly} other {Every # years}}"
 msgstr "{n, plural, one {Varje år} other {Vart #:e år}}"
 
 #: src/components/cadence-editor.tsx
-msgid "{offset, plural, one {Starting next time} other {Starting in # times}}"
+msgid "{offset, plural, one {Starting next time} other {Starting # times from now}}"
 msgstr "{offset, plural, one {Börjar nästa gång} other {Börjar om # gånger}}"
 
 #. Warning before joining with unsent changes
@@ -199,16 +204,6 @@ msgstr "{subtaskCount} deluppgifter"
 #: src/app/_layout.tsx
 msgid "A change couldn’t be saved and was undone"
 msgstr "En ändring kunde inte sparas och ångrades"
-
-#. Leeway dialog for a subtask that lands on the date after
-#: src/components/cadence-editor.tsx
-msgid "A date of the task up to this many days early takes it, if nearer than the next one."
-msgstr "Ett av uppgiftens datum upp till så många dagar tidigare tar den, om det ligger närmare än nästa."
-
-#. Leeway dialog for a subtask that lands on the date before
-#: src/components/cadence-editor.tsx
-msgid "A date of the task up to this many days late takes it, if nearer than the one before."
-msgstr "Ett av uppgiftens datum upp till så många dagar senare tar den, om det ligger närmare än det före."
 
 #. Settings section about the app
 #: src/screens/settings.tsx
@@ -401,17 +396,17 @@ msgstr "Rensa sökningen"
 msgid "Clear the end"
 msgstr "Rensa slutet"
 
-#. Subtask cadence editor: keeps it strictly on its side
-#: src/components/cadence-editor.tsx
-msgid "Clear the leeway"
-msgstr "Ta bort marginalen"
-
 #. Closes a sheet
 #. Closes an information dialog
 #: src/components/update-alert.tsx
 #: src/ui/sheets.tsx
 msgid "Close"
 msgstr "Stäng"
+
+#. Subtask schedule: lands on whichever of the task’s dates is nearest its own
+#: src/ui/format.ts
+msgid "Closest date"
+msgstr "Närmaste datum"
 
 #. Field label: the pairing code
 #: src/screens/link.tsx
@@ -422,18 +417,6 @@ msgstr "Kod"
 #: src/screens/link.tsx
 msgid "Code copied"
 msgstr "Koden kopierad"
-
-#. Subtask cadence editor: how
-#. Subtask cadence editor: how it repeats
-#. Title of the subtask cadence editor
-#: src/components/cadence-editor.tsx
-msgid "Comes round"
-msgstr "Återkommer"
-
-#. Subtask: its turn is now
-#: src/ui/format.ts
-msgid "Comes round this time"
-msgstr "Återkommer den här gången"
 
 #. Filter chip: tasks that are done
 #: src/screens/tasks.tsx
@@ -619,6 +602,23 @@ msgstr "Laddar ned uppdatering"
 msgid "Due {day}"
 msgstr "Deadline {day}"
 
+#. Makes a subtask due every time its task repeats
+#: src/screens/task.tsx
+msgid "Due every time"
+msgstr "Varje gång"
+
+#. Subtask cadence summary: no cadence of its own
+#. Subtask field: when it is due, unset
+#: src/components/cadence-editor.tsx
+#: src/screens/task.tsx
+msgid "Due every time the task repeats"
+msgstr "Varje gång uppgiften upprepas"
+
+#. Subtask: its turn is now
+#: src/ui/format.ts
+msgid "Due this time"
+msgstr "Den här gången"
+
 #. A deadline that is today
 #. Section of the Today view: tasks dated today
 #: src/components/task-list.tsx
@@ -690,24 +690,15 @@ msgstr "Alla klara uppgifter i alla listor tas bort."
 msgid "Every done task, in every list"
 msgstr "Alla klara uppgifter, i alla listor"
 
-#. Subtask cadence: once every so many times its task comes round
+#. Subtask cadence: once every so many times its task repeats
 #: src/components/cadence-editor.tsx
 msgid "Every few times"
 msgstr "Var n:e gång"
 
-#. Makes a subtask come round every time its task does
-#. Subtask cadence: whenever its task comes round
+#. Subtask cadence: whenever its task repeats
 #: src/components/cadence-editor.tsx
-#: src/screens/task.tsx
 msgid "Every time"
 msgstr "Varje gång"
-
-#. Subtask cadence summary: no cadence of its own
-#. Subtask field: when it comes round, unset
-#: src/components/cadence-editor.tsx
-#: src/screens/task.tsx
-msgid "Every time the task comes round"
-msgstr "Varje gång uppgiften återkommer"
 
 #. Repeat summary: Monday to Friday
 #: src/ui/format.ts
@@ -724,7 +715,14 @@ msgstr "Går ut om {left} min"
 msgid "first"
 msgstr "första"
 
+#. Dialog title: which time a subtask is first due
+#: src/components/cadence-editor.tsx
+msgid "First due"
+msgstr "Första gången"
+
 #. Repeat editor switch: keep the dates instead of counting from done
+#. Repeat editor switch: keep the dates instead of counting from done
+#: src/components/cadence-editor.tsx
 #: src/components/repeat-editor.tsx
 msgid "Fixed schedule"
 msgstr "Fast schema"
@@ -738,6 +736,16 @@ msgstr "fjärde"
 #: src/screens/settings.tsx
 msgid "Home screen widget"
 msgstr "Widget på hemskärmen"
+
+#. Dialog title: leeway of a never-early subtask, in days
+#: src/components/cadence-editor.tsx
+msgid "How early is fine?"
+msgstr "Hur tidigt går bra?"
+
+#. Dialog title: leeway of a never-late subtask, in days
+#: src/components/cadence-editor.tsx
+msgid "How late is fine?"
+msgstr "Hur sent går bra?"
 
 #. Opens the guide to deploying the backend
 #: src/components/server-setup.tsx
@@ -753,6 +761,16 @@ msgstr "Jag har en kod"
 #: src/components/update-alert.tsx
 msgid "Installing update"
 msgstr "Installerar uppdatering"
+
+#. Leeway dialog for a never-early subtask
+#: src/components/cadence-editor.tsx
+msgid "It can land this many days early instead, when that’s nearer than landing late."
+msgstr "Den kan hamna så många dagar tidigt i stället, när det är närmare än att hamna sent."
+
+#. Leeway dialog for a never-late subtask
+#: src/components/cadence-editor.tsx
+msgid "It can land this many days late instead, when that’s nearer than landing early."
+msgstr "Den kan hamna så många dagar sent i stället, när det är närmare än att hamna tidigt."
 
 #. Deleting a task
 #: src/screens/task.tsx
@@ -785,11 +803,6 @@ msgstr "sista"
 #: src/ui/format.ts
 msgid "Later"
 msgstr "Senare"
-
-#. Dialog title: how many days on the other side of its date still do
-#: src/components/cadence-editor.tsx
-msgid "Leeway"
-msgstr "Marginal"
 
 #. Settings row opening the licenses of the open-source packages
 #. Title of the screen listing the open-source packages and their licenses
@@ -893,6 +906,16 @@ msgstr "Mina uppgifter"
 msgid "Name"
 msgstr "Namn"
 
+#. Subtask schedule: lands on the first of the task’s dates on or after its own
+#: src/ui/format.ts
+msgid "Never early"
+msgstr "Aldrig tidigt"
+
+#. Subtask schedule: lands on the last of the task’s dates on or before its own
+#: src/ui/format.ts
+msgid "Never late"
+msgstr "Aldrig sent"
+
 #. Dialog title
 #. Lists sheet button adding a list
 #: src/components/lists-sheet.tsx
@@ -908,15 +931,10 @@ msgstr "Ny lista"
 msgid "New task"
 msgstr "Ny uppgift"
 
-#. Subtask cadence editor: the date it is next meant for
-#: src/components/cadence-editor.tsx
-msgid "Next date"
-msgstr "Nästa datum"
-
 #. Subtask cadence editor: the date of its own schedule it is next for
 #: src/components/cadence-editor.tsx
-msgid "Next meant for {nextDay}"
-msgstr "Härnäst avsedd för {nextDay}"
+msgid "Next on its schedule: {nextDay}"
+msgstr "Nästa enligt schemat: {nextDay}"
 
 #. Update channel: daily builds
 #. Update channel: daily builds
@@ -934,7 +952,7 @@ msgstr "Inget datum"
 msgid "No deadline"
 msgstr "Ingen deadline"
 
-#. Subtask cadence editor: never on the other side of its date, unset
+#. Subtask cadence editor: keeps it strictly on its side
 #: src/components/cadence-editor.tsx
 msgid "No leeway"
 msgstr "Ingen marginal"
@@ -966,25 +984,35 @@ msgstr "Inga stjärnmärkta uppgifter"
 msgid "No tasks"
 msgstr "Inga uppgifter"
 
-#. Subtask: its turn would come after its task stops repeating
-#: src/ui/format.ts
-msgid "Not again before the repeat ends"
-msgstr "Inte igen innan upprepningen slutar"
-
 #. Settings row before the first sync
 #: src/screens/settings.tsx
 msgid "Not connected yet"
 msgstr "Inte ansluten än"
 
+#. Subtask: its turn would come after its task stops repeating
+#: src/ui/format.ts
+msgid "Not due again before the task stops repeating"
+msgstr "Inte igen innan uppgiften slutar upprepas"
+
+#. Subtask resting while its task was done
+#: src/screens/task.tsx
+msgid "Not due this time"
+msgstr "Inte den här gången"
+
+#. Subtask cadence editor: no leeway for a never-early one
+#: src/components/cadence-editor.tsx
+msgid "Not even a day early"
+msgstr "Inte en dag för tidigt"
+
+#. Subtask cadence editor: no leeway for a never-late one
+#: src/components/cadence-editor.tsx
+msgid "Not even a day late"
+msgstr "Inte en dag för sent"
+
 #. Section of tasks without a star
 #: src/ui/format.ts
 msgid "Not starred"
 msgstr "Inte stjärnmärkta"
-
-#. Subtask resting while its task was done
-#: src/screens/task.tsx
-msgid "Not this time"
-msgstr "Inte den här gången"
 
 #. Empty Upcoming view
 #: src/components/task-list.tsx
@@ -1058,11 +1086,6 @@ msgstr "på {day}"
 msgid "On a date"
 msgstr "Ett visst datum"
 
-#. Subtask cadence: its own interval, landing on its task’s dates
-#: src/components/cadence-editor.tsx
-msgid "On a schedule of its own"
-msgstr "Efter ett eget schema"
-
 #. Monthly repeat on a day number
 #: src/components/repeat-editor.tsx
 msgid "On day {day}"
@@ -1078,6 +1101,11 @@ msgstr "På alla telefoner, för gott"
 msgid "On its day · back {when}"
 msgstr "På sin dag · tillbaka {when}"
 
+#. Subtask cadence: its own interval, landing on its task’s dates
+#: src/components/cadence-editor.tsx
+msgid "On its own schedule"
+msgstr "Eget schema"
+
 #. Monthly repeat on e.g. the second Tuesday
 #. placeholder {0}: ordinalWeekLabel(week)
 #. placeholder {1}: weekdayName(startWeekday)
@@ -1091,10 +1119,25 @@ msgstr "På {0} {1}en"
 msgid "On the last {0}"
 msgstr "Sista {0}en"
 
-#. Dialog title: every how many times a subtask comes round
+#. Explains the Never early choice of a subtask schedule
+#: src/ui/format.ts
+msgid "On the task’s first date on or after it"
+msgstr "Uppgiftens första datum på eller efter det"
+
+#. Explains the Never late choice of a subtask schedule
+#: src/ui/format.ts
+msgid "On the task’s last date on or before it"
+msgstr "Uppgiftens sista datum på eller före det"
+
+#. Explains the Closest date choice of a subtask schedule
+#: src/ui/format.ts
+msgid "On whichever of the task’s dates is nearest"
+msgstr "Det av uppgiftens datum som ligger närmast"
+
+#. Dialog title: every how many times a subtask is due
 #: src/components/cadence-editor.tsx
-msgid "Once every"
-msgstr "Hur ofta"
+msgid "Once every how many times?"
+msgstr "Hur ofta?"
 
 #. Account with one phone
 #: src/screens/settings.tsx
@@ -1361,15 +1404,10 @@ msgstr "Börja om på den här telefonen"
 msgid "Start over on this phone?"
 msgstr "Börja om på den här telefonen?"
 
-#. Subtask cadence: first comes round now
+#. Subtask cadence: first due now
 #: src/components/cadence-editor.tsx
 msgid "Starting this time"
 msgstr "Börjar den här gången"
-
-#. Dialog title: which time a subtask first comes round
-#: src/components/cadence-editor.tsx
-msgid "Starts"
-msgstr "Börjar"
 
 #. Task page heading over its subtasks
 #: src/components/task-form.tsx
@@ -1454,20 +1492,10 @@ msgstr "Den nedladdade uppdateringen var skadad och installerades inte. Försök
 msgid "The lists on this phone are replaced by the other phone’s. If no other phone shares them, they are deleted."
 msgstr "Listorna på den här telefonen ersätts av den andra telefonens. Om ingen annan telefon delar dem tas de bort."
 
-#. Subtask schedule: lands on whichever of the task’s dates is nearest its own
-#: src/ui/format.ts
-msgid "The task’s closest date"
-msgstr "Uppgiftens närmaste datum"
-
-#. Subtask schedule: lands on the first of the task’s dates on or after its own
-#: src/ui/format.ts
-msgid "The task’s date after"
-msgstr "Uppgiftens datum efter"
-
-#. Subtask schedule: lands on the last of the task’s dates on or before its own
-#: src/ui/format.ts
-msgid "The task’s date before"
-msgstr "Uppgiftens datum före"
+#. Subtask cadence summary: its schedule is as often as its task
+#: src/components/cadence-editor.tsx
+msgid "The task repeats less often than this, so it’s due every time anyway."
+msgstr "Uppgiften upprepas mer sällan än så, så den gäller varje gång ändå."
 
 #. Update dialog when downloading the new version failed
 #: src/components/update-alert.tsx
@@ -1663,6 +1691,12 @@ msgstr "Version"
 #: src/components/done-day-sheet.tsx
 msgid "When did you do it?"
 msgstr "När gjorde du den?"
+
+#. Dialog title: how often a subtask is due
+#. Title of the subtask cadence editor
+#: src/components/cadence-editor.tsx
+msgid "When it’s due"
+msgstr "När den ska göras"
 
 #. A date that was yesterday, inside a sentence
 #: src/ui/format.ts

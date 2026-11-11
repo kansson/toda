@@ -287,97 +287,133 @@ export function everyLabel(unit: Repeat['unit'], count: number) {
   }
 }
 
-/** A subtask coming round every few times its task does, as in "Once every 3 times". */
+/** A subtask due once every few times its task repeats, as in "Once every 3 times". */
 export function everyTimesLabel(count: number) {
   return plural(count, { one: 'Every time', other: 'Once every # times' })
 }
 
-/** Which of its task's dates a subtask on its own schedule lands on, for the cadence editor. */
+/** Which of its task's dates a subtask on its own schedule lands on, in a word or two. */
 export function leanLabel(lean: Lean) {
   switch (lean) {
     case 'closest':
       return t({
-        message: 'The task’s closest date',
+        message: 'Closest date',
         comment: 'Subtask schedule: lands on whichever of the task’s dates is nearest its own',
       })
     case 'before':
       return t({
-        message: 'The task’s date before',
+        message: 'Never late',
         comment: 'Subtask schedule: lands on the last of the task’s dates on or before its own',
       })
     case 'after':
       return t({
-        message: 'The task’s date after',
+        message: 'Never early',
         comment: 'Subtask schedule: lands on the first of the task’s dates on or after its own',
       })
   }
 }
 
-/** How far a subtask leaning before or after its date may go the other way, as a card says it. */
+/** What each choice of `leanLabel` does, under it in the choice dialog. */
+export function leanDescription(lean: Lean) {
+  switch (lean) {
+    case 'closest':
+      return t({
+        message: 'On whichever of the task’s dates is nearest',
+        comment: 'Explains the Closest date choice of a subtask schedule',
+      })
+    case 'before':
+      return t({
+        message: 'On the task’s last date on or before it',
+        comment: 'Explains the Never late choice of a subtask schedule',
+      })
+    case 'after':
+      return t({
+        message: 'On the task’s first date on or after it',
+        comment: 'Explains the Never early choice of a subtask schedule',
+      })
+  }
+}
+
+/** How far a never-late or never-early subtask may go the other way, as its card says it. */
 export function leewayLabel(lean: Lean, days: number) {
   return lean === 'after'
-    ? plural(days, { one: 'Up to # day early', other: 'Up to # days early' })
-    : plural(days, { one: 'Up to # day late', other: 'Up to # days late' })
+    ? plural(days, { one: 'Up to # day early is fine', other: 'Up to # days early is fine' })
+    : plural(days, { one: 'Up to # day late is fine', other: 'Up to # days late is fine' })
+}
+
+/** A subtask schedule's interval, with "after done" where it counts from when it was done. */
+function scheduleEvery(cadence: Extract<Cadence, { kind: 'schedule' }>) {
+  const every = everyLabel(cadence.unit, cadence.interval)
+
+  return cadence.anchor === 'completion'
+    ? t({
+        message: `${every} after done`,
+        comment:
+          'Subtask schedule counted from when it was last done, as in Every month after done',
+      })
+    : every
 }
 
 /**
- * How often a subtask comes round, in a few words: "Once every 3 times", or "Every month, on the
- * closest date" for one on its own schedule.
+ * How often a subtask is due, in a few words: "Once every 3 times", or for one on its own
+ * schedule "Every month, never late" or "Every month, up to 2 days early".
  */
 export function cadenceLabel(cadence: Cadence) {
   if (cadence.kind === 'every') return everyTimesLabel(cadence.count)
-  const every = everyLabel(cadence.unit, cadence.interval)
+  const every = scheduleEvery(cadence)
   const leeway = cadence.leeway
 
   switch (cadence.lean) {
     case 'closest':
       return t({
         message: `${every}, on the closest date`,
-        comment: 'Subtask cadence summary: its own schedule, on the task’s nearest date',
+        comment: 'Subtask schedule summary: on whichever of the task’s dates is nearest',
       })
     case 'before':
       return leeway === 0
         ? t({
-            message: `${every}, on the date before`,
-            comment: 'Subtask cadence summary: its own schedule, on the task’s date on or before',
+            message: `${every}, never late`,
+            comment: 'Subtask schedule summary: on the task’s date on or before its own',
           })
         : plural(leeway, {
-            one: `${every}, on the date before or # day late`,
-            other: `${every}, on the date before or up to # days late`,
+            one: `${every}, at most # day late`,
+            other: `${every}, at most # days late`,
           })
     case 'after':
       return leeway === 0
         ? t({
-            message: `${every}, on the date after`,
-            comment: 'Subtask cadence summary: its own schedule, on the task’s date on or after',
+            message: `${every}, never early`,
+            comment: 'Subtask schedule summary: on the task’s date on or after its own',
           })
         : plural(leeway, {
-            one: `${every}, on the date after or # day early`,
-            other: `${every}, on the date after or up to # days early`,
+            one: `${every}, at most # day early`,
+            other: `${every}, at most # days early`,
           })
   }
 }
 
 /**
- * When a subtask next comes round: this time, or after how many of its task's occurrences and on
- * which of its dates; null once its task's repeat ends first.
+ * When a subtask is next due: this time, or on which of its task's dates and after how many of
+ * its occurrences; null once its task stops repeating first.
  */
-export function nextRoundLabel(
-  round: { date: CalendarDate; after: number } | null,
+export function nextDueLabel(
+  due: { date: CalendarDate; after: number } | null,
   today: CalendarDate,
 ) {
-  if (round === null)
+  if (due === null)
     return t({
-      message: 'Not again before the repeat ends',
+      message: 'Not due again before the task stops repeating',
       comment: 'Subtask: its turn would come after its task stops repeating',
     })
 
-  if (round.after === 0)
-    return t({ message: 'Comes round this time', comment: 'Subtask: its turn is now' })
-  const { after } = round
-  const day = dayLabel(round.date, today)
+  if (due.after === 0) return t({ message: 'Due this time', comment: 'Subtask: its turn is now' })
+  const { after } = due
+  const day = dayLabel(due.date, today)
 
-  return plural(after, { one: `Next time: ${day}`, other: `In # times: ${day}` })
+  return plural(after, {
+    one: `Due next time, ${day}`,
+    other: `Due # times from now, ${day}`,
+  })
 }
 
 /** A section's heading in the reader's language. */
