@@ -16,6 +16,7 @@ export type TaskPatch = Partial<
     | 'deadline'
     | 'starredAt'
     | 'repeat'
+    | 'cadence'
     | 'listId'
     | 'position'
   >
@@ -316,8 +317,8 @@ export function createActions(db: Db, onRefused: () => void) {
 
       moveTasks({
         changes: [
-          // A subtask moved on its own becomes a top-level task there.
-          { id, patch: { listId, parentId: null, position } },
+          // A subtask moved on its own becomes a top-level task there, with no cadence.
+          { id, patch: { listId, parentId: null, position, cadence: null } },
           ...(task.parentId === null
             ? subtasksOf(id).map((subtask) => ({ id: subtask.clientId, patch: { listId } }))
             : []),
@@ -343,7 +344,10 @@ export function createActions(db: Db, onRefused: () => void) {
         })
     },
 
-    /** Makes a top-level task a subtask of the task above it, its own subtasks following. */
+    /**
+     * Makes a top-level task a subtask of the task above it, its own subtasks following; they
+     * come every time under it until a cadence is chosen there.
+     */
     indent(id: string, under: string) {
       const task = tasks.get(id)
       const parent = tasks.get(under)
@@ -356,12 +360,12 @@ export function createActions(db: Db, onRefused: () => void) {
       moveTasks({
         changes: [task, ...children].map((row) => ({
           id: row.clientId,
-          patch: { parentId: under, listId: parent.listId, position: position++ },
+          patch: { parentId: under, listId: parent.listId, position: position++, cadence: null },
         })),
       })
     },
 
-    /** Makes a subtask a top-level task just below its parent. */
+    /** Makes a subtask a top-level task just below its parent, leaving its cadence behind. */
     outdent(id: string) {
       const task = tasks.get(id)
       const parent = task?.parentId ? tasks.get(task.parentId) : undefined
@@ -375,7 +379,7 @@ export function createActions(db: Db, onRefused: () => void) {
       const next = Math.min(...after.map((sibling) => sibling.position))
       const position = Number.isFinite(next) ? (parent.position + next) / 2 : parent.position + 1
 
-      moveTasks({ changes: [{ id, patch: { parentId: null, position } }] })
+      moveTasks({ changes: [{ id, patch: { parentId: null, position, cadence: null } }] })
     },
   }
 }

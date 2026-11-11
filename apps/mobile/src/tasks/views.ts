@@ -1,3 +1,4 @@
+import { rests } from './cadence'
 import { addDays, type CalendarDate, daysBetween } from './dates'
 import type { ListSort, Task } from './model'
 
@@ -141,7 +142,8 @@ export type ListView = {
 /**
  * A list's tasks as its screen shows them: open top-level tasks sorted and sectioned by the
  * list's sort, each followed by its subtasks in their own order (open first, then done), and the
- * done ones below. Later occurrences of a repeating task wait for their day.
+ * done ones below. Later occurrences of a repeating task wait for their day, and subtasks resting
+ * this time for their turn.
  */
 export function listView(
   tasks: readonly Task[],
@@ -166,7 +168,8 @@ export function listView(
 
   const subtaskRows = (parent: Task, done: boolean) =>
     (children.get(parent.clientId) ?? [])
-      .filter((task) => done || task.completedAt === null)
+      // A subtask whose cadence rests it this time waits on the task's page for its turn.
+      .filter((task) => (done || task.completedAt === null) && !rests(task, parent))
       .slice()
       .sort(
         (a, b) =>

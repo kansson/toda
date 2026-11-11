@@ -1,6 +1,6 @@
 import type { ListRow, TaskRow } from '@toda/backend/model'
 
-export type { ListRow, ListSort, Repeat, TaskRow } from '@toda/backend/model'
+export type { Cadence, ListRow, ListSort, Repeat, TaskRow } from '@toda/backend/model'
 
 export { DEFAULT_LIST_ID, NOTES_MAX, TITLE_MAX } from '@toda/backend/model'
 
@@ -31,6 +31,7 @@ export function newTask(clientId: string, fields: NewTask, now: number): Task {
     repeat: null,
     seriesId: null,
     occurrence: 1,
+    cadence: null,
     createdAt: now,
     updatedAt: now,
     ...fields,

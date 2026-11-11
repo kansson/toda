@@ -31,7 +31,7 @@ const OUTBOX_FILE = 'toda-outbox.db'
  * Raised whenever the shape of a stored row changes; the copy on the phone is then dropped and
  * synced again. The outbox is unaffected.
  */
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
 
 /** The phone's one JavaScript runtime always owns the outbox; there are no tabs to share it. */
 const alwaysLeader: LeaderElection = {
