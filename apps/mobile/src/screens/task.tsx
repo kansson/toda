@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
+import { CadenceEditor } from '@/components/cadence-editor'
 import { DatePicker, TimePicker } from '@/components/date-pickers'
 import { RepeatEditor } from '@/components/repeat-editor'
 import { useTaskCommands } from '@/components/task-commands'
@@ -16,10 +17,20 @@ import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
 import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
 import { Column, FilledTonalButton, Row, Text, useMaterialColors } from '@/lib/compose-ui'
+import { cadenceOf, nextRound, rests } from '@/tasks/cadence'
 import { localDate } from '@/tasks/dates'
 import { NO_LIST, TITLE_MAX } from '@/tasks/model'
 import { ChoiceDialog, ConfirmDialog, TextDialog } from '@/ui/dialogs'
-import { datePhrase, dayLabel, deadlineLabel, isOverdue, repeatLabel, timeLabel } from '@/ui/format'
+import {
+  cadenceLabel,
+  datePhrase,
+  dayLabel,
+  deadlineLabel,
+  isOverdue,
+  nextRoundLabel,
+  repeatLabel,
+  timeLabel,
+} from '@/ui/format'
 import { Empty, Fab } from '@/ui/primitives'
 import { Action, Screen } from '@/ui/screen'
 
@@ -29,6 +40,7 @@ type Overlay =
   | 'time'
   | 'deadline'
   | 'repeat'
+  | 'cadence'
   | 'list'
   | 'delete'
   | 'deadlineRepeat'
@@ -36,8 +48,10 @@ type Overlay =
 
 /**
  * A task's page: its title in the large app bar, renamed in a dialog, then the new task page's
- * cards for its details, list, date, time, repeat and deadline, its subtasks, and Done. Every
- * change is saved as it is made; deleting asks first.
+ * cards for its details, list, date, time, repeat and deadline, its subtasks, and Done. A subtask
+ * of a repeating task has, in their place, when it comes round; on its task's page a subtask
+ * resting this time says when its turn is. Every change is saved as it is made; deleting asks
+ * first.
  */
 export function TaskScreen() {
   const { t } = useLingui()
@@ -52,6 +66,8 @@ export function TaskScreen() {
   const lists = useLists()
 
   const { task, subtasks } = useTask(id)
+  // A subtask's task, which decides whether it can have a cadence: only under a repeating one.
+  const { task: parent } = useTask(task?.parentId ?? '')
   const [overlay, setOverlay] = useState<Overlay>(null)
 
   // Checked off in a widget: checked off here once it has loaded, so a late repeating task asks
@@ -88,6 +104,17 @@ export function TaskScreen() {
   const done = task.completedAt !== null
   const list = lists.find((candidate) => candidate.clientId === task.listId)
   const isSubtask = task.parentId !== null
+  const repeatingParent = isSubtask && parent?.repeat ? parent : undefined
+  const cadence = cadenceOf(task, repeatingParent)
+
+  // When a subtask resting this time next comes round, or that it rested this time, its task done.
+  const waiting = (subtask: (typeof subtasks)[number]) => {
+    if (!rests(subtask, task)) return null
+
+    return done
+      ? t({ message: 'Not this time', comment: 'Subtask resting while its task was done' })
+      : nextRoundLabel(nextRound(subtask, task), today)
+  }
 
   return (
     <Screen
@@ -142,6 +169,27 @@ export function TaskScreen() {
         <FieldCards
           rows={[
             details.row,
+            ...(repeatingParent
+              ? [
+                  {
+                    key: 'cadence',
+                    glyph: 'repeat' as const,
+                    label: t({
+                      message: 'Every time the task comes round',
+                      comment: 'Subtask field: when it comes round, unset',
+                    }),
+                    value: cadence ? cadenceLabel(cadence) : null,
+                    onPress: () => setOverlay('cadence'),
+                    clear: {
+                      label: t({
+                        message: 'Every time',
+                        comment: 'Makes a subtask come round every time its task does',
+                      }),
+                      onPress: () => actions.updateTask(task.clientId, { cadence: null }),
+                    },
+                  },
+                ]
+              : []),
             ...(isSubtask
               ? []
               : [
@@ -235,6 +283,7 @@ export function TaskScreen() {
               key: subtask.clientId,
               title: subtask.title,
               done: subtask.completedAt !== null,
+              waiting: waiting(subtask),
             }))}
             onAdd={(value) =>
               actions.createTask({ listId: task.listId, parentId: task.clientId, title: value })
@@ -252,6 +301,11 @@ export function TaskScreen() {
             }}
           />
         )}
+        {cadence && repeatingParent && !done ? (
+          <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
+            {nextRoundLabel(nextRound(task, repeatingParent), today)}
+          </Text>
+        ) : null}
         {isSubtask ? (
           <Row modifiers={[fillMaxWidth()]}>
             <FilledTonalButton onClick={() => actions.outdent(task.clientId)}>
@@ -314,6 +368,15 @@ export function TaskScreen() {
               repeat ? { repeat, dueDate, deadline: null } : { repeat: null },
             )
           }
+          onDismiss={() => setOverlay(null)}
+        />
+      ) : null}
+      {overlay === 'cadence' && repeatingParent ? (
+        <CadenceEditor
+          subtask={task}
+          parent={repeatingParent}
+          today={today}
+          onSave={(next) => actions.updateTask(task.clientId, { cadence: next })}
           onDismiss={() => setOverlay(null)}
         />
       ) : null}

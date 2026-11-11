@@ -195,10 +195,7 @@ describe('sync.apply', () => {
     ],
     [
       'a subtask that comes round every zero times',
-      [
-        task('a'),
-        task('b', { parentId: 'a', cadence: { kind: 'every', count: 0, from: 1 } }),
-      ],
+      [task('a'), task('b', { parentId: 'a', cadence: { kind: 'every', count: 0, from: 1 } })],
     ],
     [
       'a subtask schedule meant for a day that does not exist',

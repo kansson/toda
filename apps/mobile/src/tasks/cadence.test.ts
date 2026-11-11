@@ -108,9 +108,9 @@ describe('a subtask on a schedule of its own', () => {
     const february = carriedCadence(endOfMonth, cleaning('2027-01-30'))
 
     expect(february).toMatchObject({ next: '2027-02-28' })
-    expect(
-      carriedCadence(sub(february), cleaning('2027-02-27')),
-    ).toMatchObject({ next: '2027-03-31' })
+    expect(carriedCadence(sub(february), cleaning('2027-02-27'))).toMatchObject({
+      next: '2027-03-31',
+    })
   })
 
   it('skips its dates that passed while the task was late', () => {
