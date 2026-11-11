@@ -193,6 +193,31 @@ describe('sync.apply', () => {
         }),
       ],
     ],
+    [
+      'a subtask that comes round every zero times',
+      [
+        task('a'),
+        task('b', { parentId: 'a', cadence: { kind: 'every', count: 0, from: 1 } }),
+      ],
+    ],
+    [
+      'a subtask schedule meant for a day that does not exist',
+      [
+        task('a'),
+        task('b', {
+          parentId: 'a',
+          cadence: {
+            kind: 'schedule',
+            unit: 'month',
+            interval: 1,
+            from: '2026-11-01',
+            next: '2026-11-31',
+            lean: 'closest',
+            leeway: 0,
+          },
+        }),
+      ],
+    ],
   ])('refuses %s, writing nothing', async (_, operations) => {
     const { as } = await signedIn()
 
@@ -200,6 +225,35 @@ describe('sync.apply', () => {
       as.mutation(api.sync.apply, { idempotencyKey: 'bad', operations }),
     ).rejects.toThrow()
     expect(await allTasks(as)).toEqual([])
+  })
+
+  it('keeps a subtask’s cadence, clears it with null and takes rows without one', async () => {
+    const { as } = await signedIn()
+
+    const cadence = {
+      kind: 'schedule' as const,
+      unit: 'month' as const,
+      interval: 1,
+      from: '2026-12-01',
+      next: '2026-12-01',
+      lean: 'before' as const,
+      leeway: 2,
+    }
+
+    await as.mutation(api.sync.apply, {
+      idempotencyKey: '1',
+      operations: [task('a'), task('b', { parentId: 'a', cadence })],
+    })
+
+    expect(await allTasks(as)).toMatchObject([{ clientId: 'a' }, { clientId: 'b', cadence }])
+    expect((await allTasks(as))[0]).not.toHaveProperty('cadence')
+
+    await as.mutation(api.sync.apply, {
+      idempotencyKey: '2',
+      operations: [{ table: 'tasks', type: 'update', clientId: 'b', value: { cadence: null } }],
+    })
+
+    expect((await allTasks(as))[1]?.cadence).toBeNull()
   })
 
   it('deletes any list, the first one too, with its tasks', async () => {

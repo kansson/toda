@@ -21,13 +21,20 @@ export const sortValidator = v.union(
 /** Days of the week, Monday first: 0 is Monday and 6 is Sunday. */
 const weekdayValidator = v.number()
 
+const unitValidator = v.union(
+  v.literal('day'),
+  v.literal('week'),
+  v.literal('month'),
+  v.literal('year'),
+)
+
 /**
  * A repeat schedule. `anchor` says what the next date counts from when a task is completed:
  * `due` keeps a fixed schedule, as Google Tasks does; `completion` counts the interval from the
  * day it was done, so finishing late moves every later date with it.
  */
 export const repeatValidator = v.object({
-  unit: v.union(v.literal('day'), v.literal('week'), v.literal('month'), v.literal('year')),
+  unit: unitValidator,
   interval: v.number(),
   /** Weekly repeats: the days it falls on; empty means the due date's own weekday. */
   weekdays: v.array(weekdayValidator),
@@ -44,6 +51,30 @@ export const repeatValidator = v.object({
     v.object({ kind: v.literal('after'), count: v.number() }),
   ),
 })
+
+/**
+ * How often a subtask of a repeating task comes round; without one it comes every time. Its
+ * task's occurrences carry it from one to the next, and a subtask that does not come round in an
+ * occurrence rests there, hidden and left open when the task is done.
+ *
+ * - `every`: every `count`th occurrence of its task, counting from occurrence `from`.
+ * - `schedule`: a schedule of its own, every `interval` units from `from`, that lands on one of
+ *   its task's dates: `next` is the date it is next meant for. `lean` picks which of the task's
+ *   dates around it takes it: the closest, the last on or before it, or the first on or after it;
+ *   `leeway` lets a date that many days on the other side take it instead, where that is closer.
+ */
+export const cadenceValidator = v.union(
+  v.object({ kind: v.literal('every'), count: v.number(), from: v.number() }),
+  v.object({
+    kind: v.literal('schedule'),
+    unit: unitValidator,
+    interval: v.number(),
+    from: v.string(),
+    next: v.string(),
+    lean: v.union(v.literal('closest'), v.literal('before'), v.literal('after')),
+    leeway: v.number(),
+  }),
+)
 
 /** What a client may set on a list; `clientId` is its identity on every device. */
 export const listFields = {
@@ -76,6 +107,11 @@ export const taskFields = {
   seriesId: v.union(v.string(), v.null()),
   /** Which occurrence of its series this is, from 1. */
   occurrence: v.number(),
+  /**
+   * A subtask's own cadence within its task's repeat, or null for every time. Optional, so rows
+   * written before it existed, and by app versions that know nothing of it, stay valid.
+   */
+  cadence: v.optional(v.union(cadenceValidator, v.null())),
   createdAt: v.number(),
 }
 
