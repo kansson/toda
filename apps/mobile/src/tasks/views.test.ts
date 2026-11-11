@@ -231,4 +231,35 @@ describe('browseView', () => {
       ['today', ['a', 'b']],
     ])
   })
+
+  it('keeps each task’s subtasks under it in Today, sorted or not, without the resting ones', () => {
+    const chore = task('b', { dueDate: today, position: 1, repeat: defaultRepeat('week') })
+
+    const tasks = [
+      chore,
+      task('a', { dueDate: today, position: 2 }),
+      task('b2', { parentId: 'b', position: 2 }),
+      task('b1', { parentId: 'b', position: 1 }),
+      task('bRest', { parentId: 'b', cadence: everyCadence(chore, 2, 1) }),
+    ]
+
+    expect(titles(browseView(tasks, 'today', 'manual', today, now, null))).toEqual([
+      ['today', ['b', 'b1', 'b2', 'a']],
+    ])
+    expect(titles(browseView(tasks, 'today', 'title', today, now, null))).toEqual([
+      ['today', ['a', 'b', 'b1', 'b2']],
+    ])
+  })
+
+  it('shows a starred subtask once in Starred, on its own row', () => {
+    const tasks = [
+      task('p', { starredAt: 1 }),
+      task('s', { parentId: 'p', starredAt: 2 }),
+      task('t', { parentId: 'p' }),
+    ]
+
+    expect(titles(browseView(tasks, 'starred', 'manual', today, now, null))).toEqual([
+      ['starredEarlier', ['s', 'p', 't']],
+    ])
+  })
 })

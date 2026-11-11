@@ -27,6 +27,8 @@ export type TaskRowProps = {
   listTitle?: string
   /** Open subtasks under it, shown as a count when its subtasks are not listed below it. */
   subtaskCount?: number
+  /** A subtask's cadence under its repeating task, such as "Once every 3 times". */
+  cadence?: string
   /** The write is still on its way to the server. */
   pending?: boolean
   onToggle: () => void
@@ -36,7 +38,8 @@ export type TaskRowProps = {
 
 /**
  * A task in a list: its circle checks it off, its star marks it, and the rest opens it. Below the
- * title, what it carries: when it is due (red once passed), its repeat, deadline and details.
+ * title, what it carries: when it is due (red once passed), its repeat or, for a subtask, how
+ * often it is due, its deadline and details.
  */
 export function TaskRow({
   task,
@@ -44,6 +47,7 @@ export function TaskRow({
   today,
   listTitle,
   subtaskCount = 0,
+  cadence,
   pending = false,
   onToggle,
   onStar,
@@ -68,7 +72,8 @@ export function TaskRow({
 
   // Every line of the details, under the rest, so none of them is cut off.
   const notes = task.notes.trim()
-  const hasMeta = due !== '' || task.repeat !== null || pending || details.length > 0
+  const repeats = task.repeat !== null || cadence !== undefined
+  const hasMeta = due !== '' || repeats || pending || details.length > 0
   const hasSupporting = hasMeta || notes !== ''
 
   const title =
@@ -134,8 +139,18 @@ export function TaskRow({
                     {due}
                   </Text>
                 ) : null}
-                {task.repeat ? (
+                {repeats ? (
                   <Icon source={glyphs.repeat} size={14} tint={colors.onSurfaceVariant} />
+                ) : null}
+                {cadence ? (
+                  <Text
+                    color={colors.onSurfaceVariant}
+                    maxLines={1}
+                    overflow='ellipsis'
+                    style={{ typography: 'bodySmall' }}
+                  >
+                    {cadence}
+                  </Text>
                 ) : null}
                 {pending ? (
                   <Icon source={glyphs.pending} size={14} tint={colors.onSurfaceVariant} />
@@ -147,7 +162,7 @@ export function TaskRow({
                     overflow='ellipsis'
                     style={{ typography: 'bodySmall' }}
                   >
-                    {(due ? '· ' : '') + details.join(' · ')}
+                    {(due || cadence ? '· ' : '') + details.join(' · ')}
                   </Text>
                 ) : null}
               </Row>
