@@ -6,6 +6,7 @@ import {
   Icon,
   IconButton,
   ListItem,
+  Switch,
   Text,
   TextField,
   type TextFieldRef,
@@ -17,6 +18,7 @@ import { NOTES_MAX, TITLE_MAX } from '@/tasks/model'
 import { TextDialog } from '@/ui/dialogs'
 import { type Glyph, glyphs } from '@/ui/glyphs'
 import { cardCorners } from '@/ui/primitives'
+import { SettingCard } from './setting-cards'
 
 /** A text field's value, held natively so typing never waits on JavaScript. */
 type TextState = ReturnType<typeof useNativeState<string>>
@@ -183,21 +185,85 @@ export type SubtaskItem = {
   done: boolean
   /** Resting this time, as its cadence has it: when it is next due. */
   waiting?: string | null
+  /** When it is due, where that is not every time, as in "Once every 3 times". */
+  note?: string | null
+}
+
+/** A switch that sets how a task's subtasks work, at the end of their cards. */
+export type SubtaskSetting = {
+  key: string
+  glyph: Glyph
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
+/**
+ * How a task's subtasks work, as switches under them: whether checking off the last one due does
+ * the task, and, on a repeating task with two or more, whether they take turns.
+ */
+export function useSubtaskSettings({
+  count,
+  repeating,
+  doneWithSubtasks,
+  turns,
+  onDoneWithSubtasks,
+  onTurns,
+}: {
+  count: number
+  repeating: boolean
+  doneWithSubtasks: boolean
+  turns: boolean
+  onDoneWithSubtasks: (checked: boolean) => void
+  onTurns: (checked: boolean) => void
+}): SubtaskSetting[] {
+  const { t } = useLingui()
+  const settings: SubtaskSetting[] = []
+
+  if (repeating && count > 1)
+    settings.push({
+      key: 'turns',
+      glyph: 'turns',
+      label: t({
+        message: 'Take turns, one each time',
+        comment: 'Task page switch: one subtask is due each time the task repeats',
+      }),
+      checked: turns,
+      onChange: onTurns,
+    })
+
+  if (count > 0)
+    settings.push({
+      key: 'completion',
+      glyph: 'allDone',
+      label: t({
+        message: 'Done when its subtasks are',
+        comment: 'Task page switch: checking off the last subtask due this time does the task',
+      }),
+      checked: doneWithSubtasks,
+      onChange: onDoneWithSubtasks,
+    })
+
+  return settings
 }
 
 /**
  * A task's subtasks as connected cards under a Subtasks card whose + adds one in a dialog. Each
  * shows whether it is done by its circle, which only shows (a subtask is checked off on its own
  * page or in the list), and has a button to remove it. One resting this time is dimmed, with the
- * upcoming glyph for a circle, and says when it is next due.
+ * upcoming glyph for a circle, and says when it is next due; one with a cadence says it. The
+ * switches that set how they work follow them.
  */
 export function SubtaskCards({
   subtasks,
+  settings = [],
   onAdd,
   onOpen,
   onRemove,
 }: {
   subtasks: SubtaskItem[]
+  /** Switches setting how they work, after them in the same run of cards. */
+  settings?: SubtaskSetting[]
   onAdd: (title: string) => void
   onOpen?: (key: string) => void
   onRemove: (key: string) => void
@@ -205,7 +271,7 @@ export function SubtaskCards({
   const { t } = useLingui()
   const colors = useMaterialColors()
   const [adding, setAdding] = useState(false)
-  const count = subtasks.length + 1
+  const count = subtasks.length + settings.length + 1
 
   return (
     <Column
@@ -236,12 +302,13 @@ export function SubtaskCards({
       {subtasks.map((subtask, index) => {
         const waiting = subtask.waiting ?? null
         const dimmed = subtask.done || waiting !== null
+        const line = waiting ?? subtask.note ?? null
 
         return (
           <ListItem
             // Compose reads a ListItem's slots once, so one that starts or stops resting is drawn
             // afresh with its line under the title.
-            key={`${subtask.key}:${waiting === null ? '' : 'w'}`}
+            key={`${subtask.key}:${waiting === null ? '' : 'w'}:${line === null ? '' : 'n'}`}
             colors={{ containerColor: colors.surfaceContainerHigh }}
             modifiers={[
               fillMaxWidth(),
@@ -265,10 +332,10 @@ export function SubtaskCards({
                   t({ message: '(No title)', comment: 'Shown for a task without a title' })}
               </Text>
             </ListItem.HeadlineContent>
-            {waiting !== null ? (
+            {line !== null ? (
               <ListItem.SupportingContent>
                 <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
-                  {waiting}
+                  {line}
                 </Text>
               </ListItem.SupportingContent>
             ) : null}
@@ -288,6 +355,17 @@ export function SubtaskCards({
           </ListItem>
         )
       })}
+      {settings.map((setting, index) => (
+        <SettingCard
+          key={setting.key}
+          glyph={setting.glyph}
+          label={setting.label}
+          index={subtasks.length + 1 + index}
+          count={count}
+          onPress={() => setting.onChange(!setting.checked)}
+          trailing={<Switch value={setting.checked} onCheckedChange={setting.onChange} />}
+        />
+      ))}
       {adding ? (
         <TextDialog
           title={t({ message: 'Add subtask', comment: 'Dialog title' })}

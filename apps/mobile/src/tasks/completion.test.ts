@@ -3,8 +3,10 @@ import {
   asksDoneDay,
   asksDoneDayAfter,
   checkedOff,
+  completedBy,
   completionMoment,
   doneDayChoices,
+  finishesTask,
   nextDueIfDone,
   planCompletion,
   planReopen,
@@ -170,5 +172,38 @@ describe('reopening a task', () => {
     const doneToo = task('n', { seriesId: 'p', occurrence: 2, completedAt: 20 })
 
     expect(planReopen(done, [], [done, doneToo]).remove).toEqual([])
+  })
+})
+
+describe('a task done when its subtasks are', () => {
+  const parent = (fields: Partial<Task> = {}) => task('p', { completion: 'subtasks', ...fields })
+
+  it('is done by the last of its subtasks', () => {
+    const subtasks = [task('a', { parentId: 'p', completedAt: 5 }), task('b', { parentId: 'p' })]
+
+    expect(finishesTask(subtasks[1]!, parent(), subtasks, '2026-11-03')).toBe(true)
+    expect(completedBy(subtasks[1]!, [parent(), ...subtasks], '2026-11-03').clientId).toBe('p')
+  })
+
+  it('waits for the others, but not for those resting this time', () => {
+    const repeating = parent({ dueDate: '2026-11-03', repeat: defaultRepeat('day'), occurrence: 1 })
+
+    const subtasks = [
+      task('a', { parentId: 'p' }),
+      task('b', { parentId: 'p' }),
+      task('c', { parentId: 'p', cadence: { kind: 'every', count: 2, from: 2 } }),
+    ]
+
+    expect(finishesTask(subtasks[0]!, repeating, subtasks, '2026-11-03')).toBe(false)
+    expect(finishesTask(subtasks[0]!, repeating, [subtasks[0]!, subtasks[2]!], '2026-11-03')).toBe(
+      true,
+    )
+  })
+
+  it('is checked off on its own otherwise', () => {
+    const subtasks = [task('a', { parentId: 'p' })]
+
+    expect(finishesTask(subtasks[0]!, task('p'), subtasks, '2026-11-03')).toBe(false)
+    expect(completedBy(subtasks[0]!, [task('p'), ...subtasks], '2026-11-03').clientId).toBe('a')
   })
 })

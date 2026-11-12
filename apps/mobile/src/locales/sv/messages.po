@@ -18,7 +18,9 @@ msgstr "”{removingTitle}” tas bort från alla telefoner."
 #. Shown for a task without a title
 #. Shown for a task without a title
 #. Shown for a task without a title
+#. Shown for a task without a title
 #: src/components/app-sync.tsx
+#: src/components/skip-cards.tsx
 #: src/components/task-form.tsx
 #: src/components/task-row.tsx
 #: src/reminders/notifications.ts
@@ -211,6 +213,11 @@ msgstr "{subtaskCount} deluppgifter"
 msgid "A change couldn’t be saved and was undone"
 msgstr "En ändring kunde inte sparas och ångrades"
 
+#. Repeat sheet: the task it minded was deleted
+#: src/components/skip-cards.tsx
+msgid "A task that is gone"
+msgstr "En uppgift som inte finns längre"
+
 #. Settings section about the app
 #: src/screens/settings.tsx
 msgid "About"
@@ -371,6 +378,7 @@ msgstr "Tillbaka {when}"
 #. Closes a dialog without changes
 #: src/components/date-pickers.tsx
 #: src/components/repeat-editor.tsx
+#: src/components/setting-cards.tsx
 #: src/components/update-alert.tsx
 #: src/screens/settings.tsx
 #: src/ui/dialogs.tsx
@@ -598,6 +606,11 @@ msgstr "Upprepa inte"
 msgid "Done"
 msgstr "Klar"
 
+#. Task page switch: checking off the last subtask due this time does the task
+#: src/components/task-form.tsx
+msgid "Done when its subtasks are"
+msgstr "Klar när deluppgifterna är klara"
+
 #. Snackbar after completing a repeating task: when the next one is due
 #. placeholder {0}: datePhrase(completion.nextDue, now)
 #: src/components/task-commands.tsx
@@ -615,13 +628,17 @@ msgid "Due {day}"
 msgstr "Deadline {day}"
 
 #. Makes a subtask due every time its task repeats
+#. Makes a subtask due every time its task repeats
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 msgid "Due every time"
 msgstr "Varje gång"
 
 #. Subtask cadence summary: no cadence of its own
 #. Subtask field: when it is due, unset
+#. Subtask field: when it is due, unset
 #: src/components/cadence-editor.tsx
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 msgid "Due every time the task repeats"
 msgstr "Varje gång uppgiften upprepas"
@@ -654,7 +671,10 @@ msgid "Earlier occurrences you completed stay in Completed."
 msgstr "Tidigare tillfällen du klarat finns kvar bland klara."
 
 #. Dialog title: renaming a task
+#. Dialog title: renaming a task
 #. Task page button renaming it
+#. Task page button renaming it
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 msgid "Edit title"
 msgstr "Ändra titel"
@@ -891,6 +911,16 @@ msgstr "Markera som klar"
 msgid "Mark not done"
 msgstr "Markera som inte klar"
 
+#. Clears the task a repeat minds
+#: src/components/skip-cards.tsx
+msgid "Mind no other task"
+msgstr "Ingen annan uppgift"
+
+#. Repeat condition naming a deleted task; it no longer does anything
+#: src/ui/format.ts
+msgid "Minds a task that is gone"
+msgstr "Gäller en uppgift som inte finns längre"
+
 #. Dialog title
 #. Settings row: the daily notification of the day’s tasks
 #: src/screens/settings.tsx
@@ -1062,6 +1092,7 @@ msgstr "Av"
 #: src/components/cadence-editor.tsx
 #: src/components/date-pickers.tsx
 #: src/components/repeat-editor.tsx
+#: src/components/setting-cards.tsx
 msgid "OK"
 msgstr "OK"
 
@@ -1115,31 +1146,41 @@ msgstr "Eget schema"
 msgid "On the {0} {1}"
 msgstr "På {0} {1}en"
 
+#. Dialog title: what a repeat does on another task’s days
+#: src/components/skip-cards.tsx
+msgid "On the days it’s due"
+msgstr "De dagar den ska göras"
+
 #. Monthly repeat on e.g. the last Friday
 #. placeholder {0}: weekdayName(startWeekday)
 #: src/components/repeat-editor.tsx
 msgid "On the last {0}"
 msgstr "Sista {0}en"
 
-#. Explains the Never early choice of a subtask schedule
-#: src/ui/format.ts
-msgid "On the task’s first date on or after it"
-msgstr "Uppgiftens första datum på eller efter det"
-
-#. Explains the Never late choice of a subtask schedule
-#: src/ui/format.ts
-msgid "On the task’s last date on or before it"
-msgstr "Uppgiftens sista datum på eller före det"
-
-#. Explains the Closest date choice of a subtask schedule
-#: src/ui/format.ts
-msgid "On whichever of the task’s dates is nearest"
-msgstr "Det av uppgiftens datum som ligger närmast"
-
 #. Dialog title: every how many times a subtask is due
 #: src/components/cadence-editor.tsx
 msgid "Once every how many times?"
 msgstr "Hur ofta?"
+
+#. Repeat: the only months it falls in
+#: src/ui/format.ts
+msgid "Only in {months}"
+msgstr "Bara i {months}"
+
+#. Repeat: the only weekdays it falls on
+#: src/ui/format.ts
+msgid "Only on {days}"
+msgstr "Bara på {days}"
+
+#. Repeat: falls only on the days another task is due
+#: src/ui/format.ts
+msgid "Only on the days “{title}” is due"
+msgstr "Bara de dagar ”{title}” ska göras"
+
+#. Repeat: falls only on the days another task is due
+#: src/ui/format.ts
+msgid "Only on the days it’s due"
+msgstr "Bara de dagar den ska göras"
 
 #. Account with one phone
 #: src/screens/settings.tsx
@@ -1296,6 +1337,7 @@ msgstr "Ersätta telefonens uppgifter?"
 #. Saves a list’s new name
 #. Saves a task’s details
 #. Saves a task’s title
+#. Saves a task’s title
 #. Saves the new task
 #: src/components/lists-sheet.tsx
 #: src/components/task-form.tsx
@@ -1349,10 +1391,75 @@ msgstr "Visa alla listor"
 msgid "Show in the widget"
 msgstr "Visa i widgeten"
 
+#. Repeat sheet heading: days it skips
+#: src/components/skip-cards.tsx
+msgid "Skip"
+msgstr "Hoppa över"
+
+#. Repeat sheet card, unset
+#: src/components/skip-cards.tsx
+msgid "Skip days of the week"
+msgstr "Hoppa över veckodagar"
+
+#. Dialog title: months a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Skip in"
+msgstr "Hoppa över i"
+
+#. Repeat sheet card, unset
+#: src/components/skip-cards.tsx
+msgid "Skip months"
+msgstr "Hoppa över månader"
+
+#. Clears skipped weekdays
+#: src/components/skip-cards.tsx
+msgid "Skip no days of the week"
+msgstr "Hoppa inte över några veckodagar"
+
+#. Clears skipped months
+#: src/components/skip-cards.tsx
+msgid "Skip no months"
+msgstr "Hoppa inte över några månader"
+
+#. Dialog title: weekdays a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Skip on"
+msgstr "Hoppa över på"
+
 #. Subtask resting while its task was done
 #: src/screens/task.tsx
 msgid "Skipped this time"
 msgstr "Hoppades över den här gången"
+
+#. Repeat: the weekdays it skips
+#: src/ui/format.ts
+msgid "Skips {days}"
+msgstr "Hoppar över {days}"
+
+#. Repeat: the one day it skips
+#: src/ui/format.ts
+msgid "Skips {from}"
+msgstr "Hoppar över {from}"
+
+#. Repeat: a run of days it skips
+#: src/ui/format.ts
+msgid "Skips {from} to {to}"
+msgstr "Hoppar över {from} till {to}"
+
+#. Repeat: the months it skips
+#: src/ui/format.ts
+msgid "Skips {months}"
+msgstr "Hoppar över {months}"
+
+#. Repeat: leaves out the days another task is due
+#: src/ui/format.ts
+msgid "Skips the days “{title}” is due"
+msgstr "Hoppar över de dagar ”{title}” ska göras"
+
+#. Repeat: leaves out the days another task is due, so the two take turns
+#: src/ui/format.ts
+msgid "Skips the days it’s due"
+msgstr "Hoppar över de dagar den ska göras"
 
 #. Title of the app-wide error screen
 #: src/components/app-error.tsx
@@ -1441,6 +1548,26 @@ msgstr "Synkning"
 #: src/screens/settings.tsx
 msgid "System default"
 msgstr "Systemstandard"
+
+#. Dialog title: the task whose days a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Take turns with"
+msgstr "Turas om med"
+
+#. Repeat sheet card, unset: skip the days another task is due
+#: src/components/skip-cards.tsx
+msgid "Take turns with another task"
+msgstr "Turas om med en annan uppgift"
+
+#. Task page switch: one subtask is due each time the task repeats
+#: src/components/task-form.tsx
+msgid "Take turns, one each time"
+msgstr "Turas om, en i taget"
+
+#. Subtask page: its task’s subtasks come round one each time
+#: src/screens/task.tsx
+msgid "Takes turns with the task’s other subtasks."
+msgstr "Turas om med uppgiftens andra deluppgifter."
 
 #. Snackbar after deleting a task
 #: src/components/task-commands.tsx
@@ -1555,8 +1682,10 @@ msgstr "Gånger"
 #. Field label: a subtask’s title
 #. Label of a task’s title field
 #. Label of a task’s title field
+#. Label of a task’s title field
 #. Sort option: alphabetically
 #: src/components/task-form.tsx
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 #: src/ui/format.ts
 msgid "Title"

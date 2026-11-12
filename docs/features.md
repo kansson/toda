@@ -63,6 +63,15 @@ or 24-hour clock.
   Reopening a subtask of a done task, as from Completed, reopens the task too, since a task is
   done only once all its subtasks are; its other subtasks stay done.
   Completing and deleting show a snackbar with Undo.
+- A task's subtasks end in switches, in the same run of cards (not in Google Tasks): **Done when
+  its subtasks are** and, on a repeating task with two or more, **Take turns, one each time** (see
+  Subtasks of a repeating task). With the first on, checking off the last of its subtasks due this
+  time, in the list, on its page or in a widget, does the task too, as if the task itself were
+  checked off. Subtasks resting this time are not waited for. A daily _Workout_ with _Stretch_ and
+  _Run_ is done once both are; the task's own check box still does it with all its subtasks at
+  once.
+- A new task's subtasks open as a subtask's page does, in a sheet before the task exists: its
+  title, and when it is due once the task repeats, set as on its page. The switches are there too.
 - Tasks move to another list with their subtasks from the list card on a task's page, which picks
   among the lists and is cleared with its button to leave the task in none. With no lists it says
   so in a snackbar.
@@ -102,7 +111,7 @@ list or on its page: today, each day back to its own date (a week at most), or a
 calendar, each saying when the task comes back if that day is taken. A daily task forgotten
 yesterday and marked done on yesterday comes back today, where marking it done today would bring
 tomorrow's; the done occurrence is recorded on that day. Closing the
-sheet leaves the task open. A widget's check box asks too: on such a task it opens the app on the
+sheet leaves the task open. A subtask whose check-off would do its late repeating task asks the same, for that task. A widget's check box asks too: on such a task it opens the app on the
 task's page with the question over it, and once a day is taken the page goes back to the tasks
 with the snackbar; closing the question leaves the task open on its page. The widget tells from
 the task's date and the phone's, redrawn just after midnight, so a task that turns late while the
@@ -114,6 +123,39 @@ still done on Sunday.
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.
 
+### Skipping days
+
+Not in Google Tasks. Under **Skip**, the repeat sheet has a second run of cards laid out as the
+first: each shows what it skips, or what it sets dimmed while it skips nothing, opens one dialog
+and is cleared with its button. What they skip is spelled out after the rule ("Daily · Skips
+Sunday").
+
+| Card                                                                                                                       | Example                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Skip days of the week** (not on a fixed weekly repeat, whose days are chosen already)                                    | Walk the dog daily, skipping Sunday                                                        |
+| **Skip months**                                                                                                            | Water the garden weekly, skipping October to March: "Only in Apr, May, Jun, Jul, Aug, Sep" |
+| **Take turns with another task**, then on a card under it whether it skips the days that task is due or falls only on them | Run daily, skipping the days _Gym_ is due                                                  |
+
+Days of the week and months are ticked in a list of those skipped, never all of them; each says
+the shorter of what it skips and what it keeps. The repeat's conditions are stored as the general
+rule below, which the sheet reads and writes in this one form; the rule can also leave out a run
+of days, which the sheet does not offer but keeps and spells out.
+
+A date stays on the schedule when every "only" condition holds and no "except" one does. A date
+left out moves the task on: a fixed schedule to its next date that is kept, one counted from
+when it is done to the next day that is kept. "Ends after" counts only the times kept, and a
+repeat whose next kept date comes after its end ends. Conditions that leave out every date for
+ten years are let go of rather than the task never coming back.
+
+Another task is named by its series, so the condition goes on meaning that task as it repeats.
+It is due on its own date, done or not, and on the dates it comes back on, each counted as done on
+its day, following its weekday, month and date conditions but not its own task conditions, so
+two tasks that name each other never go round in a circle. Two tasks take turns with "Not when
+the other is due" on one of them: _Paper bins_ every other week, and _Plastic bins_ weekly, not
+when _Paper bins_ is due. A task that is gone holds on no day, and its condition says so. The
+done-day sheet and the snackbar say when a task is really back; a subtask's cadence counts its
+task's dates by the weekday, month and date conditions only.
+
 ### Subtasks of a repeating task (`tasks/cadence.ts`)
 
 Not in Google Tasks. A subtask of a repeating task is due every time by default; its page has a
@@ -123,10 +165,10 @@ bottom:
 
 - **Every few times**: once every N times the task repeats, starting this time or a few times
   on. Changing the filter on every third cleaning.
-- **On its own schedule**: every N days, weeks, months or years. Its dates are **fixed** (the
-  default, from a first date chosen in the sheet) or, with Fixed schedule off, each counts from
-  the day it was last done. Each date lands on one of the task's, chosen in a dialog that says
-  what each choice does:
+- **On its own schedule**: **Fixed schedule** first, as in the repeat sheet, then every N days,
+  weeks, months or years. Its dates are **fixed** (the default, from a first date chosen in the
+  sheet) or, with Fixed schedule off, each counts from the day it was last done. Each date lands
+  on one of the task's, chosen in a dialog of just their names:
   - **Closest date**: whichever is nearer, the earlier on a tie.
   - **Never late**: the task's last date on or before it.
   - **Never early**: the task's first date on or after it.
@@ -144,6 +186,16 @@ counts from today instead, as it would if done now: whether a subtask is due is 
 the date the task would really come back on, which for a task that repeats from when it is done
 is later the later it is done, and a subtask whose own date passed while the task waited is due
 now.
+
+**Take turns, one each time**, under the subtasks of a repeating task with two or more, makes them
+come round one each time the task repeats, in their order, and turns on Done when its subtasks
+are. _Bins_, weekly, with _Paper_ and _Plastic_: Paper this week, Plastic the next, and checking
+off the one whose turn it is does the week. Each subtask carries the every-few-times cadence that
+makes it so, kept in step as subtasks are added, deleted, restored, moved or reordered: the one
+whose turn it is keeps it and the others follow in their order. Their pages say they take turns
+in place of the cadence card, and those not up this time say on their rows when their turn is. Turning it off
+makes every subtask due every time again. A subtask with a cadence of its own says it on its row
+("Once every 3 times").
 
 A subtask that is due in the task's current occurrence says so on its page ("Due with the task
 today"). One that is not rests in that occurrence: it is left out of the lists, left open when

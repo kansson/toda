@@ -4,15 +4,18 @@ import { useRef, useState } from 'react'
 import { DatePicker } from '@/components/date-pickers'
 import { DoneDaySheet } from '@/components/done-day-sheet'
 import { useActions } from '@/data/provider'
-import { useToday } from '@/data/queries'
+import { useAllTasks, useToday } from '@/data/queries'
 import { useFeedback } from '@/lib/feedback'
-import { asksDoneDay } from '@/tasks/completion'
+import { asksDoneDay, completedBy } from '@/tasks/completion'
 import { type CalendarDate, localDate } from '@/tasks/dates'
 import type { Task } from '@/tasks/model'
 import { datePhrase } from '@/ui/format'
 
-/** A late repeating task waiting to hear which day it was done, and how it is being asked. */
-type Asking = { task: Task; afterwards?: () => void; with: 'sheet' | 'calendar' }
+/**
+ * A late repeating task waiting to hear which day it was done, and how it is being asked; the
+ * task checked off is `checked`, its subtask when that is the last one it waited for.
+ */
+type Asking = { task: Task; checked: Task; afterwards?: () => void; with: 'sheet' | 'calendar' }
 
 /**
  * What a task row can do, with the snackbar that confirms it and takes it back: completing
@@ -24,6 +27,7 @@ export function useTaskCommands() {
   const actions = useActions()
   const router = useRouter()
   const today = useToday()
+  const tasks = useAllTasks()
   const { showFeedback } = useFeedback()
   const [asking, setAsking] = useState<Asking | null>(null)
   // Whether the task asked about was done, so its `afterwards` follows once the question has gone.
@@ -50,7 +54,7 @@ export function useTaskCommands() {
   function finish(day: CalendarDate) {
     if (!asking) return
     // A day picked in the calendar after today means today.
-    complete(asking.task, day > today ? today : day)
+    complete(asking.checked, day > today ? today : day)
     answered.current = true
   }
 
@@ -76,17 +80,20 @@ export function useTaskCommands() {
   return {
     /**
      * Checks a task off or opens it again. A late repeating task asks first which day it was
-     * done; `afterwards` runs once it is done, such as leaving its page.
+     * done, as does one that its last subtask due this time does; `afterwards` runs once it is
+     * done, such as leaving its page.
      */
     toggle(task: Task, afterwards?: () => void) {
+      const target = task.completedAt === null ? completedBy(task, tasks, today) : task
+
       if (task.completedAt !== null) {
         actions.reopen(task.clientId)
         showFeedback(
           t({ message: 'Task not done', comment: 'Snackbar after reopening a done task' }),
         )
-      } else if (asksDoneDay(task, today)) {
+      } else if (asksDoneDay(target, today)) {
         answered.current = false
-        setAsking({ task, afterwards, with: 'sheet' })
+        setAsking({ task: target, checked: task, afterwards, with: 'sheet' })
       } else {
         complete(task)
         afterwards?.()

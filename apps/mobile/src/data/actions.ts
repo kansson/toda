@@ -1,6 +1,21 @@
-import { checkedOff, completionMoment, planCompletion, planReopen } from '@/tasks/completion'
+import { turnChanges } from '@/tasks/cadence'
+import {
+  checkedOff,
+  completedBy,
+  completionMoment,
+  planCompletion,
+  planReopen,
+} from '@/tasks/completion'
+import { seriesOf, seriesSchedules } from '@/tasks/conditions'
 import { type CalendarDate, localDate } from '@/tasks/dates'
-import { type List, type ListSort, newTask, type NewTask, type Task } from '@/tasks/model'
+import {
+  type Cadence,
+  type List,
+  type ListSort,
+  newTask,
+  type NewTask,
+  type Task,
+} from '@/tasks/model'
 import { bottomPosition, placeInOrder, topPosition } from '@/tasks/positions'
 import type { Db } from './db'
 import { newId } from './ids'
@@ -17,10 +32,14 @@ export type TaskPatch = Partial<
     | 'starredAt'
     | 'repeat'
     | 'cadence'
+    | 'completion'
     | 'listId'
     | 'position'
   >
 >
+
+/** A subtask made with its task: its title, and when it is due where not every time. */
+export type NewSubtask = { title: string; cadence?: Cadence | null }
 
 /** What completing a task did, for the confirmation and its Undo. */
 export type Completion = { taskId: string; nextDue: string | null; spawned: string[] }
@@ -56,6 +75,27 @@ export function createActions(db: Db, onRefused: () => void) {
       .map((task) => ({ id: task.clientId, position: task.position }))
 
   const now = () => Date.now()
+
+  /**
+   * Keeps the subtasks of each task named taking turns in step with what they are now, after
+   * one comes, goes or moves. Tasks that do not take turns keep their subtasks' cadences.
+   */
+  function keepTurns(parentIds: Iterable<string | null>) {
+    const today = localDate(now())
+
+    const changes = [...new Set(parentIds)].flatMap((parentId) => {
+      const parent = parentId === null ? undefined : tasks.get(parentId)
+
+      if (!parent?.turns || parent.parentId !== null) return []
+
+      return turnChanges(parent, subtasksOf(parent.clientId), today).map(({ id, cadence }) => ({
+        id,
+        patch: { cadence },
+      }))
+    })
+
+    if (changes.length > 0) moveTasks({ changes })
+  }
 
   const insertList = action<List>((list) => {
     lists.insert(list)
@@ -168,10 +208,10 @@ export function createActions(db: Db, onRefused: () => void) {
 
     /**
      * A new task at the top of its list, or at the end of its parent's subtasks, with `subtasks`
-     * (their titles) under it in order; returns its id. The task and its subtasks are one write,
+     * (their titles, and when each is due) under it in order; returns its id. The task and its subtasks are one write,
      * so the server never sees a subtask before its task.
      */
-    createTask(fields: NewTask, subtasks: readonly string[] = []) {
+    createTask(fields: NewTask, subtasks: readonly NewSubtask[] = []) {
       const id = newId()
       const at = now()
       const parentId = fields.parentId ?? null
@@ -187,21 +227,50 @@ export function createActions(db: Db, onRefused: () => void) {
         at,
       )
 
-      const children = subtasks.map((title, index) =>
+      const children = subtasks.map((subtask, index) =>
         newTask(
           newId(),
-          { listId: fields.listId, parentId: id, title: title.trim(), position: index },
+          {
+            listId: fields.listId,
+            parentId: id,
+            title: subtask.title.trim(),
+            position: index,
+            cadence: subtask.cadence ?? null,
+          },
           at,
         ),
       )
 
       insertTasks({ rows: [task, ...children] })
+      // A subtask joins its task's turns; a new task taking turns starts them.
+      keepTurns([parentId, id])
 
       return id
     },
 
     updateTask(id: string, patch: TaskPatch) {
       patchTasks({ ids: [id], patch })
+    },
+
+    /**
+     * Makes a repeating task's subtasks take turns, one each time it repeats, and the task done
+     * once the one whose turn it is is done; or makes them all due every time again.
+     */
+    setTurns(id: string, turns: boolean) {
+      const task = tasks.get(id)
+
+      if (!task || task.parentId !== null) return
+      const today = localDate(now())
+
+      const changes: { id: string; patch: Partial<Task> }[] = [
+        { id, patch: turns ? { turns, completion: 'subtasks' } : { turns } },
+        ...turnChanges({ ...task, turns }, subtasksOf(id), today).map((change) => ({
+          id: change.id,
+          patch: { cadence: change.cadence },
+        })),
+      ]
+
+      moveTasks({ changes })
     },
 
     setStarred(id: string, starred: boolean) {
@@ -211,25 +280,44 @@ export function createActions(db: Db, onRefused: () => void) {
     /**
      * Checks a task off, as done today, on an earlier `day`, or at the moment `checkedAt` it was
      * checked off somewhere the app only hears of later, as in a widget; a repeating one gets its
-     * next occurrence, counted from that day where its repeat counts from completion.
+     * next occurrence, counted from that day where its repeat counts from completion. The last
+     * subtask due this time of a task done with its subtasks does that task too.
      */
     complete(
       id: string,
       day: CalendarDate | null = null,
       checkedAt: number | null = null,
     ): Completion | null {
-      const task = tasks.get(id)
+      const checkedTask = tasks.get(id)
 
-      if (!task || task.completedAt !== null) return null
+      if (!checkedTask || checkedTask.completedAt !== null) return null
       const current = now()
+      const all = allTasks()
+      const task = completedBy(checkedTask, all, localDate(current))
       const checked = checkedAt === null ? null : checkedOff(checkedAt, current)
       const doneOn = day ?? checked?.day ?? localDate(current)
       const at = checked?.at ?? completionMoment(doneOn, current)
-      const plan = planCompletion(task, subtasksOf(id), current, newId, doneOn)
+      const schedules = seriesSchedules(all, seriesOf(task))
 
-      complete({ ids: plan.complete, at, spawn: plan.spawn })
+      const plan = planCompletion(
+        task,
+        subtasksOf(task.clientId),
+        current,
+        newId,
+        doneOn,
+        schedules,
+      )
 
-      return { taskId: id, nextDue: plan.nextDue, spawned: plan.spawn.map((row) => row.clientId) }
+      // The subtask checked off is done even if it was resting this time.
+      const ids = plan.complete.includes(id) ? plan.complete : [...plan.complete, id]
+
+      complete({ ids, at, spawn: plan.spawn })
+
+      return {
+        taskId: task.clientId,
+        nextDue: plan.nextDue,
+        spawned: plan.spawn.map((row) => row.clientId),
+      }
     },
 
     /** Opens a done task again, taking back the occurrence its completion made. */
@@ -278,7 +366,10 @@ export function createActions(db: Db, onRefused: () => void) {
         for (const subtask of subtasksOf(id)) removed.set(subtask.clientId, subtask)
       }
 
-      if (removed.size > 0) removeTasks({ ids: [...removed.keys()] })
+      if (removed.size > 0) {
+        removeTasks({ ids: [...removed.keys()] })
+        keepTurns([...removed.values()].map((task) => task.parentId))
+      }
 
       return [...removed.values()]
     },
@@ -289,8 +380,11 @@ export function createActions(db: Db, onRefused: () => void) {
         .slice()
         .sort((a, b) => Number(a.parentId !== null) - Number(b.parentId !== null))
 
-      if (ordered.length > 0)
-        insertTasks({ rows: ordered.filter((row) => !tasks.has(row.clientId)) })
+      const missing = ordered.filter((row) => !tasks.has(row.clientId))
+
+      if (missing.length === 0) return
+      insertTasks({ rows: missing })
+      keepTurns(missing.map((row) => row.parentId))
     },
 
     /** Deletes the done tasks of a list, or of every list, and returns them, for Undo. */
@@ -324,6 +418,7 @@ export function createActions(db: Db, onRefused: () => void) {
             : []),
         ],
       })
+      keepTurns([task.parentId])
     },
 
     /**
@@ -335,13 +430,15 @@ export function createActions(db: Db, onRefused: () => void) {
       if (!task) return
       const changes = placeInOrder(openSiblings(task.listId, task.parentId), order, id)
 
-      if (changes.length > 0)
-        moveTasks({
-          changes: changes.map((change) => ({
-            id: change.id,
-            patch: { position: change.position },
-          })),
-        })
+      if (changes.length === 0) return
+
+      moveTasks({
+        changes: changes.map((change) => ({
+          id: change.id,
+          patch: { position: change.position },
+        })),
+      })
+      keepTurns([task.parentId])
     },
 
     /**
@@ -363,6 +460,7 @@ export function createActions(db: Db, onRefused: () => void) {
           patch: { parentId: under, listId: parent.listId, position: position++, cadence: null },
         })),
       })
+      keepTurns([under])
     },
   }
 }

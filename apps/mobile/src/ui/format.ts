@@ -2,7 +2,8 @@ import { msg, plural, t } from '@lingui/core/macro'
 import { getCalendars, getLocales } from 'expo-localization'
 import { i18n } from '@/i18n'
 import type { Cadence, Lean } from '@/tasks/cadence'
-import { addDays, type CalendarDate, daysBetween, momentOf, parts } from '@/tasks/dates'
+import { keptOf, skipPhrasing, skipSet } from '@/tasks/conditions'
+import { addDays, type CalendarDate, dateOf, daysBetween, momentOf, parts } from '@/tasks/dates'
 import type { Repeat, Task } from '@/tasks/model'
 import { isEveryWeekday } from '@/tasks/recurrence'
 import type { SectionKind } from '@/tasks/views'
@@ -191,8 +192,114 @@ export function weekdaysPhrase(weekdays: readonly number[]) {
     .join(', ')
 }
 
-/** A repeat rule in a few words, such as "Every 3 days, from when done" or "Weekly on Mon, Thu". */
-export function repeatLabel(repeat: Repeat) {
+/** A month's name, January as 1. */
+export function monthName(month: number, width: 'long' | 'short' = 'long') {
+  return formatDate(momentOf(dateOf(2024, month, 1)), { month: width })
+}
+
+/** Months inside a sentence, after "in": one in full, or several shortened, as in "Apr, May". */
+export function monthsPhrase(months: readonly number[]) {
+  return months
+    .slice()
+    .sort((a, b) => a - b)
+    .map((month) => monthName(month, months.length === 1 ? 'long' : 'short'))
+    .join(', ')
+}
+
+/** The weekdays a repeat skips, or keeps to where that is shorter: "Skips Sunday", "Only on Mon, Tue". */
+export function skippedWeekdaysLabel(skipped: readonly number[]) {
+  if (skipPhrasing(7, skipped.length) === 'skips') {
+    const days = weekdaysPhrase(skipped)
+
+    return t({ message: `Skips ${days}`, comment: 'Repeat: the weekdays it skips' })
+  }
+
+  const days = weekdaysPhrase(keptOf('weekdays', skipped))
+
+  return t({ message: `Only on ${days}`, comment: 'Repeat: the only weekdays it falls on' })
+}
+
+/** The months a repeat skips, or keeps to where that is shorter: "Only in Apr, May, Jun". */
+export function skippedMonthsLabel(skipped: readonly number[]) {
+  if (skipPhrasing(12, skipped.length) === 'skips') {
+    const months = monthsPhrase(skipped)
+
+    return t({ message: `Skips ${months}`, comment: 'Repeat: the months it skips' })
+  }
+
+  const months = monthsPhrase(keptOf('months', skipped))
+
+  return t({ message: `Only in ${months}`, comment: 'Repeat: the only months it falls in' })
+}
+
+/** What a repeat does on another task's days: skips them, or keeps to them. */
+export function taskModeLabel(except: boolean) {
+  return except
+    ? t({
+        message: 'Skips the days it’s due',
+        comment: 'Repeat: leaves out the days another task is due, so the two take turns',
+      })
+    : t({
+        message: 'Only on the days it’s due',
+        comment: 'Repeat: falls only on the days another task is due',
+      })
+}
+
+/**
+ * A repeat's conditions in a few words each, as the repeat sheet sets them: "Skips Sunday",
+ * "Skips 20 Dec to 27 Dec", "Skips the days “Gym” is due". `titleOf` names the task one minds.
+ */
+export function conditionLabels(
+  conditions: Repeat['conditions'],
+  titleOf: (seriesId: string) => string | null = () => null,
+) {
+  const set = skipSet(conditions)
+  const labels: string[] = []
+
+  if (set.weekdays.length > 0) labels.push(skippedWeekdaysLabel(set.weekdays))
+
+  if (set.months.length > 0) labels.push(skippedMonthsLabel(set.months))
+
+  if (set.period) {
+    const from = fullDate(set.period.from)
+    const to = fullDate(set.period.to)
+
+    labels.push(
+      set.period.from === set.period.to
+        ? t({ message: `Skips ${from}`, comment: 'Repeat: the one day it skips' })
+        : t({ message: `Skips ${from} to ${to}`, comment: 'Repeat: a run of days it skips' }),
+    )
+  }
+
+  if (set.task) {
+    const title = titleOf(set.task.seriesId)
+
+    labels.push(
+      title === null
+        ? t({
+            message: 'Minds a task that is gone',
+            comment: 'Repeat condition naming a deleted task; it no longer does anything',
+          })
+        : set.task.except
+          ? t({
+              message: `Skips the days “${title}” is due`,
+              comment: 'Repeat: leaves out the days another task is due',
+            })
+          : t({
+              message: `Only on the days “${title}” is due`,
+              comment: 'Repeat: falls only on the days another task is due',
+            }),
+    )
+  }
+
+  return labels
+}
+
+/**
+ * A repeat rule in a few words, such as "Every 3 days, from when done" or "Weekly on Mon, Thu",
+ * with its conditions after it: "Daily · Not on Sun". `titleOf` names the tasks they mind.
+ */
+export function repeatLabel(repeat: Repeat, titleOf?: (seriesId: string) => string | null) {
   const n = repeat.interval
   let base: string
 
@@ -270,7 +377,9 @@ export function repeatLabel(repeat: Repeat) {
         ? plural(repeat.end.count, { one: '# time', other: '# times' })
         : null
 
-  return [base, anchor, end].filter(Boolean).join(', ')
+  const rule = [base, anchor, end].filter(Boolean).join(', ')
+
+  return [rule, ...conditionLabels(repeat.conditions, titleOf)].join(' · ')
 }
 
 /** How often, as in "Every 3 days". */
@@ -309,27 +418,6 @@ export function leanLabel(lean: Lean) {
       return t({
         message: 'Never early',
         comment: 'Subtask schedule: lands on the first of the task’s dates on or after its own',
-      })
-  }
-}
-
-/** What each choice of `leanLabel` does, under it in the choice dialog. */
-export function leanDescription(lean: Lean) {
-  switch (lean) {
-    case 'closest':
-      return t({
-        message: 'On whichever of the task’s dates is nearest',
-        comment: 'Explains the Closest date choice of a subtask schedule',
-      })
-    case 'before':
-      return t({
-        message: 'On the task’s last date on or before it',
-        comment: 'Explains the Never late choice of a subtask schedule',
-      })
-    case 'after':
-      return t({
-        message: 'On the task’s first date on or after it',
-        comment: 'Explains the Never early choice of a subtask schedule',
       })
   }
 }

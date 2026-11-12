@@ -20,7 +20,6 @@ import {
   dayLabel,
   everyLabel,
   everyTimesLabel,
-  leanDescription,
   leanLabel,
   leewayLabel,
   nextDueLabel,
@@ -29,7 +28,8 @@ import { SummaryCard } from '@/ui/primitives'
 import { PrimaryAction } from '@/ui/screen'
 import { Sheet } from '@/ui/sheets'
 import { DatePicker } from './date-pickers'
-import { IntervalDialog, SettingCard } from './repeat-editor'
+import { IntervalDialog } from './repeat-editor'
+import { SettingCard } from './setting-cards'
 
 const MAX_TIMES = 999
 
@@ -198,20 +198,6 @@ export function CadenceEditor({
 
   const scheduleCards: Card[] = [
     {
-      key: 'interval',
-      node: (index, total) => (
-        <SettingCard
-          key='interval'
-          glyph='repeat'
-          index={index}
-          count={total}
-          label={everyLabel(schedule.unit, schedule.interval)}
-          value={everyLabel(schedule.unit, schedule.interval)}
-          onPress={() => setDialog('interval')}
-        />
-      ),
-    },
-    {
       key: 'fixed',
       node: (index, total) => (
         <SettingCard
@@ -232,6 +218,20 @@ export function CadenceEditor({
               }
             />
           }
+        />
+      ),
+    },
+    {
+      key: 'interval',
+      node: (index, total) => (
+        <SettingCard
+          key='interval'
+          glyph='repeat'
+          index={index}
+          count={total}
+          label={everyLabel(schedule.unit, schedule.interval)}
+          value={everyLabel(schedule.unit, schedule.interval)}
+          onPress={() => setDialog('interval')}
         />
       ),
     },
@@ -407,11 +407,7 @@ export function CadenceEditor({
                 message: 'Lands on',
                 comment: 'Dialog title: which of the task’s dates a subtask schedule takes',
               })}
-              options={LEANS.map((lean) => ({
-                value: lean,
-                label: leanLabel(lean),
-                description: leanDescription(lean),
-              }))}
+              options={LEANS.map((lean) => ({ value: lean, label: leanLabel(lean) }))}
               selected={schedule.lean}
               onSelect={(lean) => updateSchedule({ lean })}
               onDismiss={() => setDialog(null)}

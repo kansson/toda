@@ -29,6 +29,29 @@ const unitValidator = v.union(
 )
 
 /**
+ * A condition on the dates a repeat falls on. Each one either narrows them to the days it names
+ * (`except: false`, "only") or leaves those days out (`except: true`); a date stays on the
+ * schedule when every "only" condition holds and no "except" one does.
+ *
+ * - `weekdays`: days of the week.
+ * - `months`: months of the year, 1 for January.
+ * - `dates`: the days from `from` to `to`, both included, such as a holiday.
+ * - `task`: the days another task is due, named by its series (its first occurrence's
+ *   `clientId`, which every later occurrence carries as `seriesId`), so it keeps meaning the same
+ *   task as it repeats. A series that no longer exists holds on no day.
+ */
+export const conditionValidator = v.union(
+  v.object({
+    kind: v.literal('weekdays'),
+    weekdays: v.array(weekdayValidator),
+    except: v.boolean(),
+  }),
+  v.object({ kind: v.literal('months'), months: v.array(v.number()), except: v.boolean() }),
+  v.object({ kind: v.literal('dates'), from: v.string(), to: v.string(), except: v.boolean() }),
+  v.object({ kind: v.literal('task'), seriesId: v.string(), except: v.boolean() }),
+)
+
+/**
  * A repeat schedule. `anchor` says what the next date counts from when a task is completed:
  * `due` keeps a fixed schedule, as Google Tasks does; `completion` counts the interval from the
  * day it was done, so finishing late moves every later date with it.
@@ -50,6 +73,11 @@ export const repeatValidator = v.object({
     v.object({ kind: v.literal('on'), date: v.string() }),
     v.object({ kind: v.literal('after'), count: v.number() }),
   ),
+  /**
+   * Days the schedule keeps to or leaves out (see `conditionValidator`). Optional, so rules
+   * written before conditions existed stay valid.
+   */
+  conditions: v.optional(v.array(conditionValidator)),
 })
 
 /**
@@ -115,6 +143,17 @@ export const taskFields = {
    * written before it existed, and by app versions that know nothing of it, stay valid.
    */
   cadence: v.optional(v.union(cadenceValidator, v.null())),
+  /**
+   * How a task with subtasks is done: `self` (or none) when it is checked off itself; `subtasks`
+   * when checking off the last of its subtasks due this time does it too. Optional, as `cadence`.
+   */
+  completion: v.optional(v.union(v.literal('self'), v.literal('subtasks'))),
+  /**
+   * Whether a repeating task's subtasks take turns, one each time in their order. Each carries
+   * the `every` cadence that makes it so, kept in step as subtasks come and go; optional, as
+   * `cadence`.
+   */
+  turns: v.optional(v.boolean()),
   createdAt: v.number(),
 }
 

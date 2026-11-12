@@ -44,6 +44,7 @@ import Settings from '@expo/material-symbols/settings.xml'
 import Sort from '@expo/material-symbols/sort.xml'
 import Star from '@expo/material-symbols/star.xml'
 import SubdirectoryArrow from '@expo/material-symbols/subdirectory_arrow_right.xml'
+import SwapHoriz from '@expo/material-symbols/swap_horiz.xml'
 import Sync from '@expo/material-symbols/sync.xml'
 import TaskAlt from '@expo/material-symbols/task_alt.xml'
 import Today from '@expo/material-symbols/today.xml'
@@ -112,6 +113,7 @@ export const glyphs = {
   today: Today,
   todayFilled: TodayFill,
   toTop: VerticalTop,
+  turns: SwapHoriz,
   upcoming: EventUpcoming,
   week: DateRange,
   update: Sync,

@@ -3,16 +3,12 @@ import { useLingui } from '@lingui/react/macro'
 import { type ReactNode, useEffect, useState } from 'react'
 import {
   animateContentSize,
-  clickable,
-  clip,
-  composeGeometry,
   alpha,
   fillMaxWidth,
   height,
   matchParentSize,
   menuAnchor,
   padding,
-  selectable,
   size,
   verticalScroll,
   weight,
@@ -20,14 +16,11 @@ import {
 import {
   AlertDialog,
   Box,
-  Checkbox,
   Column,
   DropdownMenuItem,
   ExposedDropdownMenu,
   ExposedDropdownMenuBox,
   Icon,
-  IconButton,
-  ListItem,
   Row,
   Switch,
   Text,
@@ -48,12 +41,14 @@ import {
   weekdayName,
   weekdaysPhrase,
 } from '@/ui/format'
-import { type Glyph, glyphs } from '@/ui/glyphs'
-import { cardCorners, SummaryCard } from '@/ui/primitives'
+import { glyphs } from '@/ui/glyphs'
+import { SummaryCard } from '@/ui/primitives'
 import { PrimaryAction } from '@/ui/screen'
 import { Sheet } from '@/ui/sheets'
 import { AnimatedRotation } from '../../modules/ui'
 import { DatePicker } from './date-pickers'
+import { ChecklistDialog, SettingCard } from './setting-cards'
+import { type OtherTask, SkipCards } from './skip-cards'
 
 const MAX_INTERVAL = 999
 
@@ -78,74 +73,6 @@ function unitWord(unit: Units, count: number) {
 }
 
 const UNITS: Units[] = ['day', 'week', 'month', 'year']
-
-/**
- * One of the editor's connected cards, as a task's field cards are: its glyph and value, or what
- * it sets dimmed while unset, with a button to clear a set value; or a control of its own.
- */
-export function SettingCard({
-  glyph,
-  label,
-  value,
-  headline,
-  index,
-  count,
-  trailing,
-  clear,
-  onPress,
-}: {
-  glyph: Glyph
-  label: string
-  /** The value, or null while unset; a card without one shows its label as it is. */
-  value?: string | null
-  /** In place of the label, such as a row of weekdays. */
-  headline?: ReactNode
-  index: number
-  count: number
-  trailing?: ReactNode
-  clear?: { label: string; onPress: () => void }
-  onPress?: () => void
-}) {
-  const colors = useMaterialColors()
-  const unset = value === null
-  const content = unset ? colors.onSurfaceVariant : colors.onSurface
-
-  return (
-    <ListItem
-      colors={{ containerColor: colors.surfaceContainerHigh }}
-      modifiers={[
-        fillMaxWidth(),
-        clip(cardCorners(index, count)),
-        ...(onPress ? [clickable(onPress)] : []),
-      ]}
-    >
-      <ListItem.LeadingContent>
-        <Icon source={glyphs[glyph]} size={24} tint={unset ? colors.onSurfaceVariant : content} />
-      </ListItem.LeadingContent>
-      <ListItem.HeadlineContent>
-        {headline ?? (
-          <Text color={content} maxLines={2} overflow='ellipsis'>
-            {value ?? label}
-          </Text>
-        )}
-      </ListItem.HeadlineContent>
-      {/* The slot stays put and only its content changes: a slot added later never shows. */}
-      <ListItem.TrailingContent>
-        {trailing ??
-          (clear && !unset ? (
-            <IconButton onClick={clear.onPress}>
-              <Icon
-                source={glyphs.clear}
-                size={20}
-                tint={colors.onSurfaceVariant}
-                contentDescription={clear.label}
-              />
-            </IconButton>
-          ) : null)}
-      </ListItem.TrailingContent>
-    </ListItem>
-  )
-}
 
 /**
  * How often, as a number and a unit chosen together. A new repeat has no number yet and counts in
@@ -288,6 +215,8 @@ export function IntervalDialog({
   )
 }
 
+const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6]
+
 /** The days of the week a fixed weekly repeat falls on, ticked in a list; at least one. */
 function WeekdaysDialog({
   weekdays,
@@ -299,60 +228,15 @@ function WeekdaysDialog({
   onDismiss: () => void
 }) {
   const { t } = useLingui()
-  const colors = useMaterialColors()
-  const [chosen, setChosen] = useState(weekdays)
-
-  const toggle = (day: number) =>
-    setChosen((current) =>
-      current.includes(day) ? current.filter((other) => other !== day) : [...current, day],
-    )
 
   return (
-    <AlertDialog onDismissRequest={onDismiss}>
-      <AlertDialog.Title>
-        <Text style={{ typography: 'headlineSmall' }}>
-          {t({ message: 'Repeats on', comment: 'Dialog title: the weekdays of a weekly repeat' })}
-        </Text>
-      </AlertDialog.Title>
-      <AlertDialog.Text>
-        <Column modifiers={[fillMaxWidth(), verticalScroll()]}>
-          {[0, 1, 2, 3, 4, 5, 6].map((day) => (
-            <ListItem
-              key={day}
-              colors={{ containerColor: colors.surfaceContainerHigh }}
-              modifiers={[
-                fillMaxWidth(),
-                clip(composeGeometry.RoundedCorner(16)),
-                selectable(chosen.includes(day), () => toggle(day), 'checkbox'),
-              ]}
-            >
-              <ListItem.LeadingContent>
-                <Checkbox value={chosen.includes(day)} />
-              </ListItem.LeadingContent>
-              <ListItem.HeadlineContent>
-                <Text>{weekdayName(day)}</Text>
-              </ListItem.HeadlineContent>
-            </ListItem>
-          ))}
-        </Column>
-      </AlertDialog.Text>
-      <AlertDialog.ConfirmButton>
-        <TextButton
-          enabled={chosen.length > 0}
-          onClick={() => {
-            onConfirm(chosen)
-            onDismiss()
-          }}
-        >
-          <Text>{t({ message: 'OK', comment: 'Confirms a dialog' })}</Text>
-        </TextButton>
-      </AlertDialog.ConfirmButton>
-      <AlertDialog.DismissButton>
-        <TextButton onClick={onDismiss}>
-          <Text>{t({ message: 'Cancel', comment: 'Closes a dialog without changes' })}</Text>
-        </TextButton>
-      </AlertDialog.DismissButton>
-    </AlertDialog>
+    <ChecklistDialog
+      title={t({ message: 'Repeats on', comment: 'Dialog title: the weekdays of a weekly repeat' })}
+      options={WEEKDAYS.map((day) => ({ value: day, label: weekdayName(day) }))}
+      chosen={weekdays}
+      onConfirm={onConfirm}
+      onDismiss={onDismiss}
+    />
   )
 }
 
@@ -367,12 +251,19 @@ function WeekdaysDialog({
 export function RepeatEditor({
   repeat: initial,
   dueDate,
+  others = [],
+  titleOf = (seriesId: string) =>
+    others.find((other) => other.seriesId === seriesId)?.title ?? null,
   onSave,
   onDismiss,
 }: {
   repeat: Repeat | null
   /** The task's date; a repeat needs one, and starts on today when it has none. */
   dueDate: CalendarDate | null
+  /** The tasks its conditions can mind, the task itself not among them. */
+  others?: readonly OtherTask[]
+  /** The title of the task a condition minds, or null once it is gone. */
+  titleOf?: (seriesId: string) => string | null
   /** The rule and the date the task should have for it, or null to stop repeating. */
   onSave: (repeat: Repeat | null, dueDate: CalendarDate) => void
   onDismiss: () => void
@@ -570,7 +461,16 @@ export function RepeatEditor({
           >
             {cards.map((card, index) => card.node(index, cards.length))}
           </Column>
-          {chosen ? <SummaryCard glyph='repeat' title={repeatLabel(repeat)} /> : null}
+          {chosen ? (
+            <SkipCards
+              repeat={repeat}
+              weekly={fixed && repeat.unit === 'week'}
+              others={others}
+              titleOf={titleOf}
+              onChange={(conditions) => setRepeat({ ...repeat, conditions })}
+            />
+          ) : null}
+          {chosen ? <SummaryCard glyph='repeat' title={repeatLabel(repeat, titleOf)} /> : null}
           {dialog === 'interval' ? (
             <IntervalDialog
               interval={chosen ? repeat.interval : null}

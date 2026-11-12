@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CadenceEditor } from '@/components/cadence-editor'
 import { DatePicker, TimePicker } from '@/components/date-pickers'
 import { RepeatEditor } from '@/components/repeat-editor'
+import { useConditionTasks } from '@/components/skip-cards'
 import { useTaskCommands } from '@/components/task-commands'
 import {
   FieldCards,
@@ -12,12 +13,14 @@ import {
   SubtaskCards,
   useDetailsRow,
   useListPicker,
+  useSubtaskSettings,
 } from '@/components/task-form'
 import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
-import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
+import { fillMaxSize, verticalScroll } from '@/lib/compose-modifiers'
 import { Column, Text, useMaterialColors } from '@/lib/compose-ui'
 import { cadenceOf, nextDue, rests } from '@/tasks/cadence'
+import { seriesOf } from '@/tasks/conditions'
 import { localDate } from '@/tasks/dates'
 import { NO_LIST, TITLE_MAX } from '@/tasks/model'
 import { ChoiceDialog, ConfirmDialog, TextDialog } from '@/ui/dialogs'
@@ -85,6 +88,21 @@ export function TaskScreen() {
     if (task.completedAt === null) commands.toggle(task, () => router.back())
   }, [checkedInWidget, task, commands, router])
 
+  const conditionTasks = useConditionTasks(task ? seriesOf(task) : undefined)
+
+  const subtaskSettings = useSubtaskSettings({
+    count: task && task.parentId === null ? subtasks.length : 0,
+    repeating: Boolean(task?.repeat && task.dueDate),
+    doneWithSubtasks: task?.completion === 'subtasks',
+    turns: task?.turns === true,
+    onDoneWithSubtasks: (checked) => {
+      if (task) actions.updateTask(task.clientId, { completion: checked ? 'subtasks' : 'self' })
+    },
+    onTurns: (checked) => {
+      if (task) actions.setTurns(task.clientId, checked)
+    },
+  })
+
   const pickList = useListPicker(lists.length > 0, () => setOverlay('list'))
 
   const details = useDetailsRow(task?.notes ?? '', (value) => {
@@ -114,6 +132,16 @@ export function TaskScreen() {
     t({ message: '(No title)', comment: 'Shown for a task without a title' })
 
   const cadence = cadenceOf(task, repeatingParent)
+  // A subtask of a task whose subtasks take turns has its turn, not a cadence of its own.
+  const takingTurns = repeatingParent?.turns === true
+  const repeating = !isSubtask && task.repeat !== null && task.dueDate !== null
+
+  // How often a subtask with a cadence of its own is due; one taking turns says nothing.
+  const subtaskNote = (subtask: (typeof subtasks)[number]) => {
+    const own = repeating && !task.turns ? cadenceOf(subtask, task) : null
+
+    return own ? cadenceLabel(own) : null
+  }
 
   // When a subtask resting this time is next due, or that it was not due, its task done.
   const waiting = (subtask: (typeof subtasks)[number]) => {
@@ -171,13 +199,14 @@ export function TaskScreen() {
       }
     >
       <Column
-        modifiers={[fillMaxWidth(), verticalScroll(), formPadding]}
+        // The whole page scrolls, below its last card too, so a drag anywhere folds the app bar.
+        modifiers={[fillMaxSize(), verticalScroll(), formPadding]}
         verticalArrangement={{ spacedBy: 16 }}
       >
         <FieldCards
           rows={[
             details.row,
-            ...(repeatingParent
+            ...(repeatingParent && !takingTurns
               ? [
                   {
                     key: 'cadence',
@@ -256,7 +285,7 @@ export function TaskScreen() {
                     key: 'repeat',
                     glyph: 'repeat' as const,
                     label: t({ message: 'Repeat', comment: 'Task field: how it repeats, unset' }),
-                    value: task.repeat ? repeatLabel(task.repeat) : null,
+                    value: task.repeat ? repeatLabel(task.repeat, conditionTasks.titleOf) : null,
                     onPress: () => setOverlay(task.deadline ? 'deadlineRepeat' : 'repeat'),
                     clear: {
                       label: t({ message: 'Don’t repeat', comment: 'Stops a task repeating' }),
@@ -292,7 +321,9 @@ export function TaskScreen() {
               title: subtask.title,
               done: subtask.completedAt !== null,
               waiting: waiting(subtask),
+              note: subtaskNote(subtask),
             }))}
+            settings={subtaskSettings}
             onAdd={(value) =>
               actions.createTask({ listId: task.listId, parentId: task.clientId, title: value })
             }
@@ -301,6 +332,14 @@ export function TaskScreen() {
             onRemove={(key) => setRemoving(key)}
           />
         )}
+        {takingTurns && !done ? (
+          <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
+            {t({
+              message: 'Takes turns with the task’s other subtasks.',
+              comment: 'Subtask page: its task’s subtasks come round one each time',
+            })}
+          </Text>
+        ) : null}
         {cadence && repeatingParent && !done ? (
           <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
             {nextDueLabel(nextDue(task, repeatingParent, today), today)}
@@ -351,6 +390,8 @@ export function TaskScreen() {
         <RepeatEditor
           repeat={task.repeat}
           dueDate={task.dueDate}
+          others={conditionTasks.others}
+          titleOf={conditionTasks.titleOf}
           onSave={(repeat, dueDate) =>
             actions.updateTask(
               task.clientId,

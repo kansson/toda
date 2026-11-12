@@ -1,7 +1,7 @@
 import { carriedCadence, isDue } from './cadence'
 import { addDays, type CalendarDate, localDate, localTime, momentOf } from './dates'
 import type { Task } from './model'
-import { nextOccurrence } from './recurrence'
+import { nextOccurrence, type Schedules } from './recurrence'
 
 /** The most days a late repeating task offers as when it was done, today included. */
 const DONE_DAY_CHOICES = 7
@@ -60,11 +60,54 @@ export function checkedOff(moment: number, now: number) {
   return { day: localDate(at), at }
 }
 
-/** When a repeating task comes back if it was done on `day`; null when it would not. */
-export function nextDueIfDone(task: Task, day: CalendarDate) {
+/**
+ * When a repeating task comes back if it was done on `day`; null when it would not. `schedules`
+ * tells when the tasks its conditions name are due; without it those conditions are left out.
+ */
+export function nextDueIfDone(task: Task, day: CalendarDate, schedules?: Schedules) {
   return task.repeat && task.dueDate && task.parentId === null
-    ? nextOccurrence(task.repeat, task.dueDate, day, task.occurrence)
+    ? nextOccurrence(task.repeat, task.dueDate, day, task.occurrence, schedules)
     : null
+}
+
+/**
+ * Whether checking `subtask` off also does its task: one done when its subtasks are, still open,
+ * with every other subtask due this time done already. Subtasks resting this time are not waited
+ * for.
+ */
+export function finishesTask(
+  subtask: Task,
+  parent: Task | undefined,
+  siblings: readonly Task[],
+  today: CalendarDate,
+) {
+  if (
+    parent === undefined ||
+    parent.completion !== 'subtasks' ||
+    parent.completedAt !== null ||
+    subtask.parentId !== parent.clientId ||
+    subtask.completedAt !== null
+  )
+    return false
+
+  return siblings.every(
+    (sibling) =>
+      sibling.clientId === subtask.clientId ||
+      sibling.completedAt !== null ||
+      !isDue(sibling, parent, today),
+  )
+}
+
+/**
+ * The task checking `task` off does: its task, when that is done with its subtasks and `task` is
+ * the last of those due this time; otherwise `task` itself.
+ */
+export function completedBy(task: Task, all: readonly Task[], today: CalendarDate): Task {
+  if (task.parentId === null) return task
+  const parent = all.find((other) => other.clientId === task.parentId)
+  const siblings = all.filter((other) => other.parentId === task.parentId)
+
+  return parent !== undefined && finishesTask(task, parent, siblings, today) ? parent : task
 }
 
 export type CompletionPlan = {
@@ -82,7 +125,7 @@ export type CompletionPlan = {
  * occurrence as a new task in the same place, with its subtasks open again, each carrying its
  * cadence on, so the one done stays in Completed with the day it was done. That day is today
  * unless the task was done earlier and only checked off now; a repeat counted from completion
- * counts from it.
+ * counts from it. `schedules` tells when the tasks its repeat's conditions name are due.
  */
 export function planCompletion(
   task: Task,
@@ -90,6 +133,7 @@ export function planCompletion(
   now: number,
   newId: () => string,
   doneOn: CalendarDate = localDate(now),
+  schedules?: Schedules,
 ): CompletionPlan {
   // Whether each subtask is due is judged as the list showed it, on today's date.
   const today = localDate(now)
@@ -101,7 +145,7 @@ export function planCompletion(
     ),
   ]
 
-  const nextDue = nextDueIfDone(task, doneOn)
+  const nextDue = nextDueIfDone(task, doneOn, schedules)
 
   if (!task.repeat || nextDue === null) return { complete, spawn: [], nextDue: null }
 

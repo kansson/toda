@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
+import { useAllTasks } from '@/data/queries'
 import { doneDayChoices, nextDueIfDone } from '@/tasks/completion'
+import { seriesOf, seriesSchedules } from '@/tasks/conditions'
 import type { CalendarDate } from '@/tasks/dates'
 import type { Task } from '@/tasks/model'
 import { datePhrase, dayLabel } from '@/ui/format'
@@ -28,10 +30,13 @@ export function DoneDaySheet({
   const { t } = useLingui()
   // Another day opens the calendar only once the sheet has closed, not over it.
   const another = useRef(false)
+  const tasks = useAllTasks()
+  // When the tasks its repeat's conditions name are due, so each day says when it really is back.
+  const schedules = useMemo(() => seriesSchedules(tasks, seriesOf(task)), [tasks, task])
 
   // What taking a day does: when the task comes back, and whether it was done on its own day.
   const note = (day: CalendarDate) => {
-    const next = nextDueIfDone(task, day)
+    const next = nextDueIfDone(task, day, schedules)
 
     if (next === null)
       return t({
