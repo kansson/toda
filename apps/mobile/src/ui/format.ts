@@ -2,8 +2,8 @@ import { msg, plural, t } from '@lingui/core/macro'
 import { getCalendars, getLocales } from 'expo-localization'
 import { i18n } from '@/i18n'
 import type { Cadence, Lean } from '@/tasks/cadence'
-import { addDays, type CalendarDate, daysBetween, momentOf, parts } from '@/tasks/dates'
-import type { Repeat, Task } from '@/tasks/model'
+import { addDays, type CalendarDate, dateOf, daysBetween, momentOf, parts } from '@/tasks/dates'
+import type { Condition, Repeat, Task } from '@/tasks/model'
 import { isEveryWeekday } from '@/tasks/recurrence'
 import type { SectionKind } from '@/tasks/views'
 
@@ -191,8 +191,92 @@ export function weekdaysPhrase(weekdays: readonly number[]) {
     .join(', ')
 }
 
-/** A repeat rule in a few words, such as "Every 3 days, from when done" or "Weekly on Mon, Thu". */
-export function repeatLabel(repeat: Repeat) {
+/** A month's name, January as 1. */
+export function monthName(month: number, width: 'long' | 'short' = 'long') {
+  return formatDate(momentOf(dateOf(2024, month, 1)), { month: width })
+}
+
+/** Months inside a sentence, after "in": one in full, or several shortened, as in "Apr, May". */
+export function monthsPhrase(months: readonly number[]) {
+  return months
+    .slice()
+    .sort((a, b) => a - b)
+    .map((month) => monthName(month, months.length === 1 ? 'long' : 'short'))
+    .join(', ')
+}
+
+/**
+ * A repeat's condition in a few words, such as "Not on Sat, Sun" or "Only when “Gym” is due";
+ * `titleOf` names the task a condition minds, or says it is gone.
+ */
+export function conditionLabel(
+  condition: Condition,
+  titleOf: (seriesId: string) => string | null = () => null,
+) {
+  switch (condition.kind) {
+    case 'weekdays': {
+      const days = weekdaysPhrase(condition.weekdays)
+
+      return condition.except
+        ? t({ message: `Not on ${days}`, comment: 'Repeat condition: leaves out weekdays' })
+        : t({ message: `Only on ${days}`, comment: 'Repeat condition: keeps to weekdays' })
+    }
+
+    case 'months': {
+      const months = monthsPhrase(condition.months)
+
+      return condition.except
+        ? t({ message: `Not in ${months}`, comment: 'Repeat condition: leaves out months' })
+        : t({ message: `Only in ${months}`, comment: 'Repeat condition: keeps to months' })
+    }
+
+    case 'dates': {
+      const from = fullDate(condition.from)
+      const to = fullDate(condition.to)
+
+      if (condition.from === condition.to)
+        return condition.except
+          ? t({ message: `Not on ${from}`, comment: 'Repeat condition: leaves out one date' })
+          : t({ message: `Only on ${from}`, comment: 'Repeat condition: keeps to one date' })
+
+      return condition.except
+        ? t({
+            message: `Not from ${from} to ${to}`,
+            comment: 'Repeat condition: leaves out a run of days, such as a holiday',
+          })
+        : t({
+            message: `Only from ${from} to ${to}`,
+            comment: 'Repeat condition: keeps to a run of days',
+          })
+    }
+
+    case 'task': {
+      const title = titleOf(condition.seriesId)
+
+      if (title === null)
+        return t({
+          message: 'Minds a task that is gone',
+          comment: 'Repeat condition naming a deleted task; it no longer does anything',
+        })
+
+      return condition.except
+        ? t({
+            message: `Not when “${title}” is due`,
+            comment: 'Repeat condition: leaves out the days another task is due',
+          })
+        : t({
+            message: `Only when “${title}” is due`,
+            comment: 'Repeat condition: keeps to the days another task is due',
+          })
+    }
+  }
+}
+
+/**
+ * A repeat rule in a few words, such as "Every 3 days, from when done" or "Weekly on Mon, Thu",
+ * with its conditions after it: "Daily · Not on Sun". `titleOf` names the tasks they mind.
+ */
+export function repeatLabel(repeat: Repeat, titleOf?: (seriesId: string) => string | null) {
   const n = repeat.interval
   let base: string
 
@@ -270,7 +354,12 @@ export function repeatLabel(repeat: Repeat) {
         ? plural(repeat.end.count, { one: '# time', other: '# times' })
         : null
 
-  return [base, anchor, end].filter(Boolean).join(', ')
+  const rule = [base, anchor, end].filter(Boolean).join(', ')
+
+  return [
+    rule,
+    ...(repeat.conditions ?? []).map((condition) => conditionLabel(condition, titleOf)),
+  ].join(' · ')
 }
 
 /** How often, as in "Every 3 days". */

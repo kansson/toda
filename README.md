@@ -25,7 +25,9 @@ pairing code, with no sign-up.
 - Sorting by Relevance, Date, Deadline, Starred recently or Title, as in Google Tasks.
 - Repeats every N days, weeks, months or years, counted **from completion** or on a **fixed
   schedule** (chosen weekdays, a day of the month, the nth or last weekday), ending never, on a
-  date or after a number of times. One occurrence is open at a time.
+  date or after a number of times, and kept to or away from some weekdays, months, dates or
+  another task's days. One occurrence is open at a time. Subtasks can take turns, and a task can
+  be done once its subtasks are.
 - Reminders at a task's time and a morning summary, with Mark done and Tomorrow buttons that
   work while the app is closed.
 - Native Glance home screen widgets in Material You colours: a list (or Today or Starred) with

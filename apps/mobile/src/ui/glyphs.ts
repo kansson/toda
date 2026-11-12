@@ -20,6 +20,7 @@ import DriveFileMove from '@expo/material-symbols/drive_file_move.xml'
 import Edit from '@expo/material-symbols/edit.xml'
 import ErrorIcon from '@expo/material-symbols/error.xml'
 import EventUpcoming from '@expo/material-symbols/event_upcoming.xml'
+import FilterAlt from '@expo/material-symbols/filter_alt.xml'
 import Flag from '@expo/material-symbols/flag.xml'
 import IndentDecrease from '@expo/material-symbols/format_indent_decrease.xml'
 import IndentIncrease from '@expo/material-symbols/format_indent_increase.xml'
@@ -44,6 +45,7 @@ import Settings from '@expo/material-symbols/settings.xml'
 import Sort from '@expo/material-symbols/sort.xml'
 import Star from '@expo/material-symbols/star.xml'
 import SubdirectoryArrow from '@expo/material-symbols/subdirectory_arrow_right.xml'
+import SwapHoriz from '@expo/material-symbols/swap_horiz.xml'
 import Sync from '@expo/material-symbols/sync.xml'
 import TaskAlt from '@expo/material-symbols/task_alt.xml'
 import Today from '@expo/material-symbols/today.xml'
@@ -69,6 +71,7 @@ export const glyphs = {
   clearCompleted: ClearAll,
   completed: CheckCircleFill,
   completedOutline: CheckCircle,
+  conditions: FilterAlt,
   copy: ContentCopy,
   date: Today,
   deadline: Flag,
@@ -112,6 +115,7 @@ export const glyphs = {
   today: Today,
   todayFilled: TodayFill,
   toTop: VerticalTop,
+  turns: SwapHoriz,
   upcoming: EventUpcoming,
   week: DateRange,
   update: Sync,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { seriesSchedules } from './conditions'
+import { mindableTasks, seriesSchedules, seriesTitles } from './conditions'
 import { newTask, type Task } from './model'
 import {
   type Condition,
@@ -122,5 +122,33 @@ describe('a repeat that minds another task', () => {
 
   it('leaves the condition out where no schedules are given', () => {
     expect(nextOccurrence(run(true), '2026-11-03', '2026-11-03', 1)).toBe('2026-11-04')
+  })
+})
+
+describe('the tasks a condition can mind', () => {
+  const tasks = [
+    task('bins-1', { title: 'Bins', dueDate: '2026-11-02', completedAt: 1 }),
+    task('bins-2', {
+      title: 'Bins, renamed',
+      dueDate: '2026-11-09',
+      seriesId: 'bins-1',
+      occurrence: 2,
+    }),
+    task('gym', { title: 'Gym', dueDate: '2026-11-04' }),
+    task('someday', { title: 'Someday' }),
+    task('stretch', { title: 'Stretch', dueDate: '2026-11-04', parentId: 'gym' }),
+    task('run', { title: 'Run', dueDate: '2026-11-03' }),
+  ]
+
+  it('are the open dated tasks, once a series, by title, but for the one asking', () => {
+    expect(mindableTasks(tasks, 'run').map((other) => [other.seriesId, other.task.title])).toEqual([
+      ['bins-1', 'Bins, renamed'],
+      ['gym', 'Gym'],
+    ])
+  })
+
+  it('go by the title of their latest occurrence', () => {
+    expect(seriesTitles(tasks).get('bins-1')).toBe('Bins, renamed')
+    expect(seriesTitles(tasks).has('stretch')).toBe(false)
   })
 })

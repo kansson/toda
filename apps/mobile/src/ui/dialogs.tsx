@@ -27,7 +27,8 @@ export type ChoiceDialogProps<T extends string | number> = {
   title: string
   /** Each choice, with a line under it saying what it does where its name alone would not. */
   options: { value: T; label: string; description?: string }[]
-  selected: T
+  /** The choice made, or null while none is, as for something new. */
+  selected: T | null
   onSelect: (value: T) => void
   onDismiss: () => void
 }

@@ -49,3 +49,37 @@ export function seriesSchedules(tasks: readonly Task[], self?: string): Schedule
     return current === date
   }
 }
+
+/**
+ * The tasks a repeat's conditions can mind: each open top-level task with a date, once per
+ * series, by title, without the series asking.
+ */
+export function mindableTasks(tasks: readonly Task[], self?: string) {
+  const seen = new Map<string, Task>()
+
+  for (const task of tasks) {
+    const series = seriesOf(task)
+
+    if (task.parentId === null && task.completedAt === null && task.dueDate !== null)
+      if (series !== self && !seen.has(series)) seen.set(series, task)
+  }
+
+  return [...seen.entries()]
+    .map(([seriesId, task]) => ({ seriesId, task }))
+    .sort((a, b) => a.task.title.localeCompare(b.task.title))
+}
+
+/** Each series' title, from its latest occurrence, for naming the tasks conditions mind. */
+export function seriesTitles(tasks: readonly Task[]) {
+  const latest = new Map<string, Task>()
+
+  for (const task of tasks) {
+    if (task.parentId !== null) continue
+    const series = seriesOf(task)
+    const current = latest.get(series)
+
+    if (!current || task.occurrence > current.occurrence) latest.set(series, task)
+  }
+
+  return new Map([...latest].map(([series, task]) => [series, task.title]))
+}

@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { DatePicker, TimePicker } from '@/components/date-pickers'
-import { RepeatEditor } from '@/components/repeat-editor'
+import { RepeatEditor, useConditionTasks } from '@/components/repeat-editor'
 import {
   FieldCards,
   formPadding,
@@ -57,6 +57,8 @@ export function NewTaskScreen() {
 
   const [dueTime, setDueTime] = useState<string | null>(null)
   const [repeat, setRepeat] = useState<Repeat | null>(null)
+  // A new task has no series yet, so every open dated task can be minded.
+  const conditionTasks = useConditionTasks()
   const [deadline, setDeadline] = useState<CalendarDate | null>(null)
   const [starred, setStarred] = useState(params.starred === '1')
   const [subtasks, setSubtasks] = useState<PendingSubtask[]>([])
@@ -175,7 +177,7 @@ export function NewTaskScreen() {
               key: 'repeat',
               glyph: 'repeat',
               label: t({ message: 'Repeat', comment: 'Task field: how it repeats, unset' }),
-              value: repeat ? repeatLabel(repeat) : null,
+              value: repeat ? repeatLabel(repeat, conditionTasks.titleOf) : null,
               onPress: () => setOverlay(deadline ? 'deadlineRepeat' : 'repeat'),
               clear: {
                 label: t({ message: 'Don’t repeat', comment: 'Stops a task repeating' }),
@@ -229,6 +231,8 @@ export function NewTaskScreen() {
         <RepeatEditor
           repeat={repeat}
           dueDate={dueDate}
+          others={conditionTasks.others}
+          titleOf={conditionTasks.titleOf}
           onSave={(chosen, date) => {
             setRepeat(chosen)
 

@@ -10,7 +10,7 @@ import { useAllTasks, useLists, useToday } from '@/data/queries'
 import { scheduleReminders } from '@/reminders/notifications'
 import { respondToReminder } from '@/reminders/respond'
 import { usePreferences } from '@/settings/preferences'
-import { asksDoneDayAfter } from '@/tasks/completion'
+import { asksDoneDayAfter, completedBy } from '@/tasks/completion'
 import type { ListSort, Task } from '@/tasks/model'
 import { sharedTask } from '@/tasks/share'
 import { listSorts } from '@/tasks/views'
@@ -97,7 +97,8 @@ export function AppSync() {
         due: dueLabel(task, today),
         overdue: isOverdue(task, today),
         starred: task.starredAt !== null,
-        asksAfter: asksDoneDayAfter(task) ?? '',
+        // A subtask that would do its late repeating task asks as that task does.
+        asksAfter: asksDoneDayAfter(completedBy(task, current, today)) ?? '',
         parentId: task.parentId ?? '',
       })
 
