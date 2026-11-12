@@ -2,8 +2,9 @@ import { msg, plural, t } from '@lingui/core/macro'
 import { getCalendars, getLocales } from 'expo-localization'
 import { i18n } from '@/i18n'
 import type { Cadence, Lean } from '@/tasks/cadence'
+import { keptOf, skipPhrasing, skipSet } from '@/tasks/conditions'
 import { addDays, type CalendarDate, dateOf, daysBetween, momentOf, parts } from '@/tasks/dates'
-import type { Condition, Repeat, Task } from '@/tasks/model'
+import type { Repeat, Task } from '@/tasks/model'
 import { isEveryWeekday } from '@/tasks/recurrence'
 import type { SectionKind } from '@/tasks/views'
 
@@ -205,71 +206,107 @@ export function monthsPhrase(months: readonly number[]) {
     .join(', ')
 }
 
+/** The weekdays a repeat skips, or keeps to where that is shorter: "Skips Sunday", "Only on Mon, Tue". */
+export function skippedWeekdaysLabel(skipped: readonly number[]) {
+  if (skipPhrasing(7, skipped.length) === 'skips') {
+    const days = weekdaysPhrase(skipped)
+
+    return t({ message: `Skips ${days}`, comment: 'Repeat: the weekdays it skips' })
+  }
+
+  const days = weekdaysPhrase(keptOf('weekdays', skipped))
+
+  return t({ message: `Only on ${days}`, comment: 'Repeat: the only weekdays it falls on' })
+}
+
+/** The months a repeat skips, or keeps to where that is shorter: "Only in Apr, May, Jun". */
+export function skippedMonthsLabel(skipped: readonly number[]) {
+  if (skipPhrasing(12, skipped.length) === 'skips') {
+    const months = monthsPhrase(skipped)
+
+    return t({ message: `Skips ${months}`, comment: 'Repeat: the months it skips' })
+  }
+
+  const months = monthsPhrase(keptOf('months', skipped))
+
+  return t({ message: `Only in ${months}`, comment: 'Repeat: the only months it falls in' })
+}
+
+/** The first day of a run of days a repeat skips: "Skips from Sun 20 Dec". */
+export function periodStartLabel(from: CalendarDate) {
+  const day = fullDate(from)
+
+  return t({ message: `Skips from ${day}`, comment: 'Repeat: the first day of a pause' })
+}
+
+/** The last day of a run of days a repeat skips: "Until Sun 27 Dec". */
+export function periodEndLabel(to: CalendarDate) {
+  const day = fullDate(to)
+
+  return t({ message: `Until ${day}`, comment: 'Repeat: the last day of a pause, included' })
+}
+
+/** What a repeat does on another task's days: skips them, or keeps to them. */
+export function taskModeLabel(except: boolean) {
+  return except
+    ? t({
+        message: 'Skips the days it’s due',
+        comment: 'Repeat: leaves out the days another task is due, so the two take turns',
+      })
+    : t({
+        message: 'Only on the days it’s due',
+        comment: 'Repeat: falls only on the days another task is due',
+      })
+}
+
 /**
- * A repeat's condition in a few words, such as "Not on Sat, Sun" or "Only when “Gym” is due";
- * `titleOf` names the task a condition minds, or says it is gone.
+ * A repeat's conditions in a few words each, as the repeat sheet sets them: "Skips Sunday",
+ * "Skips 20 Dec to 27 Dec", "Skips the days “Gym” is due". `titleOf` names the task one minds.
  */
-export function conditionLabel(
-  condition: Condition,
+export function conditionLabels(
+  conditions: Repeat['conditions'],
   titleOf: (seriesId: string) => string | null = () => null,
 ) {
-  switch (condition.kind) {
-    case 'weekdays': {
-      const days = weekdaysPhrase(condition.weekdays)
+  const set = skipSet(conditions)
+  const labels: string[] = []
 
-      return condition.except
-        ? t({ message: `Not on ${days}`, comment: 'Repeat condition: leaves out weekdays' })
-        : t({ message: `Only on ${days}`, comment: 'Repeat condition: keeps to weekdays' })
-    }
+  if (set.weekdays.length > 0) labels.push(skippedWeekdaysLabel(set.weekdays))
 
-    case 'months': {
-      const months = monthsPhrase(condition.months)
+  if (set.months.length > 0) labels.push(skippedMonthsLabel(set.months))
 
-      return condition.except
-        ? t({ message: `Not in ${months}`, comment: 'Repeat condition: leaves out months' })
-        : t({ message: `Only in ${months}`, comment: 'Repeat condition: keeps to months' })
-    }
+  if (set.period) {
+    const from = fullDate(set.period.from)
+    const to = fullDate(set.period.to)
 
-    case 'dates': {
-      const from = fullDate(condition.from)
-      const to = fullDate(condition.to)
-
-      if (condition.from === condition.to)
-        return condition.except
-          ? t({ message: `Not on ${from}`, comment: 'Repeat condition: leaves out one date' })
-          : t({ message: `Only on ${from}`, comment: 'Repeat condition: keeps to one date' })
-
-      return condition.except
-        ? t({
-            message: `Not from ${from} to ${to}`,
-            comment: 'Repeat condition: leaves out a run of days, such as a holiday',
-          })
-        : t({
-            message: `Only from ${from} to ${to}`,
-            comment: 'Repeat condition: keeps to a run of days',
-          })
-    }
-
-    case 'task': {
-      const title = titleOf(condition.seriesId)
-
-      if (title === null)
-        return t({
-          message: 'Minds a task that is gone',
-          comment: 'Repeat condition naming a deleted task; it no longer does anything',
-        })
-
-      return condition.except
-        ? t({
-            message: `Not when “${title}” is due`,
-            comment: 'Repeat condition: leaves out the days another task is due',
-          })
-        : t({
-            message: `Only when “${title}” is due`,
-            comment: 'Repeat condition: keeps to the days another task is due',
-          })
-    }
+    labels.push(
+      set.period.from === set.period.to
+        ? t({ message: `Skips ${from}`, comment: 'Repeat: the one day it skips' })
+        : t({ message: `Skips ${from} to ${to}`, comment: 'Repeat: a run of days it skips' }),
+    )
   }
+
+  if (set.task) {
+    const title = titleOf(set.task.seriesId)
+
+    labels.push(
+      title === null
+        ? t({
+            message: 'Minds a task that is gone',
+            comment: 'Repeat condition naming a deleted task; it no longer does anything',
+          })
+        : set.task.except
+          ? t({
+              message: `Skips the days “${title}” is due`,
+              comment: 'Repeat: leaves out the days another task is due',
+            })
+          : t({
+              message: `Only on the days “${title}” is due`,
+              comment: 'Repeat: falls only on the days another task is due',
+            }),
+    )
+  }
+
+  return labels
 }
 
 /**
@@ -356,10 +393,7 @@ export function repeatLabel(repeat: Repeat, titleOf?: (seriesId: string) => stri
 
   const rule = [base, anchor, end].filter(Boolean).join(', ')
 
-  return [
-    rule,
-    ...(repeat.conditions ?? []).map((condition) => conditionLabel(condition, titleOf)),
-  ].join(' · ')
+  return [rule, ...conditionLabels(repeat.conditions, titleOf)].join(' · ')
 }
 
 /** How often, as in "Every 3 days". */

@@ -4,7 +4,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import { CadenceEditor } from '@/components/cadence-editor'
 import { DatePicker, TimePicker } from '@/components/date-pickers'
-import { RepeatEditor, SettingCard, useConditionTasks } from '@/components/repeat-editor'
+import { RepeatEditor } from '@/components/repeat-editor'
+import { useConditionTasks } from '@/components/skip-cards'
 import { useTaskCommands } from '@/components/task-commands'
 import {
   FieldCards,
@@ -12,11 +13,12 @@ import {
   SubtaskCards,
   useDetailsRow,
   useListPicker,
+  useSubtaskSettings,
 } from '@/components/task-form'
 import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
 import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
-import { Column, Switch, Text, useMaterialColors } from '@/lib/compose-ui'
+import { Column, Text, useMaterialColors } from '@/lib/compose-ui'
 import { cadenceOf, nextDue, rests } from '@/tasks/cadence'
 import { seriesOf } from '@/tasks/conditions'
 import { localDate } from '@/tasks/dates'
@@ -88,6 +90,19 @@ export function TaskScreen() {
 
   const conditionTasks = useConditionTasks(task ? seriesOf(task) : undefined)
 
+  const subtaskSettings = useSubtaskSettings({
+    count: task && task.parentId === null ? subtasks.length : 0,
+    repeating: Boolean(task?.repeat && task.dueDate),
+    doneWithSubtasks: task?.completion === 'subtasks',
+    turns: task?.turns === true,
+    onDoneWithSubtasks: (checked) => {
+      if (task) actions.updateTask(task.clientId, { completion: checked ? 'subtasks' : 'self' })
+    },
+    onTurns: (checked) => {
+      if (task) actions.setTurns(task.clientId, checked)
+    },
+  })
+
   const pickList = useListPicker(lists.length > 0, () => setOverlay('list'))
 
   const details = useDetailsRow(task?.notes ?? '', (value) => {
@@ -119,47 +134,14 @@ export function TaskScreen() {
   const cadence = cadenceOf(task, repeatingParent)
   // A subtask of a task whose subtasks take turns has its turn, not a cadence of its own.
   const takingTurns = repeatingParent?.turns === true
-  const doneWithSubtasks = task.completion === 'subtasks'
-  const canTakeTurns = !isSubtask && task.repeat !== null && task.dueDate !== null
-  const turns = canTakeTurns && task.turns === true
+  const repeating = !isSubtask && task.repeat !== null && task.dueDate !== null
 
-  // How the task is done, and whether its subtasks take turns, once it has subtasks to do it.
-  const subtaskSettings = isSubtask
-    ? []
-    : [
-        ...(subtasks.length > 0
-          ? [
-              {
-                key: 'completion',
-                glyph: 'allDone' as const,
-                label: t({
-                  message: 'Done when its subtasks are',
-                  comment:
-                    'Task page switch: checking off the last subtask due this time does the task',
-                }),
-                checked: doneWithSubtasks,
-                onChange: (checked: boolean) =>
-                  actions.updateTask(task.clientId, {
-                    completion: checked ? 'subtasks' : 'self',
-                  }),
-              },
-            ]
-          : []),
-        ...(canTakeTurns && subtasks.length > 1
-          ? [
-              {
-                key: 'turns',
-                glyph: 'turns' as const,
-                label: t({
-                  message: 'Subtasks take turns',
-                  comment: 'Task page switch: one subtask is due each time the task repeats',
-                }),
-                checked: turns,
-                onChange: (checked: boolean) => actions.setTurns(task.clientId, checked),
-              },
-            ]
-          : []),
-      ]
+  // How often a subtask with a cadence of its own is due; one taking turns says nothing.
+  const subtaskNote = (subtask: (typeof subtasks)[number]) => {
+    const own = repeating && !task.turns ? cadenceOf(subtask, task) : null
+
+    return own ? cadenceLabel(own) : null
+  }
 
   // When a subtask resting this time is next due, or that it was not due, its task done.
   const waiting = (subtask: (typeof subtasks)[number]) => {
@@ -338,7 +320,9 @@ export function TaskScreen() {
               title: subtask.title,
               done: subtask.completedAt !== null,
               waiting: waiting(subtask),
+              note: subtaskNote(subtask),
             }))}
+            settings={subtaskSettings}
             onAdd={(value) =>
               actions.createTask({ listId: task.listId, parentId: task.clientId, title: value })
             }
@@ -347,21 +331,6 @@ export function TaskScreen() {
             onRemove={(key) => setRemoving(key)}
           />
         )}
-        {subtaskSettings.length > 0 ? (
-          <Column modifiers={[fillMaxWidth()]} verticalArrangement={{ spacedBy: 2 }}>
-            {subtaskSettings.map((setting, index) => (
-              <SettingCard
-                key={setting.key}
-                glyph={setting.glyph}
-                label={setting.label}
-                index={index}
-                count={subtaskSettings.length}
-                onPress={() => setting.onChange(!setting.checked)}
-                trailing={<Switch value={setting.checked} onCheckedChange={setting.onChange} />}
-              />
-            ))}
-          </Column>
-        ) : null}
         {takingTurns && !done ? (
           <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
             {t({

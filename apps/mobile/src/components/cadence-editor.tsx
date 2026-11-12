@@ -29,7 +29,8 @@ import { SummaryCard } from '@/ui/primitives'
 import { PrimaryAction } from '@/ui/screen'
 import { Sheet } from '@/ui/sheets'
 import { DatePicker } from './date-pickers'
-import { IntervalDialog, SettingCard } from './repeat-editor'
+import { IntervalDialog } from './repeat-editor'
+import { SettingCard } from './setting-cards'
 
 const MAX_TIMES = 999
 

@@ -1,5 +1,5 @@
 import type { CalendarDate } from './dates'
-import type { Task } from './model'
+import type { Condition, Task } from './model'
 import { nextOccurrence, type Schedules } from './recurrence'
 
 /** The most of a series' coming dates looked through to tell whether it is due on a day. */
@@ -82,4 +82,87 @@ export function seriesTitles(tasks: readonly Task[]) {
   }
 
   return new Map([...latest].map(([series, task]) => [series, task.title]))
+}
+
+/**
+ * A repeat's conditions as the repeat sheet sets them: the weekdays and months it skips, one run
+ * of days it skips, and one other task whose days it skips or keeps to.
+ */
+export type SkipSet = {
+  weekdays: number[]
+  months: number[]
+  period: { from: CalendarDate; to: CalendarDate } | null
+  task: { seriesId: string; except: boolean } | null
+}
+
+const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6]
+
+const ALL_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+/** What a set of "only" or "except" conditions on weekdays or months leaves out of `all`. */
+function skipped(all: readonly number[], conditions: { values: number[]; except: boolean }[]) {
+  const left = new Set<number>()
+
+  for (const { values, except } of conditions)
+    for (const value of all) if (values.includes(value) === except) left.add(value)
+
+  return all.filter((value) => left.has(value))
+}
+
+/** A repeat's conditions as the sheet shows them, whatever way they were written. */
+export function skipSet(conditions: readonly Condition[] | undefined): SkipSet {
+  const list = conditions ?? []
+  const period = list.find((condition) => condition.kind === 'dates' && condition.except)
+  const task = list.find((condition) => condition.kind === 'task')
+
+  return {
+    weekdays: skipped(
+      ALL_WEEKDAYS,
+      list.flatMap((condition) =>
+        condition.kind === 'weekdays'
+          ? [{ values: condition.weekdays, except: condition.except }]
+          : [],
+      ),
+    ),
+    months: skipped(
+      ALL_MONTHS,
+      list.flatMap((condition) =>
+        condition.kind === 'months' ? [{ values: condition.months, except: condition.except }] : [],
+      ),
+    ),
+    period: period?.kind === 'dates' ? { from: period.from, to: period.to } : null,
+    task: task?.kind === 'task' ? { seriesId: task.seriesId, except: task.except } : null,
+  }
+}
+
+/** The conditions a skip set writes: none for what it leaves alone. */
+export function skipConditions(set: SkipSet): Condition[] {
+  const conditions: Condition[] = []
+
+  if (set.weekdays.length > 0 && set.weekdays.length < ALL_WEEKDAYS.length)
+    conditions.push({ kind: 'weekdays', weekdays: set.weekdays, except: true })
+
+  if (set.months.length > 0 && set.months.length < ALL_MONTHS.length)
+    conditions.push({ kind: 'months', months: set.months, except: true })
+
+  if (set.period) conditions.push({ kind: 'dates', ...set.period, except: true })
+
+  if (set.task) conditions.push({ kind: 'task', ...set.task })
+
+  return conditions
+}
+
+/**
+ * How to say which of `all` are left: the ones skipped ("Skips Sat, Sun"), or the ones kept where
+ * that is shorter ("Only in Apr, May, Jun").
+ */
+export function skipPhrasing(all: number, skippedCount: number): 'skips' | 'only' {
+  return skippedCount <= all - skippedCount ? 'skips' : 'only'
+}
+
+/** The weekdays or months of `all` that `skippedValues` leaves. */
+export function keptOf(kind: 'weekdays' | 'months', skippedValues: readonly number[]) {
+  return (kind === 'weekdays' ? ALL_WEEKDAYS : ALL_MONTHS).filter(
+    (value) => !skippedValues.includes(value),
+  )
 }

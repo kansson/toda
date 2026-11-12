@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { mindableTasks, seriesSchedules, seriesTitles } from './conditions'
+import {
+  keptOf,
+  mindableTasks,
+  seriesSchedules,
+  seriesTitles,
+  skipConditions,
+  skipPhrasing,
+  skipSet,
+} from './conditions'
 import { newTask, type Task } from './model'
 import {
   type Condition,
@@ -150,5 +158,39 @@ describe('the tasks a condition can mind', () => {
   it('go by the title of their latest occurrence', () => {
     expect(seriesTitles(tasks).get('bins-1')).toBe('Bins, renamed')
     expect(seriesTitles(tasks).has('stretch')).toBe(false)
+  })
+})
+
+describe('a repeat’s conditions as the sheet sets them', () => {
+  it('reads "only" conditions as the days they skip', () => {
+    expect(
+      skipSet([
+        { kind: 'weekdays', weekdays: [0, 1, 2, 3, 4], except: false },
+        { kind: 'months', months: [12], except: true },
+        { kind: 'dates', from: '2026-12-20', to: '2026-12-27', except: true },
+        { kind: 'task', seriesId: 'gym', except: true },
+      ]),
+    ).toEqual({
+      weekdays: [5, 6],
+      months: [12],
+      period: { from: '2026-12-20', to: '2026-12-27' },
+      task: { seriesId: 'gym', except: true },
+    })
+  })
+
+  it('writes back only what it sets, so a sheet left alone adds nothing', () => {
+    const set = skipSet(undefined)
+
+    expect(skipConditions(set)).toEqual([])
+    expect(skipConditions({ ...set, weekdays: [6] })).toEqual([
+      { kind: 'weekdays', weekdays: [6], except: true },
+    ])
+  })
+
+  it('says the shorter of what it skips and what it keeps', () => {
+    expect(skipPhrasing(7, 2)).toBe('skips')
+    expect(skipPhrasing(12, 6)).toBe('skips')
+    expect(skipPhrasing(12, 7)).toBe('only')
+    expect(keptOf('months', [1, 2, 3, 10, 11, 12])).toEqual([4, 5, 6, 7, 8, 9])
   })
 })

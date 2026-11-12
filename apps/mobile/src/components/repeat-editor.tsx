@@ -1,26 +1,14 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import {
-  type Dispatch,
-  type ReactNode,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-import { useAllTasks } from '@/data/queries'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
   animateContentSize,
-  clickable,
-  clip,
-  composeGeometry,
   alpha,
   fillMaxWidth,
   height,
   matchParentSize,
   menuAnchor,
   padding,
-  selectable,
   size,
   verticalScroll,
   weight,
@@ -28,14 +16,11 @@ import {
 import {
   AlertDialog,
   Box,
-  Checkbox,
   Column,
   DropdownMenuItem,
   ExposedDropdownMenu,
   ExposedDropdownMenuBox,
   Icon,
-  IconButton,
-  ListItem,
   Row,
   Switch,
   Text,
@@ -44,27 +29,26 @@ import {
   useMaterialColors,
   useNativeState,
 } from '@/lib/compose-ui'
-import { mindableTasks, seriesTitles } from '@/tasks/conditions'
 import { type CalendarDate, daysInMonth, localDate, parts, weekday } from '@/tasks/dates'
-import type { Condition, Repeat } from '@/tasks/model'
+import type { Repeat } from '@/tasks/model'
 import { defaultRepeat, fixedRepeat, intervalRepeat, snap } from '@/tasks/recurrence'
 import { ChoiceDialog, TextDialog } from '@/ui/dialogs'
 import {
-  conditionLabel,
   everyLabel,
   fullDate,
-  monthName,
   ordinalWeekLabel,
   repeatLabel,
   weekdayName,
   weekdaysPhrase,
 } from '@/ui/format'
-import { type Glyph, glyphs } from '@/ui/glyphs'
-import { cardCorners, SummaryCard } from '@/ui/primitives'
+import { glyphs } from '@/ui/glyphs'
+import { SummaryCard } from '@/ui/primitives'
 import { PrimaryAction } from '@/ui/screen'
 import { Sheet } from '@/ui/sheets'
 import { AnimatedRotation } from '../../modules/ui'
 import { DatePicker } from './date-pickers'
+import { ChecklistDialog, SettingCard } from './setting-cards'
+import { type OtherTask, SkipCards } from './skip-cards'
 
 const MAX_INTERVAL = 999
 
@@ -89,74 +73,6 @@ function unitWord(unit: Units, count: number) {
 }
 
 const UNITS: Units[] = ['day', 'week', 'month', 'year']
-
-/**
- * One of the editor's connected cards, as a task's field cards are: its glyph and value, or what
- * it sets dimmed while unset, with a button to clear a set value; or a control of its own.
- */
-export function SettingCard({
-  glyph,
-  label,
-  value,
-  headline,
-  index,
-  count,
-  trailing,
-  clear,
-  onPress,
-}: {
-  glyph: Glyph
-  label: string
-  /** The value, or null while unset; a card without one shows its label as it is. */
-  value?: string | null
-  /** In place of the label, such as a row of weekdays. */
-  headline?: ReactNode
-  index: number
-  count: number
-  trailing?: ReactNode
-  clear?: { label: string; onPress: () => void }
-  onPress?: () => void
-}) {
-  const colors = useMaterialColors()
-  const unset = value === null
-  const content = unset ? colors.onSurfaceVariant : colors.onSurface
-
-  return (
-    <ListItem
-      colors={{ containerColor: colors.surfaceContainerHigh }}
-      modifiers={[
-        fillMaxWidth(),
-        clip(cardCorners(index, count)),
-        ...(onPress ? [clickable(onPress)] : []),
-      ]}
-    >
-      <ListItem.LeadingContent>
-        <Icon source={glyphs[glyph]} size={24} tint={unset ? colors.onSurfaceVariant : content} />
-      </ListItem.LeadingContent>
-      <ListItem.HeadlineContent>
-        {headline ?? (
-          <Text color={content} maxLines={2} overflow='ellipsis'>
-            {value ?? label}
-          </Text>
-        )}
-      </ListItem.HeadlineContent>
-      {/* The slot stays put and only its content changes: a slot added later never shows. */}
-      <ListItem.TrailingContent>
-        {trailing ??
-          (clear && !unset ? (
-            <IconButton onClick={clear.onPress}>
-              <Icon
-                source={glyphs.clear}
-                size={20}
-                tint={colors.onSurfaceVariant}
-                contentDescription={clear.label}
-              />
-            </IconButton>
-          ) : null)}
-      </ListItem.TrailingContent>
-    </ListItem>
-  )
-}
 
 /**
  * How often, as a number and a unit chosen together. A new repeat has no number yet and counts in
@@ -299,330 +215,7 @@ export function IntervalDialog({
   )
 }
 
-/** Several of a few choices, ticked in a list; at least one. */
-function ChecklistDialog({
-  title,
-  options,
-  chosen: initial,
-  onConfirm,
-  onDismiss,
-}: {
-  title: string
-  options: { value: number; label: string }[]
-  chosen: number[]
-  onConfirm: (chosen: number[]) => void
-  onDismiss: () => void
-}) {
-  const { t } = useLingui()
-  const colors = useMaterialColors()
-  const [chosen, setChosen] = useState(initial)
-
-  const toggle = (value: number) =>
-    setChosen((current) =>
-      current.includes(value) ? current.filter((other) => other !== value) : [...current, value],
-    )
-
-  return (
-    <AlertDialog onDismissRequest={onDismiss}>
-      <AlertDialog.Title>
-        <Text style={{ typography: 'headlineSmall' }}>{title}</Text>
-      </AlertDialog.Title>
-      <AlertDialog.Text>
-        <Column modifiers={[fillMaxWidth(), verticalScroll()]}>
-          {options.map((option) => (
-            <ListItem
-              key={option.value}
-              colors={{ containerColor: colors.surfaceContainerHigh }}
-              modifiers={[
-                fillMaxWidth(),
-                clip(composeGeometry.RoundedCorner(16)),
-                selectable(chosen.includes(option.value), () => toggle(option.value), 'checkbox'),
-              ]}
-            >
-              <ListItem.LeadingContent>
-                <Checkbox value={chosen.includes(option.value)} />
-              </ListItem.LeadingContent>
-              <ListItem.HeadlineContent>
-                <Text>{option.label}</Text>
-              </ListItem.HeadlineContent>
-            </ListItem>
-          ))}
-        </Column>
-      </AlertDialog.Text>
-      <AlertDialog.ConfirmButton>
-        <TextButton
-          enabled={chosen.length > 0}
-          onClick={() => {
-            onConfirm(chosen.slice().sort((a, b) => a - b))
-            onDismiss()
-          }}
-        >
-          <Text>{t({ message: 'OK', comment: 'Confirms a dialog' })}</Text>
-        </TextButton>
-      </AlertDialog.ConfirmButton>
-      <AlertDialog.DismissButton>
-        <TextButton onClick={onDismiss}>
-          <Text>{t({ message: 'Cancel', comment: 'Closes a dialog without changes' })}</Text>
-        </TextButton>
-      </AlertDialog.DismissButton>
-    </AlertDialog>
-  )
-}
-
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6]
-
-const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-
-/** A task a repeat's conditions can mind: its series, and its title. */
-export type OtherTask = { seriesId: string; title: string }
-
-/**
- * The tasks a repeat's conditions can mind, for the editor, and the title of any task one names;
- * `self` is the task's own series, never among them.
- */
-export function useConditionTasks(self?: string) {
-  const { t } = useLingui()
-  const tasks = useAllTasks()
-  const untitled = t({ message: '(No title)', comment: 'Shown for a task without a title' })
-
-  return useMemo(() => {
-    const titles = seriesTitles(tasks)
-
-    const others: OtherTask[] = mindableTasks(tasks, self).map(({ seriesId, task }) => ({
-      seriesId,
-      title: task.title.trim() || untitled,
-    }))
-
-    const titleOf = (seriesId: string) => {
-      const title = titles.get(seriesId)
-
-      return title === undefined ? null : title.trim() || untitled
-    }
-
-    return { others, titleOf }
-  }, [tasks, self, untitled])
-}
-
-/** The kinds of condition offered, each keeping to the days it names or leaving them out. */
-type ConditionChoice =
-  | 'weekdaysExcept'
-  | 'weekdaysOnly'
-  | 'monthsOnly'
-  | 'monthsExcept'
-  | 'datesExcept'
-  | 'taskExcept'
-  | 'taskOnly'
-
-/** A condition being set: which one (null for a new one), as it stands, and which dialog asks. */
-type EditingCondition = {
-  index: number | null
-  condition: Condition
-  step: 'weekdays' | 'months' | 'from' | 'to' | 'task'
-}
-
-/** The dialog that sets a condition of a kind. */
-function stepOf(condition: Condition): EditingCondition['step'] {
-  switch (condition.kind) {
-    case 'weekdays':
-      return 'weekdays'
-    case 'months':
-      return 'months'
-    case 'dates':
-      return 'from'
-    case 'task':
-      return 'task'
-  }
-}
-
-/** A new condition of the kind chosen, before its dialog sets it. */
-function newCondition(choice: ConditionChoice, start: CalendarDate): Condition {
-  switch (choice) {
-    case 'weekdaysExcept':
-    case 'weekdaysOnly':
-      return { kind: 'weekdays', weekdays: [], except: choice === 'weekdaysExcept' }
-    case 'monthsOnly':
-    case 'monthsExcept':
-      return { kind: 'months', months: [], except: choice === 'monthsExcept' }
-    case 'datesExcept':
-      return { kind: 'dates', from: start, to: start, except: true }
-    case 'taskExcept':
-    case 'taskOnly':
-      return { kind: 'task', seriesId: '', except: choice === 'taskExcept' }
-  }
-}
-
-/**
- * The dialogs that set a repeat's conditions: what kind of condition a new one is, then the
- * weekdays, months, first and last day, or task it names.
- */
-function ConditionDialogs({
-  choosing,
-  editing,
-  others,
-  onChoose,
-  onEdit,
-  onSave,
-  onDismiss,
-}: {
-  choosing: boolean
-  editing: EditingCondition | null
-  others: readonly OtherTask[]
-  onChoose: (choice: ConditionChoice | null) => void
-  onEdit: Dispatch<SetStateAction<EditingCondition | null>>
-  onSave: (index: number | null, condition: Condition) => void
-  onDismiss: () => void
-}) {
-  const { t } = useLingui()
-
-  const choices: { value: ConditionChoice; label: string }[] = [
-    {
-      value: 'weekdaysExcept',
-      label: t({ message: 'Not on some days of the week', comment: 'Repeat condition kind' }),
-    },
-    {
-      value: 'weekdaysOnly',
-      label: t({ message: 'Only on some days of the week', comment: 'Repeat condition kind' }),
-    },
-    {
-      value: 'monthsOnly',
-      label: t({ message: 'Only in some months', comment: 'Repeat condition kind: a season' }),
-    },
-    {
-      value: 'monthsExcept',
-      label: t({ message: 'Not in some months', comment: 'Repeat condition kind' }),
-    },
-    {
-      value: 'datesExcept',
-      label: t({
-        message: 'Not between two dates',
-        comment: 'Repeat condition kind: such as a holiday',
-      }),
-    },
-    ...(others.length > 0
-      ? [
-          {
-            value: 'taskExcept' as const,
-            label: t({
-              message: 'Not when another task is due',
-              comment: 'Repeat condition kind: takes turns with another task',
-            }),
-          },
-          {
-            value: 'taskOnly' as const,
-            label: t({
-              message: 'Only when another task is due',
-              comment: 'Repeat condition kind: goes with another task',
-            }),
-          },
-        ]
-      : []),
-  ]
-
-  const save = (condition: Condition) => {
-    if (editing) onSave(editing.index, condition)
-  }
-
-  const close = () => onEdit(null)
-
-  if (choosing)
-    return (
-      <ChoiceDialog
-        title={t({ message: 'Add a condition', comment: 'Dialog title: a kind of condition' })}
-        options={choices}
-        selected={null}
-        // The next dialog opens once this one has gone.
-        onSelect={(choice) => setTimeout(() => onChoose(choice), 0)}
-        onDismiss={onDismiss}
-      />
-    )
-
-  if (!editing) return null
-  const { condition } = editing
-
-  switch (editing.step) {
-    case 'weekdays':
-      return condition.kind === 'weekdays' ? (
-        <ChecklistDialog
-          title={
-            condition.except
-              ? t({ message: 'Not on', comment: 'Dialog title: weekdays a repeat leaves out' })
-              : t({ message: 'Only on', comment: 'Dialog title: weekdays a repeat keeps to' })
-          }
-          options={WEEKDAYS.map((day) => ({ value: day, label: weekdayName(day) }))}
-          chosen={condition.weekdays}
-          onConfirm={(weekdays) => save({ ...condition, weekdays })}
-          onDismiss={close}
-        />
-      ) : null
-    case 'months':
-      return condition.kind === 'months' ? (
-        <ChecklistDialog
-          title={
-            condition.except
-              ? t({ message: 'Not in', comment: 'Dialog title: months a repeat leaves out' })
-              : t({ message: 'Only in', comment: 'Dialog title: months a repeat keeps to' })
-          }
-          options={MONTHS.map((month) => ({ value: month, label: monthName(month) }))}
-          chosen={condition.months}
-          onConfirm={(months) => save({ ...condition, months })}
-          onDismiss={close}
-        />
-      ) : null
-    case 'from':
-      return condition.kind === 'dates' ? (
-        <DatePicker
-          value={condition.from}
-          onPick={(from) =>
-            // The last day is asked once the first has gone.
-            setTimeout(
-              () =>
-                onEdit({
-                  ...editing,
-                  condition: { ...condition, from, to: condition.to < from ? from : condition.to },
-                  step: 'to',
-                }),
-              0,
-            )
-          }
-          onDismiss={() => onEdit((current) => (current?.step === 'from' ? null : current))}
-        />
-      ) : null
-    case 'to':
-      return condition.kind === 'dates' ? (
-        <DatePicker
-          value={condition.to}
-          onPick={(to) =>
-            save(
-              to < condition.from
-                ? { ...condition, from: to, to: condition.from }
-                : { ...condition, to },
-            )
-          }
-          onDismiss={close}
-        />
-      ) : null
-    case 'task':
-      return condition.kind === 'task' ? (
-        <ChoiceDialog
-          title={
-            condition.except
-              ? t({
-                  message: 'Not when this is due',
-                  comment: 'Dialog title: the task whose days a repeat leaves out',
-                })
-              : t({
-                  message: 'Only when this is due',
-                  comment: 'Dialog title: the task whose days a repeat keeps to',
-                })
-          }
-          options={others.map((other) => ({ value: other.seriesId, label: other.title }))}
-          selected={condition.seriesId}
-          onSelect={(seriesId) => save({ ...condition, seriesId })}
-          onDismiss={close}
-        />
-      ) : null
-  }
-}
 
 /** The days of the week a fixed weekly repeat falls on, ticked in a list; at least one. */
 function WeekdaysDialog({
@@ -681,42 +274,7 @@ export function RepeatEditor({
   // Whether how often has been chosen; a new repeat starts without it.
   const [chosen, setChosen] = useState(initial !== null)
   const [dialog, setDialog] = useState<Dialog>(null)
-  const [choosingCondition, setChoosingCondition] = useState(false)
-  const [editingCondition, setEditingCondition] = useState<EditingCondition | null>(null)
   const first = snap(repeat, start)
-  const conditions = repeat.conditions ?? []
-
-  const setConditions = (next: Condition[]) => setRepeat({ ...repeat, conditions: next })
-
-  const conditionCards = [
-    ...conditions.map((condition, index) => (
-      <SettingCard
-        key={`condition-${index}`}
-        glyph='conditions'
-        index={index}
-        count={conditions.length + 1}
-        label={conditionLabel(condition, titleOf)}
-        value={conditionLabel(condition, titleOf)}
-        onPress={() => setEditingCondition({ index, condition, step: stepOf(condition) })}
-        clear={{
-          label: t({ message: 'Remove condition', comment: 'Removes a repeat’s condition' }),
-          onPress: () => setConditions(conditions.filter((_, other) => other !== index)),
-        }}
-      />
-    )),
-    <SettingCard
-      key='addCondition'
-      glyph='add'
-      index={conditions.length}
-      count={conditions.length + 1}
-      label={t({
-        message: 'Add a condition',
-        comment: 'Repeat editor: keep to or leave out some days, such as weekends',
-      })}
-      onPress={() => setChoosingCondition(true)}
-    />,
-  ]
-
   const fixed = repeat.anchor === 'due'
 
   const update = (patch: Partial<Repeat>) => {
@@ -904,36 +462,16 @@ export function RepeatEditor({
             {cards.map((card, index) => card.node(index, cards.length))}
           </Column>
           {chosen ? (
-            <Column
-              modifiers={[fillMaxWidth(), animateContentSize()]}
-              verticalArrangement={{ spacedBy: 2 }}
-            >
-              {conditionCards}
-            </Column>
+            <SkipCards
+              repeat={repeat}
+              weekly={fixed && repeat.unit === 'week'}
+              start={first}
+              others={others}
+              titleOf={titleOf}
+              onChange={(conditions) => setRepeat({ ...repeat, conditions })}
+            />
           ) : null}
           {chosen ? <SummaryCard glyph='repeat' title={repeatLabel(repeat, titleOf)} /> : null}
-          <ConditionDialogs
-            choosing={choosingCondition}
-            editing={editingCondition}
-            others={others}
-            onChoose={(choice) => {
-              setChoosingCondition(false)
-
-              if (choice === null) return
-              const condition = newCondition(choice, first)
-
-              setEditingCondition({ index: null, condition, step: stepOf(condition) })
-            }}
-            onEdit={setEditingCondition}
-            onSave={(index, condition) =>
-              setConditions(
-                index === null
-                  ? [...conditions, condition]
-                  : conditions.map((other, at) => (at === index ? condition : other)),
-              )
-            }
-            onDismiss={() => setChoosingCondition(false)}
-          />
           {dialog === 'interval' ? (
             <IntervalDialog
               interval={chosen ? repeat.interval : null}

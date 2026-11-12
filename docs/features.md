@@ -63,11 +63,15 @@ or 24-hour clock.
   Reopening a subtask of a done task, as from Completed, reopens the task too, since a task is
   done only once all its subtasks are; its other subtasks stay done.
   Completing and deleting show a snackbar with Undo.
-- A task with subtasks has **Done when its subtasks are** on its page (not in Google Tasks): with
-  it on, checking off the last of its subtasks due this time, in the list, on its page or in a
-  widget, does the task too, as if the task itself were checked off. Subtasks resting this time
-  are not waited for. A daily _Workout_ with _Stretch_ and _Run_ is done once both are; the task's
-  own check box still does it with all its subtasks at once.
+- A task's subtasks end in switches, in the same run of cards (not in Google Tasks): **Done when
+  its subtasks are** and, on a repeating task with two or more, **Take turns, one each time** (see
+  Subtasks of a repeating task). With the first on, checking off the last of its subtasks due this
+  time, in the list, on its page or in a widget, does the task too, as if the task itself were
+  checked off. Subtasks resting this time are not waited for. A daily _Workout_ with _Stretch_ and
+  _Run_ is done once both are; the task's own check box still does it with all its subtasks at
+  once.
+- A new task's subtasks open as a subtask's page does, in a sheet before the task exists: its
+  title, and when it is due once the task repeats, set as on its page. The switches are there too.
 - Tasks move to another list with their subtasks from the list card on a task's page, which picks
   among the lists and is cleared with its button to leave the task in none. With no lists it says
   so in a snackbar.
@@ -119,20 +123,26 @@ still done on Sunday.
 Repeating tasks carry no deadline, as in Google Tasks: making a task with a deadline repeat asks
 first and removes it.
 
-### Conditions
+### Skipping days
 
-Not in Google Tasks. Below the cards, the repeat sheet has **Add a condition**, which keeps the
-repeat to some days or leaves some out; each condition is a card of its own, changed with a tap
-and removed with its button, and spelled out after the rule ("Daily · Not on Sunday"):
+Not in Google Tasks. Under **Skip**, the repeat sheet has a second run of cards laid out as the
+first: each shows what it skips, or what it sets dimmed while it skips nothing, opens one dialog
+and is cleared with its button. What they skip is spelled out after the rule ("Daily · Skips
+Sunday").
 
-| Condition                                   | Example                                          |
-| ------------------------------------------- | ------------------------------------------------ |
-| Not on, or only on, some days of the week   | Walk the dog daily, not on Sunday                |
-| Only in, or not in, some months             | Water the garden weekly, only April to September |
-| Not between two dates                       | Every chore paused from 20 to 27 December        |
-| Not when, or only when, another task is due | Run daily, not when _Gym_ is due                 |
+| Card                                                                                                                       | Example                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Skip days of the week** (not on a fixed weekly repeat, whose days are chosen already)                                    | Walk the dog daily, skipping Sunday                                                        |
+| **Skip months**                                                                                                            | Water the garden weekly, skipping October to March: "Only in Apr, May, Jun, Jul, Aug, Sep" |
+| **Skip a period**, then its last day on a card under it                                                                    | Every chore paused from 20 to 27 December                                                  |
+| **Take turns with another task**, then on a card under it whether it skips the days that task is due or falls only on them | Run daily, skipping the days _Gym_ is due                                                  |
 
-A date stays on the schedule when every "only" condition holds and no "not" one does. A date
+Days of the week and months are ticked in a list of those skipped, never all of them; each says
+the shorter of what it skips and what it keeps. A run of days asks for its first day and then its
+last. The repeat's conditions are stored as the general rule below, which the sheet reads and
+writes in this one form.
+
+A date stays on the schedule when every "only" condition holds and no "except" one does. A date
 left out moves the task on: a fixed schedule to its next date that is kept, one counted from
 when it is done to the next day that is kept. "Ends after" counts only the times kept, and a
 repeat whose next kept date comes after its end ends. Conditions that leave out every date for
@@ -178,13 +188,15 @@ the date the task would really come back on, which for a task that repeats from 
 is later the later it is done, and a subtask whose own date passed while the task waited is due
 now.
 
-**Subtasks take turns**, on the page of a repeating task with two or more subtasks, makes them
+**Take turns, one each time**, under the subtasks of a repeating task with two or more, makes them
 come round one each time the task repeats, in their order, and turns on Done when its subtasks
 are. _Bins_, weekly, with _Paper_ and _Plastic_: Paper this week, Plastic the next, and checking
 off the one whose turn it is does the week. Each subtask carries the every-few-times cadence that
 makes it so, kept in step as subtasks are added, deleted, restored, moved or reordered: the one
 whose turn it is keeps it and the others follow in their order. Their pages say they take turns
-in place of the cadence card. Turning it off makes every subtask due every time again.
+in place of the cadence card, and those not up this time say on their rows when their turn is. Turning it off
+makes every subtask due every time again. A subtask with a cadence of its own says it on its row
+("Once every 3 times").
 
 A subtask that is due in the task's current occurrence says so on its page ("Due with the task
 today"). One that is not rests in that occurrence: it is left out of the lists, left open when

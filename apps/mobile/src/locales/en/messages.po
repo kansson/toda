@@ -20,7 +20,7 @@ msgstr "“{removingTitle}” is deleted from every phone."
 #. Shown for a task without a title
 #. Shown for a task without a title
 #: src/components/app-sync.tsx
-#: src/components/repeat-editor.tsx
+#: src/components/skip-cards.tsx
 #: src/components/task-form.tsx
 #: src/components/task-row.tsx
 #: src/reminders/notifications.ts
@@ -213,6 +213,11 @@ msgstr "{subtaskCount} subtasks"
 msgid "A change couldn’t be saved and was undone"
 msgstr "A change couldn’t be saved and was undone"
 
+#. Repeat sheet: the task it minded was deleted
+#: src/components/skip-cards.tsx
+msgid "A task that is gone"
+msgstr "A task that is gone"
+
 #. Settings section about the app
 #: src/screens/settings.tsx
 msgid "About"
@@ -222,12 +227,6 @@ msgstr "About"
 #: src/components/task-form.tsx
 msgid "Add"
 msgstr "Add"
-
-#. Dialog title: a kind of condition
-#. Repeat editor: keep to or leave out some days, such as weekends
-#: src/components/repeat-editor.tsx
-msgid "Add a condition"
-msgstr "Add a condition"
 
 #. Task field: its date, unset
 #. Task field: its date, unset
@@ -379,6 +378,7 @@ msgstr "Back {when}"
 #. Closes a dialog without changes
 #: src/components/date-pickers.tsx
 #: src/components/repeat-editor.tsx
+#: src/components/setting-cards.tsx
 #: src/components/update-alert.tsx
 #: src/screens/settings.tsx
 #: src/ui/dialogs.tsx
@@ -607,7 +607,7 @@ msgid "Done"
 msgstr "Done"
 
 #. Task page switch: checking off the last subtask due this time does the task
-#: src/screens/task.tsx
+#: src/components/task-form.tsx
 msgid "Done when its subtasks are"
 msgstr "Done when its subtasks are"
 
@@ -628,13 +628,17 @@ msgid "Due {day}"
 msgstr "Due {day}"
 
 #. Makes a subtask due every time its task repeats
+#. Makes a subtask due every time its task repeats
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 msgid "Due every time"
 msgstr "Due every time"
 
 #. Subtask cadence summary: no cadence of its own
 #. Subtask field: when it is due, unset
+#. Subtask field: when it is due, unset
 #: src/components/cadence-editor.tsx
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 msgid "Due every time the task repeats"
 msgstr "Due every time the task repeats"
@@ -667,7 +671,10 @@ msgid "Earlier occurrences you completed stay in Completed."
 msgstr "Earlier occurrences you completed stay in Completed."
 
 #. Dialog title: renaming a task
+#. Dialog title: renaming a task
 #. Task page button renaming it
+#. Task page button renaming it
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 msgid "Edit title"
 msgstr "Edit title"
@@ -797,6 +804,11 @@ msgstr "It can land this many days early instead, when that’s nearer than land
 msgid "It can land this many days late instead, when that’s nearer than landing early."
 msgstr "It can land this many days late instead, when that’s nearer than landing early."
 
+#. Explains keeping to another task’s days
+#: src/components/skip-cards.tsx
+msgid "It goes with the other task."
+msgstr "It goes with the other task."
+
 #. Deleting a task
 #: src/screens/task.tsx
 msgid "It is deleted from every phone."
@@ -904,6 +916,11 @@ msgstr "Mark done"
 msgid "Mark not done"
 msgstr "Mark not done"
 
+#. Clears the task a repeat minds
+#: src/components/skip-cards.tsx
+msgid "Mind no other task"
+msgstr "Mind no other task"
+
 #. Repeat condition naming a deleted task; it no longer does anything
 #: src/ui/format.ts
 msgid "Minds a task that is gone"
@@ -1009,11 +1026,6 @@ msgstr "No starred tasks"
 msgid "No tasks"
 msgstr "No tasks"
 
-#. Repeat condition kind: such as a holiday
-#: src/components/repeat-editor.tsx
-msgid "Not between two dates"
-msgstr "Not between two dates"
-
 #. Settings row before the first sync
 #: src/screens/settings.tsx
 msgid "Not connected yet"
@@ -1034,65 +1046,10 @@ msgstr "Not even a day early"
 msgid "Not even a day late"
 msgstr "Not even a day late"
 
-#. Repeat condition: leaves out a run of days, such as a holiday
-#: src/ui/format.ts
-msgid "Not from {from} to {to}"
-msgstr "Not from {from} to {to}"
-
-#. Dialog title: months a repeat leaves out
-#: src/components/repeat-editor.tsx
-msgid "Not in"
-msgstr "Not in"
-
-#. Repeat condition: leaves out months
-#: src/ui/format.ts
-msgid "Not in {months}"
-msgstr "Not in {months}"
-
-#. Repeat condition kind
-#: src/components/repeat-editor.tsx
-msgid "Not in some months"
-msgstr "Not in some months"
-
-#. Dialog title: weekdays a repeat leaves out
-#: src/components/repeat-editor.tsx
-msgid "Not on"
-msgstr "Not on"
-
-#. Repeat condition: leaves out weekdays
-#: src/ui/format.ts
-msgid "Not on {days}"
-msgstr "Not on {days}"
-
-#. Repeat condition: leaves out one date
-#: src/ui/format.ts
-msgid "Not on {from}"
-msgstr "Not on {from}"
-
-#. Repeat condition kind
-#: src/components/repeat-editor.tsx
-msgid "Not on some days of the week"
-msgstr "Not on some days of the week"
-
 #. Section of tasks without a star
 #: src/ui/format.ts
 msgid "Not starred"
 msgstr "Not starred"
-
-#. Repeat condition: leaves out the days another task is due
-#: src/ui/format.ts
-msgid "Not when “{title}” is due"
-msgstr "Not when “{title}” is due"
-
-#. Repeat condition kind: takes turns with another task
-#: src/components/repeat-editor.tsx
-msgid "Not when another task is due"
-msgstr "Not when another task is due"
-
-#. Dialog title: the task whose days a repeat leaves out
-#: src/components/repeat-editor.tsx
-msgid "Not when this is due"
-msgstr "Not when this is due"
 
 #. Empty Upcoming view
 #: src/components/task-list.tsx
@@ -1140,6 +1097,7 @@ msgstr "Off"
 #: src/components/cadence-editor.tsx
 #: src/components/date-pickers.tsx
 #: src/components/repeat-editor.tsx
+#: src/components/setting-cards.tsx
 msgid "OK"
 msgstr "OK"
 
@@ -1193,6 +1151,11 @@ msgstr "On its own schedule"
 msgid "On the {0} {1}"
 msgstr "On the {0} {1}"
 
+#. Dialog title: what a repeat does on another task’s days
+#: src/components/skip-cards.tsx
+msgid "On the days it’s due"
+msgstr "On the days it’s due"
+
 #. Monthly repeat on e.g. the last Friday
 #. placeholder {0}: weekdayName(startWeekday)
 #: src/components/repeat-editor.tsx
@@ -1219,65 +1182,30 @@ msgstr "On whichever of the task’s dates is nearest"
 msgid "Once every how many times?"
 msgstr "Once every how many times?"
 
-#. Repeat condition: keeps to a run of days
-#: src/ui/format.ts
-msgid "Only from {from} to {to}"
-msgstr "Only from {from} to {to}"
-
-#. Dialog title: months a repeat keeps to
-#: src/components/repeat-editor.tsx
-msgid "Only in"
-msgstr "Only in"
-
-#. Repeat condition: keeps to months
+#. Repeat: the only months it falls in
 #: src/ui/format.ts
 msgid "Only in {months}"
 msgstr "Only in {months}"
 
-#. Repeat condition kind: a season
-#: src/components/repeat-editor.tsx
-msgid "Only in some months"
-msgstr "Only in some months"
-
-#. Dialog title: weekdays a repeat keeps to
-#: src/components/repeat-editor.tsx
-msgid "Only on"
-msgstr "Only on"
-
-#. Repeat condition: keeps to weekdays
+#. Repeat: the only weekdays it falls on
 #: src/ui/format.ts
 msgid "Only on {days}"
 msgstr "Only on {days}"
 
-#. Repeat condition: keeps to one date
+#. Repeat: falls only on the days another task is due
 #: src/ui/format.ts
-msgid "Only on {from}"
-msgstr "Only on {from}"
+msgid "Only on the days “{title}” is due"
+msgstr "Only on the days “{title}” is due"
 
-#. Repeat condition kind
-#: src/components/repeat-editor.tsx
-msgid "Only on some days of the week"
-msgstr "Only on some days of the week"
+#. Repeat: falls only on the days another task is due
+#: src/ui/format.ts
+msgid "Only on the days it’s due"
+msgstr "Only on the days it’s due"
 
 #. Account with one phone
 #: src/screens/settings.tsx
 msgid "Only this phone so far"
 msgstr "Only this phone so far"
-
-#. Repeat condition: keeps to the days another task is due
-#: src/ui/format.ts
-msgid "Only when “{title}” is due"
-msgstr "Only when “{title}” is due"
-
-#. Repeat condition kind: goes with another task
-#: src/components/repeat-editor.tsx
-msgid "Only when another task is due"
-msgstr "Only when another task is due"
-
-#. Dialog title: the task whose days a repeat keeps to
-#: src/components/repeat-editor.tsx
-msgid "Only when this is due"
-msgstr "Only when this is due"
 
 #. Lists sheet: button opening one list’s menu
 #. placeholder {0}: list.title
@@ -1334,11 +1262,6 @@ msgstr "Reminders"
 #: src/screens/settings.tsx
 msgid "Reminders are off until you do"
 msgstr "Reminders are off until you do"
-
-#. Removes a repeat’s condition
-#: src/components/repeat-editor.tsx
-msgid "Remove condition"
-msgstr "Remove condition"
 
 #. Clears a task’s date
 #. Clears a task’s date
@@ -1434,6 +1357,7 @@ msgstr "Replace this phone’s tasks?"
 #. Saves a list’s new name
 #. Saves a task’s details
 #. Saves a task’s title
+#. Saves a task’s title
 #. Saves the new task
 #: src/components/lists-sheet.tsx
 #: src/components/task-form.tsx
@@ -1487,10 +1411,90 @@ msgstr "Show every list"
 msgid "Show in the widget"
 msgstr "Show in the widget"
 
+#. Repeat sheet heading: days it skips
+#: src/components/skip-cards.tsx
+msgid "Skip"
+msgstr "Skip"
+
+#. Repeat sheet card, unset: a run of days it skips, such as a holiday
+#: src/components/skip-cards.tsx
+msgid "Skip a period"
+msgstr "Skip a period"
+
+#. Repeat sheet card, unset
+#: src/components/skip-cards.tsx
+msgid "Skip days of the week"
+msgstr "Skip days of the week"
+
+#. Dialog title: months a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Skip in"
+msgstr "Skip in"
+
+#. Repeat sheet card, unset
+#: src/components/skip-cards.tsx
+msgid "Skip months"
+msgstr "Skip months"
+
+#. Clears skipped weekdays
+#: src/components/skip-cards.tsx
+msgid "Skip no days of the week"
+msgstr "Skip no days of the week"
+
+#. Clears skipped months
+#: src/components/skip-cards.tsx
+msgid "Skip no months"
+msgstr "Skip no months"
+
+#. Clears the run of days a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Skip no period"
+msgstr "Skip no period"
+
+#. Dialog title: weekdays a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Skip on"
+msgstr "Skip on"
+
 #. Subtask resting while its task was done
 #: src/screens/task.tsx
 msgid "Skipped this time"
 msgstr "Skipped this time"
+
+#. Repeat: the weekdays it skips
+#: src/ui/format.ts
+msgid "Skips {days}"
+msgstr "Skips {days}"
+
+#. Repeat: the one day it skips
+#: src/ui/format.ts
+msgid "Skips {from}"
+msgstr "Skips {from}"
+
+#. Repeat: a run of days it skips
+#: src/ui/format.ts
+msgid "Skips {from} to {to}"
+msgstr "Skips {from} to {to}"
+
+#. Repeat: the months it skips
+#: src/ui/format.ts
+msgid "Skips {months}"
+msgstr "Skips {months}"
+
+#. Repeat: the first day of a pause
+#: src/ui/format.ts
+msgid "Skips from {day}"
+msgstr "Skips from {day}"
+
+#. Repeat: leaves out the days another task is due
+#: src/ui/format.ts
+msgid "Skips the days “{title}” is due"
+msgstr "Skips the days “{title}” is due"
+
+#. Repeat: leaves out the days another task is due, so the two take turns
+#: src/ui/format.ts
+msgid "Skips the days it’s due"
+msgstr "Skips the days it’s due"
 
 #. Title of the app-wide error screen
 #: src/components/app-error.tsx
@@ -1559,11 +1563,6 @@ msgstr "Starting this time"
 msgid "Subtasks"
 msgstr "Subtasks"
 
-#. Task page switch: one subtask is due each time the task repeats
-#: src/screens/task.tsx
-msgid "Subtasks take turns"
-msgstr "Subtasks take turns"
-
 #. Confirms moving to another server
 #: src/screens/settings.tsx
 msgid "Switch"
@@ -1584,6 +1583,21 @@ msgstr "Sync"
 #: src/screens/settings.tsx
 msgid "System default"
 msgstr "System default"
+
+#. Dialog title: the task whose days a repeat skips
+#: src/components/skip-cards.tsx
+msgid "Take turns with"
+msgstr "Take turns with"
+
+#. Repeat sheet card, unset: skip the days another task is due
+#: src/components/skip-cards.tsx
+msgid "Take turns with another task"
+msgstr "Take turns with another task"
+
+#. Task page switch: one subtask is due each time the task repeats
+#: src/components/task-form.tsx
+msgid "Take turns, one each time"
+msgstr "Take turns, one each time"
 
 #. Subtask page: its task’s subtasks come round one each time
 #: src/screens/task.tsx
@@ -1652,6 +1666,11 @@ msgstr "The lists on this phone are replaced by the other phone’s. If no other
 msgid "The task repeats less often than this, so it’s due every time anyway."
 msgstr "The task repeats less often than this, so it’s due every time anyway."
 
+#. Explains skipping another task’s days
+#: src/components/skip-cards.tsx
+msgid "The two take turns."
+msgstr "The two take turns."
+
 #. Update dialog when downloading the new version failed
 #: src/components/update-alert.tsx
 msgid "The update couldn’t be downloaded. Check your connection and try again."
@@ -1703,8 +1722,10 @@ msgstr "Times"
 #. Field label: a subtask’s title
 #. Label of a task’s title field
 #. Label of a task’s title field
+#. Label of a task’s title field
 #. Sort option: alphabetically
 #: src/components/task-form.tsx
+#: src/screens/new-task.tsx
 #: src/screens/task.tsx
 #: src/ui/format.ts
 msgid "Title"
@@ -1793,6 +1814,11 @@ msgstr "Unit"
 #: src/ui/format.ts
 msgid "until {0}"
 msgstr "until {0}"
+
+#. Repeat: the last day of a pause, included
+#: src/ui/format.ts
+msgid "Until {day}"
+msgstr "Until {day}"
 
 #. Settings row when no update is available
 #: src/screens/settings.tsx

@@ -99,7 +99,8 @@ export function cardCorners(index: number, count: number) {
   })
 }
 
-function GroupTitle({ title }: { title: string }) {
+/** A group's heading, over its connected cards. */
+export function GroupTitle({ title }: { title: string }) {
   const colors = useMaterialColors()
 
   return (

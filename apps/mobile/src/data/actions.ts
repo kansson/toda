@@ -8,7 +8,14 @@ import {
 } from '@/tasks/completion'
 import { seriesOf, seriesSchedules } from '@/tasks/conditions'
 import { type CalendarDate, localDate } from '@/tasks/dates'
-import { type List, type ListSort, newTask, type NewTask, type Task } from '@/tasks/model'
+import {
+  type Cadence,
+  type List,
+  type ListSort,
+  newTask,
+  type NewTask,
+  type Task,
+} from '@/tasks/model'
 import { bottomPosition, placeInOrder, topPosition } from '@/tasks/positions'
 import type { Db } from './db'
 import { newId } from './ids'
@@ -30,6 +37,9 @@ export type TaskPatch = Partial<
     | 'position'
   >
 >
+
+/** A subtask made with its task: its title, and when it is due where not every time. */
+export type NewSubtask = { title: string; cadence?: Cadence | null }
 
 /** What completing a task did, for the confirmation and its Undo. */
 export type Completion = { taskId: string; nextDue: string | null; spawned: string[] }
@@ -198,10 +208,10 @@ export function createActions(db: Db, onRefused: () => void) {
 
     /**
      * A new task at the top of its list, or at the end of its parent's subtasks, with `subtasks`
-     * (their titles) under it in order; returns its id. The task and its subtasks are one write,
+     * (their titles, and when each is due) under it in order; returns its id. The task and its subtasks are one write,
      * so the server never sees a subtask before its task.
      */
-    createTask(fields: NewTask, subtasks: readonly string[] = []) {
+    createTask(fields: NewTask, subtasks: readonly NewSubtask[] = []) {
       const id = newId()
       const at = now()
       const parentId = fields.parentId ?? null
@@ -217,16 +227,23 @@ export function createActions(db: Db, onRefused: () => void) {
         at,
       )
 
-      const children = subtasks.map((title, index) =>
+      const children = subtasks.map((subtask, index) =>
         newTask(
           newId(),
-          { listId: fields.listId, parentId: id, title: title.trim(), position: index },
+          {
+            listId: fields.listId,
+            parentId: id,
+            title: subtask.title.trim(),
+            position: index,
+            cadence: subtask.cadence ?? null,
+          },
           at,
         ),
       )
 
       insertTasks({ rows: [task, ...children] })
-      keepTurns([parentId])
+      // A subtask joins its task's turns; a new task taking turns starts them.
+      keepTurns([parentId, id])
 
       return id
     },
