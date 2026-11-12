@@ -17,7 +17,7 @@ import {
 } from '@/components/task-form'
 import { useActions } from '@/data/provider'
 import { useLists, useTask, useToday } from '@/data/queries'
-import { fillMaxWidth, verticalScroll } from '@/lib/compose-modifiers'
+import { fillMaxSize, verticalScroll } from '@/lib/compose-modifiers'
 import { Column, Text, useMaterialColors } from '@/lib/compose-ui'
 import { cadenceOf, nextDue, rests } from '@/tasks/cadence'
 import { seriesOf } from '@/tasks/conditions'
@@ -199,7 +199,8 @@ export function TaskScreen() {
       }
     >
       <Column
-        modifiers={[fillMaxWidth(), verticalScroll(), formPadding]}
+        // The whole page scrolls, below its last card too, so a drag anywhere folds the app bar.
+        modifiers={[fillMaxSize(), verticalScroll(), formPadding]}
         verticalArrangement={{ spacedBy: 16 }}
       >
         <FieldCards

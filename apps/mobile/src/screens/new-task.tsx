@@ -16,7 +16,7 @@ import {
 } from '@/components/task-form'
 import { useActions } from '@/data/provider'
 import { useLists, useToday } from '@/data/queries'
-import { fillMaxWidth, padding, verticalScroll } from '@/lib/compose-modifiers'
+import { fillMaxSize, fillMaxWidth, padding, verticalScroll } from '@/lib/compose-modifiers'
 import { Column, useNativeState } from '@/lib/compose-ui'
 import { type Cadence, nextDue, turnCadences } from '@/tasks/cadence'
 import { type CalendarDate } from '@/tasks/dates'
@@ -208,7 +208,8 @@ export function NewTaskScreen() {
       }
     >
       <Column
-        modifiers={[fillMaxWidth(), verticalScroll(), formPadding]}
+        // The whole page scrolls, below its last card too, so a drag anywhere folds the app bar.
+        modifiers={[fillMaxSize(), verticalScroll(), formPadding]}
         verticalArrangement={{ spacedBy: 16 }}
       >
         <TitleField title={title} onTitleChange={(value) => setHasTitle(value.trim() !== '')} />
