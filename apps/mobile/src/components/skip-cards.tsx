@@ -10,20 +10,16 @@ import {
   skipConditions,
   skipSet,
 } from '@/tasks/conditions'
-import type { CalendarDate } from '@/tasks/dates'
 import type { Repeat } from '@/tasks/model'
 import { ChoiceDialog } from '@/ui/dialogs'
 import {
   monthName,
-  periodEndLabel,
-  periodStartLabel,
   skippedMonthsLabel,
   skippedWeekdaysLabel,
   taskModeLabel,
   weekdayName,
 } from '@/ui/format'
 import { GroupTitle } from '@/ui/primitives'
-import { DatePicker } from './date-pickers'
 import { ChecklistDialog, SettingCard } from './setting-cards'
 
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6]
@@ -63,19 +59,17 @@ export function useConditionTasks(self?: string) {
 /** A card of the group, before its place in it is known. */
 type CardProps = Omit<Parameters<typeof SettingCard>[0], 'index' | 'count'> & { key: string }
 
-type Dialog = 'weekdays' | 'months' | 'from' | 'to' | 'task' | 'mode' | null
+type Dialog = 'weekdays' | 'months' | 'task' | 'mode' | null
 
 /**
  * The days a repeat skips, as cards in the repeat sheet laid out as its others: each shows what
  * it skips, or what it sets dimmed while it skips nothing, opens one dialog and is cleared with
  * its button. Days of the week (not on a fixed weekly repeat, whose days are chosen already),
- * months, a run of days with its first and last day, and another task, whose days it skips so
- * the two take turns, or keeps to.
+ * months, and another task, whose days it skips so the two take turns, or keeps to.
  */
 export function SkipCards({
   repeat,
   weekly,
-  start,
   others,
   titleOf,
   onChange,
@@ -83,8 +77,6 @@ export function SkipCards({
   repeat: Repeat
   /** A fixed weekly repeat, which falls on chosen weekdays and so skips none. */
   weekly: boolean
-  /** The repeat's first date, where a run of days starts. */
-  start: CalendarDate
   others: readonly OtherTask[]
   titleOf: (seriesId: string) => string | null
   onChange: (conditions: Repeat['conditions']) => void
@@ -113,42 +105,17 @@ export function SkipCards({
       },
     })
 
-  cards.push(
-    {
-      key: 'months',
-      glyph: 'date',
-      label: t({ message: 'Skip months', comment: 'Repeat sheet card, unset' }),
-      value: set.months.length > 0 ? skippedMonthsLabel(set.months) : null,
-      onPress: () => setDialog('months'),
-      clear: {
-        label: t({ message: 'Skip no months', comment: 'Clears skipped months' }),
-        onPress: () => update({ months: [] }),
-      },
+  cards.push({
+    key: 'months',
+    glyph: 'date',
+    label: t({ message: 'Skip months', comment: 'Repeat sheet card, unset' }),
+    value: set.months.length > 0 ? skippedMonthsLabel(set.months) : null,
+    onPress: () => setDialog('months'),
+    clear: {
+      label: t({ message: 'Skip no months', comment: 'Clears skipped months' }),
+      onPress: () => update({ months: [] }),
     },
-    {
-      key: 'from',
-      glyph: 'upcoming',
-      label: t({
-        message: 'Skip a period',
-        comment: 'Repeat sheet card, unset: a run of days it skips, such as a holiday',
-      }),
-      value: set.period ? periodStartLabel(set.period.from) : null,
-      onPress: () => setDialog('from'),
-      clear: {
-        label: t({ message: 'Skip no period', comment: 'Clears the run of days a repeat skips' }),
-        onPress: () => update({ period: null }),
-      },
-    },
-  )
-
-  if (set.period)
-    cards.push({
-      key: 'to',
-      glyph: 'deadline',
-      label: '',
-      value: periodEndLabel(set.period.to),
-      onPress: () => setDialog('to'),
-    })
+  })
 
   if (others.length > 0 || set.task)
     cards.push({
@@ -214,34 +181,6 @@ export function SkipCards({
           onDismiss={close}
         />
       ) : null}
-      {dialog === 'from' ? (
-        <DatePicker
-          value={set.period?.from ?? start}
-          onPick={(from) => {
-            const to = set.period && set.period.to >= from ? set.period.to : from
-
-            update({ period: { from, to } })
-
-            // A new run of days asks for its last day next, once this picker has gone.
-            if (!set.period) setTimeout(() => setDialog('to'), 0)
-          }}
-          onDismiss={() => setDialog((current) => (current === 'from' ? null : current))}
-        />
-      ) : null}
-      {dialog === 'to' && set.period ? (
-        <DatePicker
-          value={set.period.to}
-          onPick={(to) =>
-            update({
-              period:
-                set.period && to < set.period.from
-                  ? { from: to, to: set.period.from }
-                  : { from: set.period?.from ?? to, to },
-            })
-          }
-          onDismiss={close}
-        />
-      ) : null}
       {dialog === 'task' ? (
         <ChoiceDialog
           title={t({
@@ -261,22 +200,8 @@ export function SkipCards({
             comment: 'Dialog title: what a repeat does on another task’s days',
           })}
           options={[
-            {
-              value: 'skip',
-              label: taskModeLabel(true),
-              description: t({
-                message: 'The two take turns.',
-                comment: 'Explains skipping another task’s days',
-              }),
-            },
-            {
-              value: 'only',
-              label: taskModeLabel(false),
-              description: t({
-                message: 'It goes with the other task.',
-                comment: 'Explains keeping to another task’s days',
-              }),
-            },
+            { value: 'skip', label: taskModeLabel(true) },
+            { value: 'only', label: taskModeLabel(false) },
           ]}
           selected={set.task.except ? 'skip' : 'only'}
           onSelect={(mode) => {

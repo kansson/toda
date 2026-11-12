@@ -25,8 +25,7 @@ import {
 
 export type ChoiceDialogProps<T extends string | number> = {
   title: string
-  /** Each choice, with a line under it saying what it does where its name alone would not. */
-  options: { value: T; label: string; description?: string }[]
+  options: { value: T; label: string }[]
   /** The choice made, or null while none is, as for something new. */
   selected: T | null
   onSelect: (value: T) => void
@@ -50,10 +49,7 @@ export function ChoiceDialog<T extends string | number>({
         <Text style={{ typography: 'headlineSmall' }}>{title}</Text>
       </AlertDialog.Title>
       <AlertDialog.Text>
-        <Column
-          modifiers={[fillMaxWidth(), verticalScroll()]}
-          verticalArrangement={{ spacedBy: 8 }}
-        >
+        <Column modifiers={[fillMaxWidth(), verticalScroll()]}>
           {options.map((option) => (
             <ListItem
               key={String(option.value)}
@@ -73,13 +69,6 @@ export function ChoiceDialog<T extends string | number>({
               <ListItem.HeadlineContent>
                 <Text>{option.label}</Text>
               </ListItem.HeadlineContent>
-              {option.description ? (
-                <ListItem.SupportingContent>
-                  <Text color={colors.onSurfaceVariant} style={{ typography: 'bodySmall' }}>
-                    {option.description}
-                  </Text>
-                </ListItem.SupportingContent>
-              ) : null}
             </ListItem>
           ))}
         </Column>

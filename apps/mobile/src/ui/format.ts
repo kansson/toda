@@ -232,20 +232,6 @@ export function skippedMonthsLabel(skipped: readonly number[]) {
   return t({ message: `Only in ${months}`, comment: 'Repeat: the only months it falls in' })
 }
 
-/** The first day of a run of days a repeat skips: "Skips from Sun 20 Dec". */
-export function periodStartLabel(from: CalendarDate) {
-  const day = fullDate(from)
-
-  return t({ message: `Skips from ${day}`, comment: 'Repeat: the first day of a pause' })
-}
-
-/** The last day of a run of days a repeat skips: "Until Sun 27 Dec". */
-export function periodEndLabel(to: CalendarDate) {
-  const day = fullDate(to)
-
-  return t({ message: `Until ${day}`, comment: 'Repeat: the last day of a pause, included' })
-}
-
 /** What a repeat does on another task's days: skips them, or keeps to them. */
 export function taskModeLabel(except: boolean) {
   return except
@@ -432,27 +418,6 @@ export function leanLabel(lean: Lean) {
       return t({
         message: 'Never early',
         comment: 'Subtask schedule: lands on the first of the task’s dates on or after its own',
-      })
-  }
-}
-
-/** What each choice of `leanLabel` does, under it in the choice dialog. */
-export function leanDescription(lean: Lean) {
-  switch (lean) {
-    case 'closest':
-      return t({
-        message: 'On whichever of the task’s dates is nearest',
-        comment: 'Explains the Closest date choice of a subtask schedule',
-      })
-    case 'before':
-      return t({
-        message: 'On the task’s last date on or before it',
-        comment: 'Explains the Never late choice of a subtask schedule',
-      })
-    case 'after':
-      return t({
-        message: 'On the task’s first date on or after it',
-        comment: 'Explains the Never early choice of a subtask schedule',
       })
   }
 }

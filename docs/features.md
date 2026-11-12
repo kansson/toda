@@ -134,13 +134,12 @@ Sunday").
 | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | **Skip days of the week** (not on a fixed weekly repeat, whose days are chosen already)                                    | Walk the dog daily, skipping Sunday                                                        |
 | **Skip months**                                                                                                            | Water the garden weekly, skipping October to March: "Only in Apr, May, Jun, Jul, Aug, Sep" |
-| **Skip a period**, then its last day on a card under it                                                                    | Every chore paused from 20 to 27 December                                                  |
 | **Take turns with another task**, then on a card under it whether it skips the days that task is due or falls only on them | Run daily, skipping the days _Gym_ is due                                                  |
 
 Days of the week and months are ticked in a list of those skipped, never all of them; each says
-the shorter of what it skips and what it keeps. A run of days asks for its first day and then its
-last. The repeat's conditions are stored as the general rule below, which the sheet reads and
-writes in this one form.
+the shorter of what it skips and what it keeps. The repeat's conditions are stored as the general
+rule below, which the sheet reads and writes in this one form; the rule can also leave out a run
+of days, which the sheet does not offer but keeps and spells out.
 
 A date stays on the schedule when every "only" condition holds and no "except" one does. A date
 left out moves the task on: a fixed schedule to its next date that is kept, one counted from
@@ -166,10 +165,10 @@ bottom:
 
 - **Every few times**: once every N times the task repeats, starting this time or a few times
   on. Changing the filter on every third cleaning.
-- **On its own schedule**: every N days, weeks, months or years. Its dates are **fixed** (the
-  default, from a first date chosen in the sheet) or, with Fixed schedule off, each counts from
-  the day it was last done. Each date lands on one of the task's, chosen in a dialog that says
-  what each choice does:
+- **On its own schedule**: **Fixed schedule** first, as in the repeat sheet, then every N days,
+  weeks, months or years. Its dates are **fixed** (the default, from a first date chosen in the
+  sheet) or, with Fixed schedule off, each counts from the day it was last done. Each date lands
+  on one of the task's, chosen in a dialog of just their names:
   - **Closest date**: whichever is nearer, the earlier on a tie.
   - **Never late**: the task's last date on or before it.
   - **Never early**: the task's first date on or after it.

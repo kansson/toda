@@ -465,7 +465,6 @@ export function RepeatEditor({
             <SkipCards
               repeat={repeat}
               weekly={fixed && repeat.unit === 'week'}
-              start={first}
               others={others}
               titleOf={titleOf}
               onChange={(conditions) => setRepeat({ ...repeat, conditions })}

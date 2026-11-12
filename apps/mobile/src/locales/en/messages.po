@@ -804,11 +804,6 @@ msgstr "It can land this many days early instead, when that’s nearer than land
 msgid "It can land this many days late instead, when that’s nearer than landing early."
 msgstr "It can land this many days late instead, when that’s nearer than landing early."
 
-#. Explains keeping to another task’s days
-#: src/components/skip-cards.tsx
-msgid "It goes with the other task."
-msgstr "It goes with the other task."
-
 #. Deleting a task
 #: src/screens/task.tsx
 msgid "It is deleted from every phone."
@@ -1162,21 +1157,6 @@ msgstr "On the days it’s due"
 msgid "On the last {0}"
 msgstr "On the last {0}"
 
-#. Explains the Never early choice of a subtask schedule
-#: src/ui/format.ts
-msgid "On the task’s first date on or after it"
-msgstr "On the task’s first date on or after it"
-
-#. Explains the Never late choice of a subtask schedule
-#: src/ui/format.ts
-msgid "On the task’s last date on or before it"
-msgstr "On the task’s last date on or before it"
-
-#. Explains the Closest date choice of a subtask schedule
-#: src/ui/format.ts
-msgid "On whichever of the task’s dates is nearest"
-msgstr "On whichever of the task’s dates is nearest"
-
 #. Dialog title: every how many times a subtask is due
 #: src/components/cadence-editor.tsx
 msgid "Once every how many times?"
@@ -1416,11 +1396,6 @@ msgstr "Show in the widget"
 msgid "Skip"
 msgstr "Skip"
 
-#. Repeat sheet card, unset: a run of days it skips, such as a holiday
-#: src/components/skip-cards.tsx
-msgid "Skip a period"
-msgstr "Skip a period"
-
 #. Repeat sheet card, unset
 #: src/components/skip-cards.tsx
 msgid "Skip days of the week"
@@ -1445,11 +1420,6 @@ msgstr "Skip no days of the week"
 #: src/components/skip-cards.tsx
 msgid "Skip no months"
 msgstr "Skip no months"
-
-#. Clears the run of days a repeat skips
-#: src/components/skip-cards.tsx
-msgid "Skip no period"
-msgstr "Skip no period"
 
 #. Dialog title: weekdays a repeat skips
 #: src/components/skip-cards.tsx
@@ -1480,11 +1450,6 @@ msgstr "Skips {from} to {to}"
 #: src/ui/format.ts
 msgid "Skips {months}"
 msgstr "Skips {months}"
-
-#. Repeat: the first day of a pause
-#: src/ui/format.ts
-msgid "Skips from {day}"
-msgstr "Skips from {day}"
 
 #. Repeat: leaves out the days another task is due
 #: src/ui/format.ts
@@ -1666,11 +1631,6 @@ msgstr "The lists on this phone are replaced by the other phone’s. If no other
 msgid "The task repeats less often than this, so it’s due every time anyway."
 msgstr "The task repeats less often than this, so it’s due every time anyway."
 
-#. Explains skipping another task’s days
-#: src/components/skip-cards.tsx
-msgid "The two take turns."
-msgstr "The two take turns."
-
 #. Update dialog when downloading the new version failed
 #: src/components/update-alert.tsx
 msgid "The update couldn’t be downloaded. Check your connection and try again."
@@ -1814,11 +1774,6 @@ msgstr "Unit"
 #: src/ui/format.ts
 msgid "until {0}"
 msgstr "until {0}"
-
-#. Repeat: the last day of a pause, included
-#: src/ui/format.ts
-msgid "Until {day}"
-msgstr "Until {day}"
 
 #. Settings row when no update is available
 #: src/screens/settings.tsx
