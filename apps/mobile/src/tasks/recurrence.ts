@@ -1,4 +1,4 @@
-import type { Repeat } from '@toda/backend/model'
+import type { Condition, Repeat } from '@toda/backend/model'
 import {
   addDays,
   addMonths,
@@ -11,7 +11,46 @@ import {
   type Weekday,
 } from './dates'
 
-export type { Repeat } from '@toda/backend/model'
+export type { Condition, Repeat } from '@toda/backend/model'
+
+/**
+ * Whether another task's series is due on a date, for a repeat's `task` conditions; null when no
+ * such series exists, which leaves the condition out. Without one, `task` conditions are left out.
+ */
+export type Schedules = (seriesId: string, date: CalendarDate) => boolean | null
+
+/** The most dates looked through for one a repeat's conditions keep. */
+const CONDITION_SEARCH = 3660
+
+/** Whether a condition names `date`, or null when it cannot tell, which leaves it out. */
+function names(condition: Condition, date: CalendarDate, schedules?: Schedules): boolean | null {
+  switch (condition.kind) {
+    case 'weekdays':
+      return condition.weekdays.includes(weekday(date))
+    case 'months':
+      return condition.months.includes(parts(date).month)
+    case 'dates':
+      return date >= condition.from && date <= condition.to
+    case 'task':
+      return schedules ? schedules(condition.seriesId, date) : null
+  }
+}
+
+/**
+ * Whether a repeat's conditions keep `date`: every "only" condition names it and no "except" one
+ * does. A rule without conditions keeps every date.
+ */
+export function keeps(
+  conditions: readonly Condition[] | undefined,
+  date: CalendarDate,
+  schedules?: Schedules,
+) {
+  return (conditions ?? []).every((condition) => {
+    const named = names(condition, date, schedules)
+
+    return named === null || named !== condition.except
+  })
+}
 
 /** The day of the month a monthly rule names: -1 is the last day. */
 function monthDay(year: number, month: number, day: number) {
@@ -130,6 +169,7 @@ export function nextOccurrence(
   due: CalendarDate,
   completed: CalendarDate,
   occurrence: number,
+  schedules?: Schedules,
 ): CalendarDate | null {
   if (repeat.end.kind === 'after' && occurrence >= repeat.end.count) return null
 
@@ -146,9 +186,32 @@ export function nextOccurrence(
     }
   }
 
+  next = kept(repeat, next, due, schedules)
+
   if (repeat.end.kind === 'on' && next > repeat.end.date) return null
 
   return next
+}
+
+/**
+ * The first date from `date` on that the repeat's conditions keep: a fixed schedule moves on to
+ * its next date, one counted from completion to the next day. Where none comes within ten years,
+ * the conditions leave out every date and are let go of: `date` stays.
+ */
+function kept(repeat: Repeat, date: CalendarDate, due: CalendarDate, schedules?: Schedules) {
+  if (!repeat.conditions?.length) return date
+  let candidate = date
+
+  for (let guard = 0; guard < CONDITION_SEARCH; guard += 1) {
+    // Past its end, the repeat ends rather than letting go of its conditions.
+    if (repeat.end.kind === 'on' && candidate > repeat.end.date) return candidate
+
+    if (keeps(repeat.conditions, candidate, schedules)) return candidate
+    candidate =
+      repeat.anchor === 'completion' ? addDays(candidate, 1) : step(repeat, candidate, due)
+  }
+
+  return date
 }
 
 /** A new rule: every `interval` units, counted from the day each occurrence is done. */

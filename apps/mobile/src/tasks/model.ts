@@ -1,6 +1,6 @@
 import type { ListRow, TaskRow } from '@toda/backend/model'
 
-export type { Cadence, ListRow, ListSort, Repeat, TaskRow } from '@toda/backend/model'
+export type { Cadence, Condition, ListRow, ListSort, Repeat, TaskRow } from '@toda/backend/model'
 
 export { DEFAULT_LIST_ID, NOTES_MAX, TITLE_MAX } from '@toda/backend/model'
 

@@ -232,3 +232,59 @@ export function scheduleCadence(
 ): ScheduleCadence {
   return { kind: 'schedule', unit, interval, from: start, next: start, lean, leeway, anchor: 'due' }
 }
+
+/** Subtasks in their task's order, as its page lists them. */
+function inOrder(subtasks: readonly Task[]) {
+  return subtasks
+    .slice()
+    .sort(
+      (a, b) =>
+        a.position - b.position ||
+        a.createdAt - b.createdAt ||
+        a.clientId.localeCompare(b.clientId),
+    )
+}
+
+/**
+ * The cadences that make a task's subtasks take turns: one each time the task repeats, in their
+ * order, the subtask whose turn it is now keeping it (the first open one due this time, else one
+ * done this time, else the first) and the others following it. A single subtask is due every
+ * time, and so is each of them once the task stops taking turns.
+ */
+export function turnCadences(
+  parent: Task,
+  subtasks: readonly Task[],
+  today: CalendarDate,
+): { id: string; cadence: Cadence | null }[] {
+  const ordered = inOrder(subtasks)
+  const count = ordered.length
+
+  if (!parent.turns || count < 2)
+    return ordered.map((subtask) => ({ id: subtask.clientId, cadence: null }))
+
+  const due = (subtask: Task) => isDue(subtask, parent, today)
+  const open = ordered.findIndex((subtask) => subtask.completedAt === null && due(subtask))
+  const current = open === -1 ? Math.max(0, ordered.findIndex(due)) : open
+
+  return ordered.map((subtask, index) => ({
+    id: subtask.clientId,
+    cadence: everyCadence(parent, count, (index - current + count) % count),
+  }))
+}
+
+/**
+ * The subtasks whose cadence must change for them to take turns as `turnCadences` has it, or to
+ * stop: none when they already do.
+ */
+export function turnChanges(parent: Task, subtasks: readonly Task[], today: CalendarDate) {
+  const current = new Map(subtasks.map((subtask) => [subtask.clientId, subtask.cadence ?? null]))
+
+  const same = (a: Cadence | null, b: Cadence | null) =>
+    a === null || b === null
+      ? a === b
+      : a.kind === 'every' && b.kind === 'every' && a.count === b.count && a.from === b.from
+
+  return turnCadences(parent, subtasks, today).filter(
+    ({ id, cadence }) => !same(current.get(id) ?? null, cadence),
+  )
+}

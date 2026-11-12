@@ -48,6 +48,9 @@ export function checkFinite(value: number, what: string) {
   if (!Number.isFinite(value)) invalid(`${what} is not a number`)
 }
 
+const isWhole = (value: number, min: number, max: number) =>
+  Number.isInteger(value) && value >= min && value <= max
+
 const isWeekday = (day: number) => Number.isInteger(day) && day >= 0 && day <= 6
 
 /** A schedule the app can step through: whole, bounded numbers and real dates. */
@@ -88,10 +91,51 @@ export function checkRepeat(repeat: Infer<typeof repeatValidator> | null) {
     (!Number.isInteger(repeat.end.count) || repeat.end.count < 1 || repeat.end.count > 9999)
   )
     invalid('Repeat count must be 1 to 9999')
+
+  checkConditions(repeat.conditions)
 }
 
-const isWhole = (value: number, min: number, max: number) =>
-  Number.isInteger(value) && value >= min && value <= max
+/** The most conditions one repeat holds. */
+const CONDITIONS_MAX = 20
+
+/** A repeat's conditions: each names at least one real day, month or date, or a task. */
+function checkConditions(conditions: Infer<typeof repeatValidator>['conditions']) {
+  if (conditions === undefined) return
+
+  if (conditions.length > CONDITIONS_MAX) invalid('A repeat has at most 20 conditions')
+
+  for (const condition of conditions) {
+    switch (condition.kind) {
+      case 'weekdays':
+        if (
+          condition.weekdays.length === 0 ||
+          !condition.weekdays.every(isWeekday) ||
+          new Set(condition.weekdays).size !== condition.weekdays.length
+        )
+          invalid('A repeat condition’s weekdays are not days of the week')
+        break
+      case 'months':
+        if (
+          condition.months.length === 0 ||
+          !condition.months.every((month) => isWhole(month, 1, 12)) ||
+          new Set(condition.months).size !== condition.months.length
+        )
+          invalid('A repeat condition’s months are not months of the year')
+        break
+      case 'dates':
+        checkDate(condition.from, 'A repeat condition’s first day')
+        checkDate(condition.to, 'A repeat condition’s last day')
+
+        if (condition.to < condition.from)
+          invalid('A repeat condition’s last day is before its first')
+        break
+      case 'task':
+        if (condition.seriesId.length === 0 || condition.seriesId.length > 64)
+          invalid('A repeat condition names no task')
+        break
+    }
+  }
+}
 
 /** A subtask's cadence the app can count with: whole, bounded numbers and real dates. */
 export function checkCadence(cadence: Infer<typeof cadenceValidator> | null | undefined) {

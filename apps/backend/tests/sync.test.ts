@@ -2,7 +2,12 @@ import { convexTest } from 'convex-test'
 import { describe, expect, it } from 'vitest'
 import { api, internal } from '../convex/_generated/api'
 import type { Id } from '../convex/_generated/dataModel'
-import schema, { DEFAULT_LIST_ID, type Infer, type taskValidator } from '../convex/schema'
+import schema, {
+  type conditionValidator,
+  DEFAULT_LIST_ID,
+  type Infer,
+  type taskValidator,
+} from '../convex/schema'
 
 const modules = {
   './_generated/api.ts': () => import('../convex/_generated/api'),
@@ -30,7 +35,25 @@ async function signedIn() {
   return { t, userId, as: t.withIdentity({ subject: userId }) }
 }
 
+type Condition = Infer<typeof conditionValidator>
+
 type TaskValue = Omit<Infer<typeof taskValidator>, 'clientId' | 'updatedAt'>
+
+/** A daily repeat counted from completion, with the conditions given, or with none. */
+function daily(conditions?: Condition[]) {
+  const repeat: NonNullable<TaskValue['repeat']> = {
+    unit: 'day',
+    interval: 1,
+    weekdays: [],
+    monthly: null,
+    anchor: 'completion',
+    end: { kind: 'never' },
+  }
+
+  if (conditions !== undefined) repeat.conditions = conditions
+
+  return repeat
+}
 
 const task = (clientId: string, value: Partial<TaskValue> = {}) => ({
   table: 'tasks' as const,
@@ -215,6 +238,33 @@ describe('sync.apply', () => {
         }),
       ],
     ],
+    [
+      'a repeat condition on no weekdays',
+      [
+        task('a', {
+          dueDate: '2026-11-01',
+          repeat: daily([{ kind: 'weekdays', weekdays: [], except: true }]),
+        }),
+      ],
+    ],
+    [
+      'a repeat condition in a thirteenth month',
+      [
+        task('a', {
+          dueDate: '2026-11-01',
+          repeat: daily([{ kind: 'months', months: [13], except: false }]),
+        }),
+      ],
+    ],
+    [
+      'a repeat condition whose days end before they start',
+      [
+        task('a', {
+          dueDate: '2026-11-01',
+          repeat: daily([{ kind: 'dates', from: '2026-12-27', to: '2026-12-20', except: true }]),
+        }),
+      ],
+    ],
   ])('refuses %s, writing nothing', async (_, operations) => {
     const { as } = await signedIn()
 
@@ -222,6 +272,31 @@ describe('sync.apply', () => {
       as.mutation(api.sync.apply, { idempotencyKey: 'bad', operations }),
     ).rejects.toThrow()
     expect(await allTasks(as)).toEqual([])
+  })
+
+  it('keeps a repeat’s conditions and how a task is done, and takes rows without them', async () => {
+    const { as } = await signedIn()
+
+    const repeat = daily([
+      { kind: 'weekdays', weekdays: [6], except: true },
+      { kind: 'months', months: [4, 5, 6, 7, 8, 9], except: false },
+      { kind: 'dates', from: '2026-12-20', to: '2026-12-27', except: true },
+      { kind: 'task', seriesId: 'gym', except: true },
+    ])
+
+    await as.mutation(api.sync.apply, {
+      idempotencyKey: '1',
+      operations: [
+        task('a', { dueDate: '2026-11-01', repeat, completion: 'subtasks' }),
+        task('b', { dueDate: '2026-11-01', repeat: daily() }),
+      ],
+    })
+
+    const [a, b] = await allTasks(as)
+
+    expect(a).toMatchObject({ repeat, completion: 'subtasks' })
+    expect(b?.repeat).not.toHaveProperty('conditions')
+    expect(b).not.toHaveProperty('completion')
   })
 
   it('keeps a subtask’s cadence, clears it with null and takes rows without one', async () => {

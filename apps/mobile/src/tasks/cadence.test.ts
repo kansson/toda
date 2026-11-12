@@ -9,6 +9,8 @@ import {
   nextDue,
   rests,
   scheduleCadence,
+  turnCadences,
+  turnChanges,
 } from './cadence'
 import { planCompletion } from './completion'
 import { momentOf } from './dates'
@@ -208,5 +210,63 @@ describe('completing a task with resting subtasks', () => {
 
     expect(plan.complete).toEqual(['clean', 'filter'])
     expect(plan.spawn[1]).toMatchObject({ cadence: { next: '2027-01-01' } })
+  })
+})
+
+describe('subtasks taking turns', () => {
+  const turning = (occurrence: number) => ({ ...cleaning('2026-11-07', occurrence), turns: true })
+
+  const three = (cadences: (Cadence | null)[]) =>
+    ['a', 'b', 'c'].map((id, index) =>
+      task(id, { parentId: 'clean', position: index, cadence: cadences[index] ?? null }),
+    )
+
+  const apply = (subtasks: Task[], changes: { id: string; cadence: Cadence | null }[]) =>
+    subtasks.map((subtask) => ({
+      ...subtask,
+      cadence: changes.find((change) => change.id === subtask.clientId)?.cadence ?? null,
+    }))
+
+  it('comes round one at a time, in order, from the first', () => {
+    const subtasks = apply(three([]), turnCadences(turning(4), three([]), today))
+
+    const due = [4, 5, 6, 7].map((occurrence) =>
+      subtasks
+        .filter((subtask) => isDue(subtask, turning(occurrence), today))
+        .map((subtask) => subtask.clientId),
+    )
+
+    expect(due).toEqual([['a'], ['b'], ['c'], ['a']])
+  })
+
+  it('keeps whose turn it is as a subtask joins, the new one going after the others', () => {
+    // Two take turns from the first time; this is the second, b's turn.
+    const two = three([everyCadence(turning(1), 2), everyCadence(turning(1), 2, 1)]).slice(0, 2)
+    const added = [...two, task('c', { parentId: 'clean', position: 2 })]
+
+    expect(turnCadences(turning(2), added, today)).toEqual([
+      { id: 'a', cadence: { kind: 'every', count: 3, from: 4 } },
+      { id: 'b', cadence: { kind: 'every', count: 3, from: 2 } },
+      { id: 'c', cadence: { kind: 'every', count: 3, from: 3 } },
+    ])
+  })
+
+  it('makes every subtask due every time once the task stops, or when one is left', () => {
+    const subtasks = apply(three([]), turnCadences(turning(1), three([]), today))
+
+    expect(turnChanges({ ...turning(1), turns: false }, subtasks, today)).toEqual([
+      { id: 'a', cadence: null },
+      { id: 'b', cadence: null },
+      { id: 'c', cadence: null },
+    ])
+    expect(turnCadences(turning(1), subtasks.slice(0, 1), today)).toEqual([
+      { id: 'a', cadence: null },
+    ])
+  })
+
+  it('changes nothing when they already take turns', () => {
+    const subtasks = apply(three([]), turnCadences(turning(4), three([]), today))
+
+    expect(turnChanges(turning(4), subtasks, today)).toEqual([])
   })
 })
