@@ -20,7 +20,6 @@ import DriveFileMove from '@expo/material-symbols/drive_file_move.xml'
 import Edit from '@expo/material-symbols/edit.xml'
 import ErrorIcon from '@expo/material-symbols/error.xml'
 import EventUpcoming from '@expo/material-symbols/event_upcoming.xml'
-import FilterAlt from '@expo/material-symbols/filter_alt.xml'
 import Flag from '@expo/material-symbols/flag.xml'
 import IndentDecrease from '@expo/material-symbols/format_indent_decrease.xml'
 import IndentIncrease from '@expo/material-symbols/format_indent_increase.xml'
@@ -71,7 +70,6 @@ export const glyphs = {
   clearCompleted: ClearAll,
   completed: CheckCircleFill,
   completedOutline: CheckCircle,
-  conditions: FilterAlt,
   copy: ContentCopy,
   date: Today,
   deadline: Flag,
